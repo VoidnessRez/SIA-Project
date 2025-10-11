@@ -1,0 +1,107 @@
+.page-container {
+  min-height: 100vh;
+  background-color: #f5e6d3;
+  display: flex;
+  align-items: center;
+  background-image: url('./tire tracks.png');
+  justify-content: center;
+  padding: 16px; /* optional, internal spacing */
+  box-sizing: border-box;
+}
+
+
+
+/* Login card styling */
+.login-card {
+  width: 100%;           
+  max-width: 400px;
+  background-color: #E2D8EE;
+  border: 4px solid #000;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; 
+  flex-shrink: 0;
+}
+
+
+@media (max-width: 500px) {
+  .login-card {
+    max-width: 90%;
+    padding: 24px;
+  }
+}
+
+
+/* Form container */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Input fields */
+.input-field {
+  width: 87%;
+  background-color: #c8bfcf;
+  border: 2px solid #000;
+  border-radius: 50px;
+  padding: 12px 20px;
+  font-size: 16px;
+  color: #000;
+}
+
+.input-field::placeholder {
+  color: #333;
+}
+
+/* Forgot password section */
+.forgot-container {
+  text-align: right;
+}
+
+.forgot-btn {
+  background: none;
+  border: none;
+  color: #000;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Button styling */
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
+.login-btn {
+  background-color: #d9beee;
+  border: 2px solid #000;
+  border-radius: 50px;
+  padding: 10px 40px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #000;
+  transition: background-color 0.2s ease;
+}
+
+.login-btn:hover {
+  background-color: #EAECC6;
+}
+
+/* Signup text */
+.signup-text {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.signup-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+}
