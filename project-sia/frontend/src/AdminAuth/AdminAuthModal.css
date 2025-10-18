@@ -262,3 +262,88 @@
     border-color: #34495e;
   }
 }
+
+/* Form styles */
+.admin-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 360px;
+}
+
+.admin-auth-form label {
+  font-size: 0.9rem;
+  color: #556;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.admin-auth-form input[type="text"],
+.admin-auth-form input[type="password"],
+.admin-auth-form input[type="email"] {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #e6e6e9;
+  background: #fff;
+  color: #222;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-auth-form input:focus {
+  outline: none;
+  border-color: rgba(102,126,234,0.8);
+  box-shadow: 0 6px 18px rgba(102,126,234,0.08);
+}
+
+.admin-auth-password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-auth-password-wrap input {
+  flex: 1;
+}
+
+.admin-auth-showpass {
+  border: none;
+  background: transparent;
+  color: #556;
+  font-weight: 700;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin-auth-showpass:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+.admin-auth-error {
+  color: #b00020;
+  background: rgba(176, 0, 32, 0.06);
+  border: 1px solid rgba(176,0,32,0.12);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.admin-auth-actions-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin-auth-form label { color: #cfd8e3; }
+  .admin-auth-form input { background: #132033; border-color: #263544; color: #e6eef6; }
+  .admin-auth-showpass { color: #cfd8e3; }
+  .admin-auth-error { background: rgba(176,0,32,0.12); color: #ffdfe1; border-color: rgba(176,0,32,0.24); }
+}
+

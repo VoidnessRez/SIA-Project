@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-y: scroll; /* Always show scrollbar */
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

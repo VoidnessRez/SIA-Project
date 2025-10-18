@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useDarkMode } from '../context/DarkModeContext';
+import UserProfileDropdown from './UserProfileDropdown.jsx';
 import './Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -74,14 +80,25 @@ const Header = () => {
             <button className="search-btn">🔍</button>
           </div>
           
-          <div className="user-profile">
-            <div className="user-avatar">👤</div>
-            <div className="user-info">
-              <span className="user-greeting">Welcome,</span>
-              <span className="user-name">Customer</span>
-            </div>
-            <button className="logout-btn">Logout</button>
-          </div>
+          {isAuthenticated() ? (
+            <UserProfileDropdown username={user?.name || 'Customer'} userRole="user" />
+          ) : (
+            <>
+              <button 
+                className="dark-mode-toggle-btn"
+                onClick={toggleDarkMode}
+                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {isDarkMode ? '☀️' : '🌙'}
+              </button>
+              <button 
+                className="login-btn-header"
+                onClick={() => navigate('/login')}
+              >
+                Sign In
+              </button>
+            </>
+          )}
         </div>
 
         <button 

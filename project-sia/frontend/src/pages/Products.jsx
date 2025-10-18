@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from '../components/AuthModal';
 import './Products.css';
 
 const Products = () => {
@@ -10,6 +13,10 @@ const Products = () => {
   const [cart, setCart] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   // Enhanced product data
   const products = [
@@ -299,9 +306,32 @@ const Products = () => {
     alert(`${product.name} added to cart!`);
   };
 
-  const openQuickView = (product) => {
+  const handleQuickView = (product) => {
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      return;
+    }
     setSelectedProduct(product);
     setCurrentImageIndex(0);
+  };
+
+  const handleAddToCart = (product) => {
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+      setCart(cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+    alert(`Added ${product.name} to cart!`);
   };
 
   const closeQuickView = () => {
@@ -449,7 +479,7 @@ const Products = () => {
                   <div className="product-image">
                     <span className="product-emoji">{product.image}</span>
                     <div className="product-overlay">
-                      <button className="quick-view-btn" onClick={() => openQuickView(product)}>
+                      <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                         Quick View
                       </button>
                     </div>
@@ -470,7 +500,7 @@ const Products = () => {
                     </div>
                     <button 
                       className="add-to-cart-btn"
-                      onClick={() => addToCart(product)}
+                      onClick={() => handleAddToCart(product)}
                     >
                       🛒 Add to Cart
                     </button>
@@ -566,13 +596,19 @@ const Products = () => {
                   <button 
                     className="add-to-cart-btn modal-cart-btn"
                     onClick={() => {
-                      addToCart(selectedProduct);
+                      handleAddToCart(selectedProduct);
                       closeQuickView();
                     }}
                   >
                     🛒 Add to Cart
                   </button>
-                  <button className="buy-now-btn">
+                  <button 
+                    className="buy-now-btn"
+                    onClick={() => {
+                      handleAddToCart(selectedProduct);
+                      closeQuickView();
+                    }}
+                  >
                     ⚡ Buy Now
                   </button>
                 </div>
@@ -581,6 +617,12 @@ const Products = () => {
           </div>
         </div>
       )}
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </div>
   );
 };
