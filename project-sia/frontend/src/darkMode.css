@@ -1,0 +1,1491 @@
+/* Dark Mode Global Styles */
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --border-color: #e5e7eb;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-lg: rgba(0, 0, 0, 0.15);
+}
+
+
+/* Attribute-based dark theme (used by components via [data-theme="dark"]) */
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+  --bg-primary: #0f111b; /* page background */
+  --bg-secondary: #121428; /* panels / cards */
+  --bg-tertiary: #0b0c14; /* inputs / inner panels */
+  --text-primary: #e6eef8;
+  --text-secondary: #b8c6db;
+  --text-tertiary: #8f9fb6;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.6);
+  --accent-color: #7c7ff1;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+}
+
+/* legacy .dark-mode class support */
+.dark-mode {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f0f1e;
+  --text-primary: #f0f4f8;
+  --text-secondary: #c5d2e0;
+  --text-tertiary: #95a5b8;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --accent-color: #7c7ff1;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+}
+
+/* Apply dark mode to body */
+body.dark-mode {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.dark-mode #root {
+  background: var(--bg-primary);
+}
+
+.dark-mode main {
+  background: var(--bg-primary);
+}
+
+.dark-mode section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .container,
+.dark-mode .content,
+.dark-mode .wrapper {
+  background: var(--bg-primary);
+}
+
+.dark-mode div:not([class*="gradient"]):not([class*="btn"]):not([class*="badge"]) {
+  color: inherit;
+}
+
+/* Dark mode for common elements */
+.dark-mode .header {
+  background: var(--bg-primary);
+  box-shadow: 0 2px 20px var(--shadow-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-mode .logo-text h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .logo-subtitle {
+  color: var(--text-secondary);
+}
+
+.dark-mode .nav-link {
+  color: var(--text-secondary);
+}
+
+.dark-mode .nav-link:hover {
+  color: white;
+}
+
+.dark-mode .nav-link.active {
+  color: #667eea;
+}
+
+.dark-mode .nav-menu {
+  background: var(--bg-primary);
+}
+
+.dark-mode .search-box {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .search-box input {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.dark-mode .search-box input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .hero-section {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .hero-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+/* Dark mode for Buttons */
+.dark-mode button:not(.cta-button):not(.add-to-cart-btn):not(.checkout-btn):not(.logout-item):not(.admin-auth-showpass) {
+  color: var(--text-primary);
+}
+
+.dark-mode .stats-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .stat-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .product-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .product-card h3,
+.dark-mode .product-card .product-price {
+  color: var(--text-primary);
+}
+
+.dark-mode .product-card .product-brand,
+.dark-mode .product-card .product-category {
+  color: var(--text-secondary);
+}
+
+/* Dark mode for Cart Modal */
+.dark-mode .cart-modal {
+  background: var(--bg-primary);
+}
+
+.dark-mode .cart-modal-header {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .cart-modal-header h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .cart-item {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .cart-item-details h4 {
+  color: var(--text-primary);
+}
+
+.dark-mode .cart-item-price,
+.dark-mode .cart-item-total {
+  color: var(--text-primary);
+}
+
+.dark-mode .quantity-controls {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .qty-input {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.dark-mode .cart-modal-footer {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .cart-summary-row {
+  color: var(--text-secondary);
+}
+
+.dark-mode .cart-summary-row span:last-child,
+.dark-mode .cart-total {
+  color: var(--text-primary);
+}
+
+.dark-mode .continue-shopping-btn {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .continue-shopping-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Dark mode for Admin Auth Modal */
+.dark-mode .admin-auth-modal {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .admin-auth-content h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .admin-auth-content p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .admin-auth-form label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .admin-auth-form input {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .admin-auth-cancel {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .admin-auth-cancel:hover {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .admin-auth-error {
+  background: rgba(176, 0, 32, 0.12);
+  color: #ffdfe1;
+  border-color: rgba(176, 0, 32, 0.24);
+}
+
+/* Dark mode for Pages */
+.dark-mode .page-header {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-mode .filter-section,
+.dark-mode .brand-card,
+.dark-mode .order-card,
+.dark-mode .contact-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
+  color: var(--text-primary);
+}
+
+.dark-mode p,
+.dark-mode span,
+.dark-mode label {
+  color: var(--text-secondary);
+}
+
+/* Dark mode for Product Modals */
+.dark-mode .quick-view-modal {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.dark-mode .modal-content {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .modal-body {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .modal-gallery {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .main-image {
+  background: linear-gradient(135deg, rgba(124,127,241,0.12) 0%, rgba(118,75,162,0.08) 100%);
+  border-color: var(--border-color);
+}
+
+.dark-mode .thumbnail {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .thumbnail.active {
+  border-color: var(--accent-color);
+}
+
+.dark-mode .modal-details {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .modal-sku {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .modal-product-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-price {
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-description h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-description p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .modal-info {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+/* Modal stock / description boxes */
+.dark-mode .modal-stock {
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+}
+
+.dark-mode .modal-description {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+}
+
+/* Modal action buttons contrast */
+.dark-mode .modal-actions .modal-cart-btn,
+.dark-mode .modal-actions .add-to-cart-btn,
+.dark-mode .modal-actions .buy-now-btn {
+  border: none;
+}
+
+.dark-mode .modal-actions .modal-cart-btn {
+  background: var(--success-color);
+  color: #fff;
+}
+
+.dark-mode .modal-actions .buy-now-btn {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.dark-mode .thumbnail-emoji,
+.dark-mode .main-image-emoji {
+  color: white;
+}
+
+.dark-mode .info-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .info-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .close-modal {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .close-modal:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.dark-mode .gallery-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .gallery-btn:hover {
+  background: var(--accent-color);
+  color: white;
+}
+
+/* Dark mode for Products Page */
+.dark-mode .products-page {
+  background: var(--bg-primary);
+}
+
+/* Products header (top bar with results and sort) */
+.dark-mode .products-header {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .products-header .results-info h2 {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .products-header .sort-controls label {
+  color: var(--text-secondary) !important;
+}
+
+.dark-mode .products-header .sort-select {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* Specific override for Products empty-state panel */
+.dark-mode .products-page .no-results {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 15px !important;
+  padding: 80px 20px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important;
+}
+
+.dark-mode .products-page .no-results h3 {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .products-page .no-results p {
+  color: var(--text-secondary) !important;
+}
+
+/* Strong overrides for the left filters sidebar on Products page */
+.dark-mode aside.filters-sidebar,
+.dark-mode .filters-sidebar {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 1rem !important;
+  border-radius: 12px !important;
+}
+
+.dark-mode .filters-sidebar .filter-section {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.5rem 0 !important;
+}
+
+.dark-mode .filters-sidebar .filter-section h3 {
+  color: var(--text-primary) !important;
+}
+
+/* pill buttons inside the sidebar (category / brand filters) */
+.dark-mode .filters-sidebar .filter-btn,
+.dark-mode .filters-sidebar .filter-option,
+.dark-mode .filters-sidebar .brand-btn {
+  background: var(--bg-tertiary) !important;
+  border: 2px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.dark-mode .filters-sidebar .filter-btn.active,
+.dark-mode .filters-sidebar .filter-option.active,
+.dark-mode .filters-sidebar .brand-btn.active {
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border-color: var(--accent-color) !important;
+}
+
+.dark-mode .filters-sidebar .filter-btn:hover,
+.dark-mode .filters-sidebar .brand-btn:hover,
+.dark-mode .filters-sidebar .filter-option:hover {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .filters-sidebar .search-input,
+.dark-mode .filters-sidebar .filter-select {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark-mode .filters-sidebar .clear-filters-btn {
+  background: var(--danger-color) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* Featured Products (home) */
+.dark-mode .product-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .container {
+  background: transparent; /* keep page container transparent in dark mode */
+}
+
+.dark-mode .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.dark-mode .section-header h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .view-all-btn {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.dark-mode .view-all-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Category pill buttons */
+.dark-mode .category-filters .filter-btn {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .category-filters .filter-btn:hover,
+.dark-mode .category-filters .filter-btn.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+/* Brand filter big rounded panel */
+.dark-mode .brand-filters {
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.28);
+  border: 1px solid var(--border-color);
+}
+
+.dark-mode .filter-label {
+  color: var(--text-primary);
+}
+
+.dark-mode .brand-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dark-mode .brand-btn {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+  border-radius: 25px;
+}
+
+.dark-mode .brand-btn:hover,
+.dark-mode .brand-btn.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(124,127,241,0.18);
+}
+
+.dark-mode .products-grid .product-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .product-card:hover {
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.dark-mode .product-sku {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .product-description {
+  color: var(--text-secondary);
+}
+
+.dark-mode .stock-status {
+  color: var(--text-secondary);
+}
+
+/* Dark mode for Brands Page */
+.dark-mode .brands-page {
+  background: var(--bg-primary);
+}
+
+.dark-mode .brands-hero {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .brands-hero h1 {
+  color: var(--text-primary);
+}
+
+.dark-mode .brands-hero p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .brands-header {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .brands-content {
+  background: var(--bg-primary);
+}
+
+.dark-mode .brands-container {
+  background: var(--bg-primary);
+}
+
+.dark-mode .brands-grid {
+  background: var(--bg-primary);
+}
+
+.dark-mode .category-tabs {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .category-tab {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.dark-mode .category-tab:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-mode .category-tab.active {
+  background: var(--bg-primary);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.dark-mode .tab-icon,
+.dark-mode .tab-name {
+  color: inherit;
+}
+
+.dark-mode .brand-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .brand-card:hover {
+  box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+.dark-mode .brand-header {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .brand-title h3,
+.dark-mode .brand-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .brand-specialty {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .brand-country {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .brand-description {
+  color: var(--text-secondary);
+}
+
+.dark-mode .brand-products {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .brand-products h4 {
+  color: var(--text-primary);
+}
+
+.dark-mode .brand-products p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .view-products-btn {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.dark-mode .view-products-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .brands-stats {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .stat-box {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .stat-box:hover {
+  background: var(--bg-primary);
+}
+
+.dark-mode .stat-content h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .stat-content p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .why-choose-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .why-choose-section h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .features-grid {
+  background: var(--bg-primary);
+}
+
+.dark-mode .feature-item {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .feature-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .feature-item h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .feature-item p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .feature-icon {
+  color: var(--accent-color);
+}
+
+/* Dark mode for Orders Page */
+.dark-mode .orders-page {
+  background: var(--bg-primary);
+}
+
+.dark-mode .orders-hero {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .orders-hero h1 {
+  color: var(--text-primary);
+}
+
+.dark-mode .orders-hero p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .orders-header {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .orders-content {
+  background: var(--bg-primary);
+}
+
+.dark-mode .orders-container {
+  background: var(--bg-primary);
+}
+
+.dark-mode .orders-stats {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .stat-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .stat-card:hover {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .stat-info h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .stat-info p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .stat-item {
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-tabs {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-tab {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-tab:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dark-mode .order-tab.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.dark-mode .orders-list {
+  background: var(--bg-primary);
+}
+
+.dark-mode .no-orders {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .no-orders h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .no-orders p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .shop-now-btn {
+  background: var(--accent-color);
+  color: white;
+}
+
+.dark-mode .order-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-card:hover {
+  box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+.dark-mode .order-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-id-section h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .order-status {
+  color: inherit;
+}
+
+.dark-mode .order-date {
+  color: var(--text-secondary);
+}
+
+.dark-mode .order-items-preview {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .item-preview {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .item-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .item-quantity {
+  color: var(--text-secondary);
+}
+
+.dark-mode .order-footer {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .total-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .total-amount {
+  color: var(--text-primary);
+}
+
+.dark-mode .order-total {
+  color: var(--text-primary);
+}
+
+.dark-mode .view-details-btn {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.dark-mode .view-details-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-items {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .order-modal {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.dark-mode .order-modal .modal-content {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .modal-header {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .modal-header h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .order-id-badge {
+  background: var(--bg-primary);
+  color: var(--accent-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .detail-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .detail-section h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .detail-text {
+  color: var(--text-secondary);
+}
+
+.dark-mode .modal-items-list {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .modal-item {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .modal-item-info h4 {
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-item-info p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .modal-item-price {
+  color: var(--text-primary);
+}
+
+.dark-mode .status-badge {
+  border-color: var(--border-color);
+}
+
+/* Dark mode for Contact Page */
+.dark-mode .contact-page {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-hero {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .contact-hero h1 {
+  color: var(--text-primary);
+}
+
+.dark-mode .contact-hero p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .contact-header {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .contact-content {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-container {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-info-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-info-section h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .contact-cards {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .contact-card:hover {
+  background: var(--bg-tertiary);
+  box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+.dark-mode .contact-card h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .contact-detail {
+  color: var(--text-primary);
+}
+
+.dark-mode .contact-detail a {
+  color: var(--accent-color);
+}
+
+.dark-mode .contact-subtext {
+  color: var(--text-secondary);
+}
+
+.dark-mode .contact-main-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .contact-form-wrapper {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .contact-form-wrapper h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .contact-form {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .form-group label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .form-group input,
+.dark-mode .form-group textarea,
+.dark-mode .form-group select {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .form-group input::placeholder,
+.dark-mode .form-group textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .form-group select option {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dark-mode .form-row {
+  background: transparent;
+}
+
+.dark-mode .submit-btn {
+  background: var(--accent-color);
+  color: white;
+}
+
+.dark-mode .submit-btn:hover {
+  opacity: 0.9;
+}
+
+.dark-mode .business-hours-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .business-hours-section h2,
+.dark-mode .business-hours-section h3 {
+  color: var(--text-primary);
+}
+
+.dark-mode .hours-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .hours-row {
+  border-color: var(--border-color);
+}
+
+.dark-mode .hours-row .day {
+  color: var(--text-primary);
+}
+
+.dark-mode .hours-row .time {
+  color: var(--text-secondary);
+}
+
+.dark-mode .hours-row.closed .time {
+  color: var(--text-tertiary);
+}
+
+.dark-mode .quick-links {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .quick-link {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .quick-link:hover {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.dark-mode .contact-info-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .faq-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .faq-section h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .faq-grid {
+  background: var(--bg-primary);
+}
+
+.dark-mode .faq-item {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .faq-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.dark-mode .faq-item h4 {
+  color: var(--text-primary);
+}
+
+.dark-mode .faq-item p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .faq-question {
+  color: var(--text-primary);
+}
+
+.dark-mode .faq-answer {
+  color: var(--text-secondary);
+}
+
+.dark-mode .social-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .social-section h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .social-section p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .social-buttons {
+  background: transparent;
+}
+
+.dark-mode .social-btn {
+  border-color: var(--border-color);
+}
+
+.dark-mode .social-btn:hover {
+  transform: translateY(-3px);
+  opacity: 1;
+}
+
+/* Additional catch-all overrides for components that default to white backgrounds */
+.dark-mode .product-section,
+.dark-mode .product-card,
+.dark-mode .products-grid,
+.dark-mode .brand-filters,
+.dark-mode .brand-card,
+.dark-mode .contact-card,
+.dark-mode .contact-form-wrapper,
+.dark-mode .hours-card,
+.dark-mode .faq-item,
+.dark-mode .stat-card,
+.dark-mode .order-card,
+.dark-mode .no-orders,
+.dark-mode .modal-content,
+.dark-mode .modal-description,
+.dark-mode .info-item,
+.dark-mode .quick-view-btn,
+.dark-mode .view-products-btn {
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ensure pill-like white buttons get dark backgrounds and clear text */
+.dark-mode .filter-btn,
+.dark-mode .brand-btn,
+.dark-mode .quick-view-btn,
+.dark-mode .view-all-btn,
+.dark-mode .view-products-btn {
+  background: var(--bg-tertiary) !important;
+  border: 2px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark-mode .filter-btn.active,
+.dark-mode .brand-btn.active,
+.dark-mode .filter-btn:hover,
+.dark-mode .brand-btn:hover {
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border-color: var(--accent-color) !important;
+}
+
+.dark-mode .brand-filters {
+  box-shadow: 0 6px 30px rgba(0,0,0,0.45) !important;
+  padding: 1.5rem !important;
+}
+
+.dark-mode .brand-buttons .brand-btn {
+  box-shadow: none !important;
+}
+
+/* important for forms and small badges inside white containers */
+.dark-mode .product-price,
+.dark-mode .product-name,
+.dark-mode .modal-product-name,
+.dark-mode .modal-price,
+.dark-mode .contact-detail a,
+.dark-mode .info-value,
+.dark-mode .stat-content h3 {
+  color: var(--text-primary) !important;
+}
+
+/* Dark mode for Dashboard */
+.dark-mode .dashboard {
+  background: var(--bg-primary);
+}
+
+.dark-mode .dashboard-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .dashboard-nav {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .nav-item {
+  color: var(--text-secondary);
+}
+
+/* User avatar in header: black circle with white icon for dark mode */
+.dark-mode .user-profile-trigger {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.dark-mode .user-profile-trigger .user-avatar {
+  background: #000000 !important; /* black circle */
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.dark-mode .user-profile-trigger .user-avatar svg,
+.dark-mode .user-profile-trigger .user-avatar img {
+  color: #ffffff !important; /* white icon */
+  fill: #ffffff !important;
+}
+
+.dark-mode .user-profile-trigger .user-info .user-greeting,
+.dark-mode .user-profile-trigger .user-info .user-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .nav-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dark-mode .nav-item.active {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+}
+
+.dark-mode .dashboard-content {
+  background: var(--bg-primary);
+}
+
+.dark-mode .dashboard-card {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .dashboard-card:hover {
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.dark-mode .dashboard-stats {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .stat-card {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .stat-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .stat-label {
+  color: var(--text-secondary);
+}
+
+.dark-mode .data-table {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .data-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .data-table td {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .data-table tr:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Smooth transitions */
+* {
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Broad dark-mode overrides to catch legacy hard-coded white backgrounds
+   This reduces white flashes for components that were styled with `background: white`.
+   It intentionally uses attribute selector [data-theme="dark"] which this app uses.
+ */
+[data-theme="dark"] .card,
+[data-theme="dark"] .card *,
+[data-theme="dark"] .product-card,
+[data-theme="dark"] .brand-card,
+[data-theme="dark"] .contact-card,
+[data-theme="dark"] .order-card,
+[data-theme="dark"] .no-orders,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .modal-description,
+[data-theme="dark"] .info-item,
+[data-theme="dark"] .quick-view-btn,
+[data-theme="dark"] .view-products-btn,
+[data-theme="dark"] .view-all-btn,
+[data-theme="dark"] .filters-sidebar,
+[data-theme="dark"] .filter-section,
+[data-theme="dark"] .brand-filters,
+[data-theme="dark"] .products-grid,
+[data-theme="dark"] .products-page .no-results,
+[data-theme="dark"] .signup-form,
+[data-theme="dark"] .signup-container,
+[data-theme="dark"] .form-group,
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}

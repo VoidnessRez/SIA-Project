@@ -1,0 +1,203 @@
+// Philippine ZIP Codes by City/Municipality
+// Source: Philippine Postal Corporation (PHLPost)
+// Updated: 2025
+
+export const zipCodes = {
+  // Metro Manila (NCR)
+  "Manila": "1000",
+  "Quezon City": "1100",
+  "Caloocan": "1400",
+  "Las Piñas": "1740",
+  "Makati": "1200",
+  "Malabon": "1470",
+  "Mandaluyong": "1550",
+  "Marikina": "1800",
+  "Muntinlupa": "1770",
+  "Navotas": "1485",
+  "Parañaque": "1700",
+  "Pasay": "1300",
+  "Pasig": "1600",
+  "Pateros": "1620",
+  "San Juan": "1500",
+  "Taguig": "1630",
+  "Valenzuela": "1440",
+
+  // Rizal Province
+  "Angono": "1930",
+  "Antipolo": "1870",
+  "Baras": "1970",
+  "Binangonan": "1940",
+  "Cainta": "1900",
+  "Cardona": "1950",
+  "Jalajala": "1990",
+  "Morong": "1960",
+  "Pililla": "1910",
+  "Rodriguez": "1860",
+  "San Mateo": "1850",
+  "Tanay": "1980",
+  "Taytay": "1920",
+  "Teresa": "1880",
+
+  // Cavite Province
+  "Cavite City": "4100",
+  "Bacoor": "4102",
+  "Imus": "4103",
+  "Dasmariñas": "4114",
+  "Tagaytay": "4120",
+  "Trece Martires": "4109",
+  "General Trias": "4107",
+  "Silang": "4118",
+  "Carmona": "4116",
+  "Kawit": "4104",
+  "Noveleta": "4105",
+  "Rosario": "4106",
+  "Tanza": "4108",
+  "Naic": "4110",
+  "Maragondon": "4111",
+  "Ternate": "4111",
+  "Magallanes": "4113",
+  "Alfonso": "4123",
+  "Amadeo": "4119",
+  "Gen. Emilio Aguinaldo": "4124",
+  "Indang": "4122",
+  "Mendez": "4121",
+  "Tagaytay City": "4120",
+
+  // Laguna Province
+  "Biñan": "4024",
+  "Cabuyao": "4025",
+  "Calamba": "4027",
+  "San Pablo": "4000",
+  "San Pedro": "4023",
+  "Santa Rosa": "4026",
+  "Alaminos": "4001",
+  "Bay": "4033",
+  "Calauan": "4012",
+  "Cavinti": "4013",
+  "Famy": "4021",
+  "Kalayaan": "4015",
+  "Liliw": "4004",
+  "Los Baños": "4030",
+  "Luisiana": "4032",
+  "Lumban": "4014",
+  "Mabitac": "4020",
+  "Magdalena": "4007",
+  "Majayjay": "4005",
+  "Nagcarlan": "4002",
+  "Paete": "4016",
+  "Pagsanjan": "4008",
+  "Pakil": "4017",
+  "Pangil": "4018",
+  "Pila": "4010",
+  "Rizal": "4003",
+  "Santa Cruz": "4009",
+  "Santa Maria": "4022",
+  "Siniloan": "4019",
+  "Victoria": "4206",
+
+  // Bulacan Province
+  "Malolos": "3000",
+  "Meycauayan": "3020",
+  "San Jose del Monte": "3023",
+  "Angat": "3012",
+  "Balagtas": "3016",
+  "Baliuag": "3006",
+  "Bocaue": "3018",
+  "Bulakan": "3017",
+  "Bustos": "3007",
+  "Calumpit": "3003",
+  "Doña Remedios Trinidad": "3009",
+  "Guiguinto": "3015",
+  "Hagonoy": "3002",
+  "Marilao": "3019",
+  "Norzagaray": "3013",
+  "Obando": "3021",
+  "Pandi": "3014",
+  "Paombong": "3001",
+  "Plaridel": "3004",
+  "Pulilan": "3005",
+  "San Ildefonso": "3010",
+  "San Miguel": "3011",
+  "San Rafael": "3008",
+  "Santa Maria": "3022",
+
+  // Batangas Province
+  "Batangas City": "4200",
+  "Lipa": "4217",
+  "Tanauan": "4232",
+  "Agoncillo": "4211",
+  "Alitagtag": "4205",
+  "Balayan": "4213",
+  "Balete": "4219",
+  "Bauan": "4201",
+  "Calaca": "4212",
+  "Calatagan": "4215",
+  "Cuenca": "4222",
+  "Ibaan": "4230",
+  "Laurel": "4221",
+  "Lemery": "4209",
+  "Lian": "4216",
+  "Lobo": "4229",
+  "Mabini": "4202",
+  "Malvar": "4233",
+  "Mataas na Kahoy": "4223",
+  "Nasugbu": "4231",
+  "Padre Garcia": "4224",
+  "Rosario": "4225",
+  "San Jose": "4227",
+  "San Juan": "4226",
+  "San Luis": "4210",
+  "San Nicolas": "4207",
+  "San Pascual": "4204",
+  "Santa Teresita": "4228",
+  "Santo Tomas": "4234",
+  "Taal": "4208",
+  "Talisay": "4220",
+  "Taysan": "4230",
+  "Tingloy": "4203",
+  "Tuy": "4214",
+
+  // Pampanga Province
+  "Angeles": "2009",
+  "San Fernando": "2000",
+  "Apalit": "2016",
+  "Arayat": "2012",
+  "Bacolor": "2001",
+  "Candaba": "2013",
+  "Floridablanca": "2006",
+  "Guagua": "2003",
+  "Lubao": "2005",
+  "Mabalacat": "2010",
+  "Macabebe": "2018",
+  "Magalang": "2011",
+  "Masantol": "2017",
+  "Mexico": "2021",
+  "Minalin": "2019",
+  "Porac": "2008",
+  "San Luis": "2014",
+  "San Simon": "2015",
+  "Santa Ana": "2022",
+  "Santa Rita": "2002",
+  "Santo Tomas": "2020",
+  "Sasmuan": "2004",
+
+  // Add more provinces and cities as needed
+  // This is a comprehensive list of major cities
+  // For complete coverage, more entries can be added
+};
+
+// Helper function to get ZIP code by city name
+export const getZipCode = (cityName) => {
+  return zipCodes[cityName] || "";
+};
+
+// Helper function to search ZIP code (case-insensitive)
+export const searchZipCode = (cityName) => {
+  const normalizedSearch = cityName.toLowerCase().trim();
+  const entry = Object.entries(zipCodes).find(
+    ([city]) => city.toLowerCase() === normalizedSearch
+  );
+  return entry ? entry[1] : "";
+};
+
+export default zipCodes;
