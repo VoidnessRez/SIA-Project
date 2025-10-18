@@ -1,0 +1,264 @@
+/* Admin Auth Modal Overlay */
+.admin-auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.admin-auth-modal {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 450px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.admin-auth-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.admin-auth-close:hover {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  transform: rotate(90deg);
+}
+
+/* Modal Content */
+.admin-auth-content {
+  text-align: center;
+}
+
+/* Admin Icon */
+.admin-auth-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+.admin-auth-icon svg {
+  width: 45px;
+  height: 45px;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
+  }
+}
+
+/* Heading and Text */
+.admin-auth-content h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-auth-content p {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Action Buttons */
+.admin-auth-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-auth-btn {
+  flex: 1;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-auth-login {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.admin-auth-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.admin-auth-login:active {
+  transform: translateY(0);
+}
+
+.admin-auth-cancel {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #dee2e6;
+}
+
+.admin-auth-cancel:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-2px);
+}
+
+/* Keyboard Hint */
+.admin-auth-hint {
+  padding: 1rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 10px;
+  border: 1px dashed rgba(102, 126, 234, 0.3);
+}
+
+.admin-auth-hint small {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.admin-auth-hint kbd {
+  background: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-family: monospace;
+  font-size: 0.8rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #333;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-auth-modal {
+    padding: 2rem;
+    max-width: 95%;
+  }
+
+  .admin-auth-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .admin-auth-content p {
+    font-size: 1rem;
+  }
+
+  .admin-auth-actions {
+    flex-direction: column;
+  }
+
+  .admin-auth-btn {
+    width: 100%;
+  }
+
+  .admin-auth-hint small {
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .admin-auth-modal {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .admin-auth-content h2 {
+    color: #fff;
+  }
+
+  .admin-auth-content p {
+    color: #b8b8b8;
+  }
+
+  .admin-auth-cancel {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #34495e;
+  }
+
+  .admin-auth-cancel:hover {
+    background: #34495e;
+  }
+
+  .admin-auth-hint {
+    background: rgba(102, 126, 234, 0.1);
+  }
+
+  .admin-auth-hint kbd {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #34495e;
+  }
+}

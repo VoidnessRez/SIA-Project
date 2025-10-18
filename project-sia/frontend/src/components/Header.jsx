@@ -1,67 +1,71 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState('home');
+  const location = useLocation();
 
-  const handleNavClick = (linkName) => {
-    setActiveLink(linkName);
-    setIsMenuOpen(false); // Close mobile menu after clicking
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
+  const handleNavClick = () => {
+    setIsMenuOpen(false);
   };
 
   return (
     <header className="header">
       <div className="header-container">
-        <div className="logo">
+        <Link to="/" className="logo" onClick={handleNavClick}>
           <span className="logo-icon">🏍️</span>
           <div className="logo-text">
             <h2>Mejia Spareparts</h2>
             <p className="logo-subtitle">and Accessories</p>
           </div>
-        </div>
+        </Link>
         
         <nav className={`nav-menu ${isMenuOpen ? 'nav-open' : ''}`}>
-          <a 
-            href="#dashboard" 
-            className={`nav-link ${activeLink === 'home' ? 'active' : ''}`}
-            onClick={() => handleNavClick('home')}
+          <Link 
+            to="/" 
+            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+            onClick={handleNavClick}
           >
             <span className="nav-icon">🏠</span>
             <span>Home</span>
-          </a>
-          <a 
-            href="#products" 
-            className={`nav-link ${activeLink === 'products' ? 'active' : ''}`}
-            onClick={() => handleNavClick('products')}
+          </Link>
+          <Link 
+            to="/products" 
+            className={`nav-link ${isActive('/products') ? 'active' : ''}`}
+            onClick={handleNavClick}
           >
             <span className="nav-icon">📦</span>
-            <span>All Products</span>
-          </a>
-          <a 
-            href="#brands" 
-            className={`nav-link ${activeLink === 'brands' ? 'active' : ''}`}
-            onClick={() => handleNavClick('brands')}
+            <span>Products</span>
+          </Link>
+          <Link 
+            to="/brands" 
+            className={`nav-link ${isActive('/brands') ? 'active' : ''}`}
+            onClick={handleNavClick}
           >
             <span className="nav-icon">🏷️</span>
             <span>Brands</span>
-          </a>
-          <a 
-            href="#my-orders" 
-            className={`nav-link ${activeLink === 'orders' ? 'active' : ''}`}
-            onClick={() => handleNavClick('orders')}
+          </Link>
+          <Link 
+            to="/orders" 
+            className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
+            onClick={handleNavClick}
           >
             <span className="nav-icon">📋</span>
-            <span>My Orders</span>
-          </a>
-          <a 
-            href="#contact" 
-            className={`nav-link ${activeLink === 'contact' ? 'active' : ''}`}
-            onClick={() => handleNavClick('contact')}
+            <span>Orders</span>
+          </Link>
+          <Link 
+            to="/contact" 
+            className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
+            onClick={handleNavClick}
           >
             <span className="nav-icon">📞</span>
             <span>Contact</span>
-          </a>
+          </Link>
         </nav>
 
         <div className="header-actions">
