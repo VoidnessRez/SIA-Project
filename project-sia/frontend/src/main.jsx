@@ -10,6 +10,7 @@ import Brands from './pages/Brands.jsx';
 import Orders from './pages/Orders.jsx';
 import Contact from './pages/Contact.jsx';
 import LoginPage from './Auth/LogInPage.jsx';
+import SignUpPage from './Auth/SignUpPage.jsx';
 import Header from './components/Header.jsx';
 import FloatingCart from './components/FloatingCart.jsx';
 import AdminAuthModal from './AdminAuth/AdminAuthModal.jsx';
@@ -44,6 +45,7 @@ const App = () => {
             {/* Public routes - all pages visible */}
             <Route path="/" element={<Dashboard />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="/products" element={<Products />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/contact" element={<Contact />} />

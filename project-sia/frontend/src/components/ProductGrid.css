@@ -43,7 +43,7 @@
 }
 
 .filter-btn {
-  background: white;
+  background: var(--bg-secondary);
   border: 2px solid #e9ecef;
   color: #666;
   padding: 10px 20px;
@@ -63,7 +63,7 @@
 .brand-filters {
   margin-bottom: 3rem;
   padding: 1.5rem;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
@@ -83,7 +83,7 @@
 }
 
 .brand-btn {
-  background: white;
+  background: var(--bg-secondary);
   border: 2px solid #e9ecef;
   color: #666;
   padding: 10px 20px;
@@ -116,7 +116,7 @@
 }
 
 .product-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 5px 20px rgba(0,0,0,0.1);

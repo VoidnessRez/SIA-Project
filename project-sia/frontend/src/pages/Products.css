@@ -34,7 +34,7 @@
 
 /* Filters Sidebar */
 .filters-sidebar {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
   padding: 25px;
   height: fit-content;
@@ -77,7 +77,7 @@
 
 .filter-option {
   width: 100%;
-  background: white;
+  background: var(--bg-secondary);
   border: 2px solid #e9ecef;
   padding: 10px 15px;
   border-radius: 8px;
@@ -109,7 +109,7 @@
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 0.9rem;
-  background: white;
+  background: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -148,7 +148,7 @@
   align-items: center;
   margin-bottom: 30px;
   padding: 20px;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
   box-shadow: 0 2px 15px rgba(0,0,0,0.08);
 }
@@ -174,7 +174,7 @@
   padding: 8px 15px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
-  background: white;
+  background: var(--bg-secondary);
   cursor: pointer;
   font-size: 0.9rem;
 }
@@ -192,7 +192,7 @@
 }
 
 .product-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 5px 20px rgba(0,0,0,0.08);
@@ -239,7 +239,7 @@
 }
 
 .quick-view-btn {
-  background: white;
+  background: var(--bg-secondary);
   color: #333;
   border: none;
   padding: 10px 20px;
@@ -336,7 +336,7 @@
 .no-results {
   text-align: center;
   padding: 80px 20px;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
 }
 

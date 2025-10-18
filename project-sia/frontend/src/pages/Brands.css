@@ -41,7 +41,7 @@
 }
 
 .category-tab {
-  background: white;
+  background: var(--bg-secondary);
   border: 2px solid #e9ecef;
   padding: 15px 30px;
   border-radius: 50px;
@@ -84,7 +84,7 @@
 }
 
 .brand-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.08);
@@ -196,7 +196,7 @@
 }
 
 .stat-box {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.08);
@@ -238,7 +238,7 @@
 
 /* Why Choose Section */
 .why-choose-section {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 25px;
   padding: 50px;
   box-shadow: 0 5px 30px rgba(0,0,0,0.08);

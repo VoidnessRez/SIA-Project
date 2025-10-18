@@ -85,7 +85,7 @@
   position: absolute;
   top: calc(100% + 0.75rem);
   right: 0;
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   min-width: 280px;

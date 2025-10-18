@@ -65,7 +65,7 @@
 }
 
 .cta-button.primary {
-  background: white;
+  background: var(--bg-secondary);
   color: #667eea;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .cta-button.secondary:hover {
-  background: white;
+  background: var(--bg-secondary);
   color: #667eea;
   transform: translateY(-2px);
 }
