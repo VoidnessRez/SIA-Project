@@ -25,7 +25,7 @@
 
 /* Cart Modal Container */
 .cart-modal {
-  background: white;
+  background: var(--bg-secondary);
   width: 100%;
   max-width: 480px;
   display: flex;
@@ -166,7 +166,7 @@
   flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
-  background: white;
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -234,7 +234,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: white;
+  background: var(--bg-secondary);
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 0.25rem;
@@ -381,7 +381,7 @@
 }
 
 .continue-shopping-btn {
-  background: white;
+  background: var(--bg-secondary);
   color: #6b7280;
   border: 2px solid #e5e7eb;
 }

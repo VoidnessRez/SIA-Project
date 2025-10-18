@@ -51,7 +51,7 @@
 }
 
 .contact-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 35px;
   text-align: center;
@@ -116,7 +116,7 @@
 }
 
 .contact-form-wrapper {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 40px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.08);
@@ -211,7 +211,7 @@
 }
 
 .hours-card {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.08);
@@ -248,7 +248,7 @@
 
 /* Quick Links */
 .quick-links {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 20px;
   padding: 30px;
   box-shadow: 0 5px 25px rgba(0,0,0,0.08);
@@ -299,7 +299,7 @@
 }
 
 .faq-item {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 15px;
   padding: 25px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.08);
@@ -326,7 +326,7 @@
 
 /* Social Section */
 .social-section {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 25px;
   padding: 50px;
   text-align: center;

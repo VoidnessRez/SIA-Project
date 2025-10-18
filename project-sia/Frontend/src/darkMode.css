@@ -12,6 +12,26 @@
   --shadow-lg: rgba(0, 0, 0, 0.15);
 }
 
+
+/* Attribute-based dark theme (used by components via [data-theme="dark"]) */
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+  --bg-primary: #0f111b; /* page background */
+  --bg-secondary: #121428; /* panels / cards */
+  --bg-tertiary: #0b0c14; /* inputs / inner panels */
+  --text-primary: #e6eef8;
+  --text-secondary: #b8c6db;
+  --text-tertiary: #8f9fb6;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.6);
+  --accent-color: #7c7ff1;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+}
+
+/* legacy .dark-mode class support */
 .dark-mode {
   --bg-primary: #1a1a2e;
   --bg-secondary: #16213e;
@@ -1422,4 +1442,50 @@ body.dark-mode {
 /* Smooth transitions */
 * {
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Broad dark-mode overrides to catch legacy hard-coded white backgrounds
+   This reduces white flashes for components that were styled with `background: white`.
+   It intentionally uses attribute selector [data-theme="dark"] which this app uses.
+ */
+[data-theme="dark"] .card,
+[data-theme="dark"] .card *,
+[data-theme="dark"] .product-card,
+[data-theme="dark"] .brand-card,
+[data-theme="dark"] .contact-card,
+[data-theme="dark"] .order-card,
+[data-theme="dark"] .no-orders,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .modal-description,
+[data-theme="dark"] .info-item,
+[data-theme="dark"] .quick-view-btn,
+[data-theme="dark"] .view-products-btn,
+[data-theme="dark"] .view-all-btn,
+[data-theme="dark"] .filters-sidebar,
+[data-theme="dark"] .filter-section,
+[data-theme="dark"] .brand-filters,
+[data-theme="dark"] .products-grid,
+[data-theme="dark"] .products-page .no-results,
+[data-theme="dark"] .signup-form,
+[data-theme="dark"] .signup-container,
+[data-theme="dark"] .form-group,
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
 }

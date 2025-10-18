@@ -96,7 +96,7 @@ export default function LoginPage() {
 
           <div className="signup-text">
             <span>Don’t have an account? </span>
-            <button type="button" className="signup-btn">
+            <button type="button" className="signup-btn" onClick={() => navigate('/signup')}>
               Sign up
             </button>
           </div>

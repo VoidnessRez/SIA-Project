@@ -1,6 +1,6 @@
 /* Stats Section Styles */
 .stats-section {
-  background: white;
+  background: var(--bg-secondary);
   padding: 60px 0;
   margin-top: -30px;
   position: relative;

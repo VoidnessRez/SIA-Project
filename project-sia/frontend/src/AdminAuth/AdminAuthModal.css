@@ -188,7 +188,7 @@
 }
 
 .admin-auth-hint kbd {
-  background: white;
+  background: var(--bg-secondary);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   border: 1px solid #ddd;
