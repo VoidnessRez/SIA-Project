@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from './AuthModal';
 import './ProductGrid.css';
 
 const ProductGrid = () => {
@@ -6,6 +9,10 @@ const ProductGrid = () => {
   const [activeBrand, setActiveBrand] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const products = [
     { 
@@ -174,9 +181,22 @@ const ProductGrid = () => {
     return matchesCategory && matchesBrand;
   });
 
-  const openQuickView = (product) => {
+  const handleQuickView = (product) => {
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      return;
+    }
     setSelectedProduct(product);
     setCurrentImageIndex(0);
+  };
+
+  const handleAddToCart = (product) => {
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      return;
+    }
+    // TODO: Add to cart logic
+    alert(`Added ${product.name} to cart!`);
   };
 
   const closeQuickView = () => {
@@ -242,7 +262,7 @@ const ProductGrid = () => {
               <div className="product-image">
                 <span className="product-emoji">{product.image}</span>
                 <div className="product-overlay">
-                  <button className="quick-view-btn" onClick={() => openQuickView(product)}>
+                  <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                     Quick View
                   </button>
                 </div>
@@ -258,7 +278,7 @@ const ProductGrid = () => {
                   <span className="product-price">{product.price}</span>
                   <span className="product-stock">Stock: {product.stock}</span>
                 </div>
-                <button className="add-to-cart-btn">Add to Cart</button>
+                <button className="add-to-cart-btn" onClick={() => handleAddToCart(product)}>Add to Cart</button>
               </div>
             </div>
           ))}
@@ -348,10 +368,10 @@ const ProductGrid = () => {
                   </div>
 
                   <div className="modal-actions">
-                    <button className="add-to-cart-btn modal-cart-btn">
+                    <button className="add-to-cart-btn modal-cart-btn" onClick={() => handleAddToCart(selectedProduct)}>
                       🛒 Add to Cart
                     </button>
-                    <button className="buy-now-btn">
+                    <button className="buy-now-btn" onClick={() => handleAddToCart(selectedProduct)}>
                       ⚡ Buy Now
                     </button>
                   </div>
@@ -360,6 +380,12 @@ const ProductGrid = () => {
             </div>
           </div>
         )}
+        
+        {/* Auth Modal */}
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+        />
       </div>
     </section>
   );

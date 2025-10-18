@@ -1,25 +1,72 @@
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Loginpage.css';
 
-export default function App() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Login attempted with:', { email, password });
+    setError('');
+    setLoading(true);
+
+    // Basic validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const result = await login(email, password);
+      
+      if (result.success) {
+        // Redirect to the page they were trying to access, or home
+        const from = location.state?.from?.pathname || '/';
+        navigate(from, { replace: true });
+      } else {
+        setError(result.error || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="page-container">
       <div className="login-card">
         <form onSubmit={handleLogin} className="login-form">
+          {error && (
+            <div style={{
+              padding: '0.75rem',
+              marginBottom: '1rem',
+              background: 'rgba(220, 38, 38, 0.1)',
+              color: '#dc2626',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              textAlign: 'center'
+            }}>
+              {error}
+            </div>
+          )}
+          
           <input
-            type="username"
-            placeholder="Username"
+            type="text"
+            placeholder="Email or Username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="input-field"
+            disabled={loading}
           />
           
           <input
@@ -28,6 +75,7 @@ export default function App() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="input-field"
+            disabled={loading}
           />
 
           <div className="forgot-container">
@@ -37,8 +85,12 @@ export default function App() {
           </div>
 
           <div className="button-container">
-            <button type="submit" className="login-btn">
-              Login
+            <button 
+              type="submit" 
+              className="login-btn"
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>
 
