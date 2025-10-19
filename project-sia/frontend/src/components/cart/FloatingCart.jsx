@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import CartModal from './CartModal';
+import { useAuth } from '../../context/AuthContext.jsx';
+import CartModal from './CartModal.jsx';
 import './FloatingCart.css';
 
 const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDarkMode } from '../context/DarkModeContext';
-import { useAuth } from '../context/AuthContext';
+import { useDarkMode } from '../../context/DarkModeContext';
+import { useAuth } from '../../context/AuthContext';
 import './UserProfileDropdown.css';
 
 const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', userRole = 'user' }) => {
