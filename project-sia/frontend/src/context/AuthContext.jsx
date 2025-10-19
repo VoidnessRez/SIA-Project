@@ -1,73 +1,112 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext(null);
+
+const BACKEND_URL = 'http://localhost:5174';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on mount
+  // Check if user is logged in on mount (from localStorage)
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        setLoading(false);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('Failed to parse stored user:', err);
+        localStorage.removeItem('user');
       }
-    );
-
-    return () => subscription.unsubscribe();
+    }
+    setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (identifier, password) => {
+    console.log('[AuthContext] 🔐 Login attempt:', { identifier, hasPassword: !!password });
+    
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      console.log('[AuthContext] 📡 Sending login request to:', `${BACKEND_URL}/api/auth/login`);
+      
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password })
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      console.log('[AuthContext] 📨 Login response status:', response.status);
+      const data = await response.json();
+      console.log('[AuthContext] 📦 Login response data:', data);
+
+      if (!response.ok) {
+        console.log('[AuthContext] ❌ Login failed:', data.error);
+        return { success: false, error: data.error || 'Login failed' };
       }
 
-      // User is set via onAuthStateChange
+      // Store user in localStorage and state
+      console.log('[AuthContext] 💾 Storing user in localStorage:', data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+
+      console.log('[AuthContext] ✅ Login successful');
       return { success: true, user: data.user };
     } catch (error) {
-      console.error('Login failed:', error);
-      return { success: false, error: error.message };
+      console.error('[AuthContext] 💥 Login error:', error);
+      console.error('[AuthContext] Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('user');
     sessionStorage.removeItem('adminToken'); // Also clear admin token if exists
+    setUser(null);
   };
 
-  const signUp = async (email, password, userData) => {
+  const signUp = async (userData) => {
+    console.log('[AuthContext] 📝 SignUp attempt with data:', {
+      username: userData.username,
+      email: userData.email,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      phone: userData.phone,
+      hasPassword: !!userData.password,
+      city: userData.city,
+      province: userData.province
+    });
+    
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData
-        }
+      console.log('[AuthContext] 📡 Sending signup request to:', `${BACKEND_URL}/api/auth/signup`);
+      console.log('[AuthContext] 📦 Full userData being sent:', userData);
+      
+      const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      console.log('[AuthContext] 📨 Signup response status:', response.status);
+      const data = await response.json();
+      console.log('[AuthContext] 📦 Signup response data:', data);
+
+      if (!response.ok) {
+        console.log('[AuthContext] ❌ Signup failed:', data.error);
+        return { success: false, error: data.error || 'Signup failed' };
       }
 
+      console.log('[AuthContext] ✅ Signup successful, user created:', data.user);
       return { success: true, user: data.user };
     } catch (error) {
-      console.error('Sign up failed:', error);
-      return { success: false, error: error.message };
+      console.error('[AuthContext] 💥 Sign up error:', error);
+      console.error('[AuthContext] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 

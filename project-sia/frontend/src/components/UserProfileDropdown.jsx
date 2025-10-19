@@ -4,12 +4,22 @@ import { useDarkMode } from '../context/DarkModeContext';
 import { useAuth } from '../context/AuthContext';
 import './UserProfileDropdown.css';
 
-const UserProfileDropdown = ({ username = 'Customer', userRole = 'user' }) => {
+const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', userRole = 'user' }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef(null);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  // Construct display name
+  const displayName = firstName && lastName 
+    ? `${firstName} ${lastName}` 
+    : username;
+  
+  const displayEmail = email || 'No email provided';
+
+  console.log('[UserProfileDropdown] Props:', { firstName, lastName, email, username, displayName });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,9 +48,18 @@ const UserProfileDropdown = ({ username = 'Customer', userRole = 'user' }) => {
   }, [isOpen]);
 
   const handleLogout = () => {
-    logout();
     setIsOpen(false);
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    setShowLogoutModal(false);
     navigate('/');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const handleEditProfile = () => {
@@ -88,7 +107,7 @@ const UserProfileDropdown = ({ username = 'Customer', userRole = 'user' }) => {
         </div>
         <div className="user-info">
           <span className="user-greeting">Welcome,</span>
-          <span className="user-name">{username}</span>
+          <span className="user-name">{displayName}</span>
         </div>
         <svg 
           className={`dropdown-arrow ${isOpen ? 'open' : ''}`}
@@ -109,8 +128,8 @@ const UserProfileDropdown = ({ username = 'Customer', userRole = 'user' }) => {
               </svg>
             </div>
             <div className="user-details">
-              <h3>{username}</h3>
-              <span className="user-role">{userRole === 'admin' ? 'Administrator' : 'Customer'}</span>
+              <h3>{displayName}</h3>
+              <span className="user-email">{displayEmail}</span>
             </div>
           </div>
 
@@ -182,6 +201,31 @@ const UserProfileDropdown = ({ username = 'Customer', userRole = 'user' }) => {
               </svg>
               <span>Logout</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="logout-modal-overlay" onClick={cancelLogout}>
+          <div className="logout-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="logout-modal-header">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="logout-modal-icon">
+                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+              </svg>
+              <h3>Confirm Logout</h3>
+            </div>
+            <p className="logout-modal-message">
+              Are you sure you want to log out?
+            </p>
+            <div className="logout-modal-actions">
+              <button className="logout-modal-btn cancel-btn" onClick={cancelLogout}>
+                Cancel
+              </button>
+              <button className="logout-modal-btn confirm-btn" onClick={confirmLogout}>
+                Yes, Log Out
+              </button>
+            </div>
           </div>
         </div>
       )}

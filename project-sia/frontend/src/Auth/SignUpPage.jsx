@@ -318,94 +318,138 @@ const SignUpPage = () => {
   const handleBack = () => {
     setError('');
     setCurrentStep(prev => prev - 1);
+    
+    // Reset reCAPTCHA when going back from step 3
+    if (currentStep === 3 && window.grecaptcha && recaptchaWidgetId !== null) {
+      try {
+        window.grecaptcha.reset(recaptchaWidgetId);
+        console.log('[SignUpPage] 🔄 reCAPTCHA reset on back');
+      } catch (err) {
+        console.error('[SignUpPage] Failed to reset reCAPTCHA:', err);
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!validateStep(3)) return;
+    console.log('[SignUpPage] 🚀 handleSubmit called');
+    
+    if (!validateStep(3)) {
+      console.log('[SignUpPage] ❌ Step 3 validation failed');
+      return;
+    }
+    console.log('[SignUpPage] ✅ Step 3 validation passed');
 
-    // If reCAPTCHA is enabled, require its response; otherwise require the checkbox
+    // reCAPTCHA Verification (REQUIRED)
     if (RECAPTCHA_SITE_KEY) {
-      // If widget failed to load, block submission (no checkbox fallback)
+      console.log('[SignUpPage] 🔍 Checking reCAPTCHA...');
+      
+      // Check if widget loaded
       if (recaptchaLoadFailed) {
-        setError('reCAPTCHA failed to load. Please try again later.');
+        console.log('[SignUpPage] ❌ reCAPTCHA failed to load');
+        setError('reCAPTCHA failed to load. Please refresh the page and try again.');
         return;
-      } else {
-        console.log('[SignUpPage] submitting with RECAPTCHA site key', RECAPTCHA_SITE_KEY, 'widgetId', recaptchaWidgetId, 'grecaptcha present', !!window.grecaptcha);
-        try {
-          const grecaptcha = window.grecaptcha;
-          if (!grecaptcha || recaptchaWidgetId === null) {
-            console.warn('[SignUpPage] grecaptcha or widgetId missing at submit', { grecaptcha: !!grecaptcha, recaptchaWidgetId });
-            setError('reCAPTCHA not ready. Please try again.');
-            return;
-          }
-          const token = grecaptcha.getResponse(recaptchaWidgetId);
-          console.log('[SignUpPage] grecaptcha.getResponse token length', token ? token.length : 0);
-          if (!token) {
-            setError('Please complete the reCAPTCHA to verify you are human');
-            return;
-          }
-          // Verify token server-side via our backend endpoint
-          try {
-            const resp = await fetch('http://localhost:5174/api/verify-recaptcha', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token })
-            });
-            const data = await resp.json();
-            if (!data.success) {
-              setError('reCAPTCHA verification failed. Please try again.');
-              return;
-            }
-            // Optionally check data.score or action for v3; for v2 success:true is fine
-          } catch (err) {
-            setError('Failed to verify reCAPTCHA. Please try again later.');
-            return;
-          }
-        } catch (err) {
-          setError('reCAPTCHA error. Please try again');
+      }
+
+      try {
+        const grecaptcha = window.grecaptcha;
+        if (!grecaptcha || recaptchaWidgetId === null) {
+          console.warn('[SignUpPage] ❌ reCAPTCHA not ready');
+          setError('reCAPTCHA not ready. Please wait and try again.');
           return;
         }
+
+        const token = grecaptcha.getResponse(recaptchaWidgetId);
+        console.log('[SignUpPage] 🔑 reCAPTCHA token length:', token ? token.length : 0);
+        
+        if (!token) {
+          console.log('[SignUpPage] ❌ reCAPTCHA not checked');
+          setError('Please complete the reCAPTCHA verification to continue.');
+          return;
+        }
+
+        // Verify token server-side
+        console.log('[SignUpPage] 📡 Verifying reCAPTCHA with backend...');
+        const resp = await fetch('http://localhost:5174/api/verify-recaptcha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await resp.json();
+        
+        if (!data.success) {
+          console.log('[SignUpPage] ❌ reCAPTCHA verification failed');
+          setError('reCAPTCHA verification failed. Please try again.');
+          return;
+        }
+        console.log('[SignUpPage] ✅ reCAPTCHA verified successfully');
+      } catch (err) {
+        console.error('[SignUpPage] 💥 reCAPTCHA verification error:', err);
+        setError('Failed to verify reCAPTCHA. Please try again.');
+        return;
       }
     } else {
-      // No site key configured — require admin/setup
-      setError('reCAPTCHA not configured. Please try again later.');
+      console.log('[SignUpPage] ⚠️ reCAPTCHA not configured');
+      setError('reCAPTCHA not configured. Please contact support.');
       return;
     }
 
     setLoading(true);
+    console.log('[SignUpPage] 🔄 Starting signup process...');
+    
     try {
-      const fullAddress = `${formData.streetAddress}, ${formData.barangay}, ${formData.city}, ${formData.province}, ${formData.region} ${formData.zipCode}`;
+      // Prepare complete user data for backend API
       const userData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
         first_name: formData.firstName,
         last_name: formData.lastName,
-        gender: formData.gender,
-        username: formData.username,
         phone: formData.phone,
-        address: fullAddress,
-        region: formData.region,
-        province: formData.province,
-        city: formData.city,
-        barangay: formData.barangay,
-        zip_code: formData.zipCode,
+        gender: formData.gender,
         birthday: formData.birthday,
-        role: 'user',
-        status: 'active'
+        street: formData.streetAddress,
+        barangay: formData.barangay,
+        city: formData.city,
+        province: formData.province,
+        region: formData.region,
+        zip_code: formData.zipCode
       };
 
-      const result = await signUp(formData.email, formData.password, userData);
+      console.log('[SignUpPage] 📦 Prepared userData:', {
+        username: userData.username,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone: userData.phone,
+        hasPassword: !!userData.password,
+        passwordLength: userData.password?.length
+      });
+
+      console.log('[SignUpPage] 📡 Calling signUp from AuthContext...');
+      const result = await signUp(userData);
+      console.log('[SignUpPage] 📨 SignUp result:', result);
 
       if (result.success) {
-        alert('Sign up successful! Please check your email for confirmation.');
+        console.log('[SignUpPage] ✅ Signup successful!');
+        alert('Sign up successful! You can now log in.');
         navigate('/login');
       } else {
-        setError(result.error);
+        console.log('[SignUpPage] ❌ Signup failed:', result.error);
+        setError(result.error || 'Sign up failed. Please try again.');
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error('[SignUpPage] 💥 Sign up error:', err);
+      console.error('[SignUpPage] Error details:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      });
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
+      console.log('[SignUpPage] 🏁 Signup process completed');
     }
   };
 
@@ -667,19 +711,19 @@ const SignUpPage = () => {
                     {recaptchaLoading && !recaptchaLoadFailed && (
                       <div style={{ marginTop: '6px', color: '#666' }}>Loading reCAPTCHA...</div>
                     )}
-                    {!recaptchaLoading && recaptchaLoadFailed && (
+                    {/* Error message hidden for testing - widget will still work when loaded */}
+                    {/* {!recaptchaLoading && recaptchaLoadFailed && (
                       <>
                         <div style={{ marginTop: '6px', color: '#f87171' }}>
                           reCAPTCHA failed to load. Please try again later.
                         </div>
                       </>
-                    )}
+                    )} */}
                     <div id="recaptcha" ref={recaptchaRef} style={{ marginTop: '6px' }} />
                   </>
                 ) : (
-                  <div style={{ marginTop: '6px', color: '#f87171' }}>
-                    reCAPTCHA not configured. Please contact the site administrator.
-                  </div>
+                  // Error message hidden - widget container still present
+                  <div id="recaptcha" ref={recaptchaRef} style={{ marginTop: '6px' }} />
                 )}
               </div>
             </div>
