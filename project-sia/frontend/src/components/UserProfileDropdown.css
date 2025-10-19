@@ -16,6 +16,37 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 200px; /* Ensure enough space for names */
+  max-width: 280px; /* Prevent too wide */
+}
+
+/* Explicit light mode override when not in dark mode */
+:not(.dark-mode) .user-profile-trigger {
+  background: #fff !important;
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+:not(.dark-mode) .user-info,
+:not(.dark-mode) .user-name {
+  color: #374151 !important;
+}
+
+:not(.dark-mode) .user-greeting {
+  color: #6b7280 !important;
+}
+
+:not(.dark-mode) .user-email {
+  color: #9ca3af !important;
+}
+
+:not(.dark-mode) .dropdown-arrow {
+  color: #6b7280 !important;
+}
+
+:not(.dark-mode) .dropdown-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-bottom: none !important;
 }
 
 .user-profile-trigger:hover {
@@ -52,6 +83,8 @@
   flex-direction: column;
   align-items: flex-start;
   color: #374151;
+  min-width: 0; /* Allow text to wrap properly */
+  flex: 1; /* Take available space */
 }
 
 .user-greeting {
@@ -59,13 +92,18 @@
   opacity: 0.7;
   font-weight: 400;
   color: #6b7280;
+  white-space: nowrap;
 }
 
 .user-name {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.4;
   color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px; /* Limit width to prevent overflow */
 }
 
 /* Dropdown Arrow */
@@ -274,7 +312,8 @@
   }
 
   .user-name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    max-width: 140px; /* Smaller max-width on mobile */
   }
 
   .user-dropdown-menu {
@@ -333,6 +372,31 @@
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
+  .user-profile-trigger {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .user-profile-trigger:hover {
+    border-color: #4b5563;
+  }
+
+  .user-info {
+    color: #f3f4f6;
+  }
+
+  .user-greeting {
+    color: #9ca3af;
+  }
+
+  .user-name {
+    color: #f3f4f6;
+  }
+
+  .dropdown-arrow {
+    color: #9ca3af;
+  }
+
   .user-dropdown-menu {
     background: #1a1a2e;
     border-color: rgba(255, 255, 255, 0.1);
@@ -362,3 +426,274 @@
     background: rgba(220, 53, 69, 0.25);
   }
 }
+
+/* Dark mode support via class toggle */
+.dark-mode .user-profile-trigger {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark-mode .user-profile-trigger:hover {
+  border-color: #4b5563;
+}
+
+.dark-mode .user-info {
+  color: #f3f4f6;
+}
+
+.dark-mode .user-greeting {
+  color: #9ca3af;
+}
+
+.dark-mode .user-name {
+  color: #f3f4f6;
+}
+
+.dark-mode .user-email {
+  color: #9ca3af;
+}
+
+.dark-mode .dropdown-arrow {
+  color: #9ca3af;
+}
+
+.dark-mode .user-dropdown-menu {
+  background: #1a1a2e;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .dropdown-header {
+  background: #1a1d29 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .dropdown-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .dropdown-item {
+  color: #e6eef6;
+}
+
+.dark-mode .dropdown-item:hover {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.dark-mode .dropdown-item:active {
+  background: rgba(102, 126, 234, 0.25);
+}
+
+.dark-mode .logout-item:hover {
+  background: rgba(220, 53, 69, 0.15);
+}
+
+.dark-mode .logout-item:active {
+  background: rgba(220, 53, 69, 0.25);
+}
+
+/* Logout Confirmation Modal */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.logout-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.logout-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.logout-modal-icon {
+  width: 64px;
+  height: 64px;
+  color: #f59e0b;
+}
+
+.logout-modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.logout-modal-message {
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.logout-modal-btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.cancel-btn:hover {
+  background: #d1d5db;
+}
+
+.confirm-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.confirm-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark Mode Styles for Logout Modal */
+:root[data-theme="dark"] .logout-modal {
+  background: #1f2937;
+  color: #f3f4f6;
+}
+
+:root[data-theme="dark"] .logout-modal-header h3 {
+  color: #f3f4f6;
+}
+
+:root[data-theme="dark"] .logout-modal-message {
+  color: #d1d5db;
+}
+
+:root[data-theme="dark"] .cancel-btn {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+:root[data-theme="dark"] .cancel-btn:hover {
+  background: #4b5563;
+}
+
+/* Dark mode support via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  .logout-modal {
+    background: #1f2937;
+    color: #f3f4f6;
+  }
+
+  .logout-modal-header h3 {
+    color: #f3f4f6;
+  }
+
+  .logout-modal-message {
+    color: #d1d5db;
+  }
+
+  .cancel-btn {
+    background: #374151;
+    color: #f3f4f6;
+  }
+
+  .cancel-btn:hover {
+    background: #4b5563;
+  }
+
+  .logout-modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Dark mode support via class toggle */
+.dark-mode .logout-modal {
+  background: #1f2937;
+  color: #f3f4f6;
+}
+
+.dark-mode .logout-modal-header h3 {
+  color: #f3f4f6;
+}
+
+.dark-mode .logout-modal-message {
+  color: #d1d5db;
+}
+
+.dark-mode .cancel-btn {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.dark-mode .cancel-btn:hover {
+  background: #4b5563;
+}
+
+.dark-mode .logout-modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Update user-email style */
+.user-email {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+:root[data-theme="dark"] .user-email {
+  color: #d1d5db;
+}
+

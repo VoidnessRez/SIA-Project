@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Loginpage.css';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,28 +17,37 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    console.log('[LoginPage] 🔐 Login attempt with identifier:', identifier);
 
     // Basic validation
-    if (!email || !password) {
+    if (!identifier || !password) {
+      console.log('[LoginPage] ❌ Validation failed - missing fields');
       setError('Please fill in all fields');
       setLoading(false);
       return;
     }
+    console.log('[LoginPage] ✅ Validation passed');
 
     try {
-      const result = await login(email, password);
+      console.log('[LoginPage] 📡 Calling login from AuthContext...');
+      const result = await login(identifier, password);
+      console.log('[LoginPage] 📨 Login result:', result);
       
       if (result.success) {
+        console.log('[LoginPage] ✅ Login successful, navigating...');
         // Redirect to the page they were trying to access, or home
         const from = location.state?.from?.pathname || '/';
         navigate(from, { replace: true });
       } else {
+        console.log('[LoginPage] ❌ Login failed:', result.error);
         setError(result.error || 'Login failed. Please try again.');
       }
     } catch (err) {
+      console.error('[LoginPage] 💥 Login error:', err);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
+      console.log('[LoginPage] 🏁 Login process completed');
     }
   };
 
@@ -63,8 +72,8 @@ export default function LoginPage() {
           <input
             type="text"
             placeholder="Email or Username"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             className="input-field"
             disabled={loading}
           />

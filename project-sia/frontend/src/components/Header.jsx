@@ -20,6 +20,9 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  // Debug user data
+  console.log('[Header] User data:', user);
+
   return (
     <header className="header">
       <div className="header-container">
@@ -81,7 +84,13 @@ const Header = () => {
           </div>
           
           {isAuthenticated() ? (
-            <UserProfileDropdown username={user?.name || 'Customer'} userRole="user" />
+            <UserProfileDropdown 
+              firstName={user?.first_name || ''}
+              lastName={user?.last_name || ''}
+              email={user?.email || ''}
+              username={user?.username || 'Customer'}
+              userRole="user" 
+            />
           ) : (
             <>
               <button 
