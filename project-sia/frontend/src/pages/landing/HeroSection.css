@@ -1,3 +1,37 @@
+/* Dark mode overrides for HeroSection */
+.dark-mode .hero-section {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .hero-section::before {
+  opacity: 0.12;
+}
+
+.dark-mode .hero-text h1,
+.dark-mode .hero-text p {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .cta-button.secondary {
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-mode .cta-button.secondary:hover {
+  background: var(--bg-tertiary) !important;
+  color: var(--accent-color) !important;
+}
+
+.dark-mode .hero-card {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .card-icon {
+  color: var(--accent-color) !important;
+}
 /* Hero Section Styles */
 .hero-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

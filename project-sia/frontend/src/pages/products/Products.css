@@ -1,3 +1,13 @@
+/* Dark mode overrides for Products Hero Section */
+.dark-mode .products-hero {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .products-hero h1,
+.dark-mode .products-hero p {
+  color: var(--text-primary) !important;
+}
 /* Products Page Styles */
 .products-page {
   min-height: 100vh;
