@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as phGeo from 'ph-geo-admin-divisions';
-import { getZipCode } from '../data/zipCodes';
-import { useAuth } from '../context/AuthContext';
+import { getZipCode } from '../../data/zipCodes.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import './SignUpPage.css';
 
 const SignUpPage = () => {

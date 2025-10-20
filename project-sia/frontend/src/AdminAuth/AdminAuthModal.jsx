@@ -1,7 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import supabase from '../lib/supabaseClient';
 import './AdminAuthModal.css';
 
 const AdminAuthModal = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -62,39 +66,26 @@ const AdminAuthModal = ({ isOpen, onClose }) => {
     setError('');
 
     try {
-      // Placeholder: call your backend admin login endpoint
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
-      });
+      // Query the adminauth table for matching username and password
+      const { data, error: supaError } = await supabase
+        .from('adminauth')
+        .select('*')
+        .eq('username', username.trim())
+        .eq('password', password)
+        .single();
 
-      if (!res.ok) {
-        // show server-provided message when available
-        const data = await res.json().catch(() => ({}));
-        setError(data?.message || 'Invalid credentials or server error');
+      if (supaError || !data) {
+        setError('Invalid credentials');
         setLoading(false);
         return;
       }
 
-      const data = await res.json().catch(() => ({}));
-      // On success, backend should return an auth token and role
-      // Prefer HttpOnly cookies; here we store token in sessionStorage as placeholder
-      if (data?.token) {
-        try { sessionStorage.setItem('adminToken', data.token); } catch (err) { /* ignore */ }
-      }
+      // Optionally, store a flag in sessionStorage
+      try { sessionStorage.setItem('adminAuthed', 'true'); } catch (err) { /* ignore */ }
 
-      // Optionally verify admin role
-      if (data?.role && data.role !== 'admin') {
-        setError('Account does not have admin privileges');
-        setLoading(false);
-        return;
-      }
-
-      // success
       setLoading(false);
       onClose();
-      // You can add a global state change here to mark admin authenticated
+      navigate('/inventory');
     } catch (err) {
       setError('Network error — please try again');
       setLoading(false);

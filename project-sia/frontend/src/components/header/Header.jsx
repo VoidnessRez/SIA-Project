@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useDarkMode } from '../context/DarkModeContext';
-import UserProfileDropdown from './UserProfileDropdown.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useDarkMode } from '../../context/DarkModeContext.jsx';
+import UserProfileDropdown from '../UserProfile/UserProfileDropdown.jsx';
 import './Header.css';
 
 const Header = () => {
