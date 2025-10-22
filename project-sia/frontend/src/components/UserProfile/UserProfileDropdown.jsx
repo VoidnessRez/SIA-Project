@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../context/DarkModeContext';
 import { useAuth } from '../../context/AuthContext';
+import EditProfileModal from '../EditProfileModal';
 import './UserProfileDropdown.css';
 
-const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', userRole = 'user' }) => {
+const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', avatarUrl = '', userRole = 'user' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const dropdownRef = useRef(null);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const { logout } = useAuth();
@@ -19,7 +21,7 @@ const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', userna
   
   const displayEmail = email || 'No email provided';
 
-  console.log('[UserProfileDropdown] Props:', { firstName, lastName, email, username, displayName });
+  console.log('[UserProfileDropdown] Props:', { firstName, lastName, email, username, avatarUrl, displayName });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,9 +65,10 @@ const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', userna
   };
 
   const handleEditProfile = () => {
-    // TODO: Navigate to edit profile page or open modal
-    alert('Edit Profile - To be implemented');
+    console.log('[UserProfileDropdown] Edit Profile clicked! Opening modal...');
     setIsOpen(false);
+    setShowEditProfile(true);
+    console.log('[UserProfileDropdown] showEditProfile set to:', true);
   };
 
   const handleAccountSettings = () => {
@@ -101,9 +104,31 @@ const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', userna
         aria-expanded={isOpen}
       >
         <div className="user-avatar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-          </svg>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={displayName} className="avatar-image" />
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+            </svg>
+          )}
+          {/* Avatar Tooltip with Image Preview */}
+          <div className="avatar-tooltip">
+            <div className="avatar-tooltip-preview">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={username} className="tooltip-preview-image" />
+              ) : (
+                <div className="tooltip-preview-placeholder">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="avatar-tooltip-content">
+              <div className="avatar-tooltip-name">{username}</div>
+              <div className="avatar-tooltip-status">Active</div>
+            </div>
+          </div>
         </div>
         <div className="user-info">
           <span className="user-greeting">Welcome,</span>
@@ -123,9 +148,13 @@ const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', userna
         <div className="user-dropdown-menu">
           <div className="dropdown-header">
             <div className="user-avatar-large">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
-              </svg>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="avatar-image" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437.695z" clipRule="evenodd" />
+                </svg>
+              )}
             </div>
             <div className="user-details">
               <h3>{displayName}</h3>
@@ -204,6 +233,12 @@ const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', userna
           </div>
         </div>
       )}
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal 
+        isOpen={showEditProfile} 
+        onClose={() => setShowEditProfile(false)} 
+      />
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (

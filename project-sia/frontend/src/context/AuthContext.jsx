@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -64,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     sessionStorage.removeItem('adminToken'); // Also clear admin token if exists
     setUser(null);
+    console.log('[AuthContext] ✅ Logout complete');
   };
 
   const signUp = async (userData) => {
@@ -79,13 +81,44 @@ export const AuthProvider = ({ children }) => {
     });
     
     try {
-      console.log('[AuthContext] 📡 Sending signup request to:', `${BACKEND_URL}/api/auth/signup`);
-      console.log('[AuthContext] 📦 Full userData being sent:', userData);
+      // ✅ FIRST: Create Supabase Auth account
+      console.log('[AuthContext] � Creating Supabase account...');
+      const { data: supabaseAuth, error: supabaseError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            username: userData.username,
+            first_name: userData.first_name,
+            last_name: userData.last_name
+          }
+        }
+      });
+
+      if (supabaseError) {
+        console.error('[AuthContext] ❌ Supabase signup failed:', supabaseError.message);
+        return { success: false, error: supabaseError.message };
+      }
+
+      console.log('[AuthContext] ✅ Supabase account created:', {
+        userId: supabaseAuth.user?.id,
+        email: supabaseAuth.user?.email
+      });
+
+      // ✅ THEN: Create in your backend (with Supabase user ID)
+      console.log('[AuthContext] �📡 Sending signup request to:', `${BACKEND_URL}/api/auth/signup`);
+      
+      const backendData = {
+        ...userData,
+        supabase_id: supabaseAuth.user.id // Include Supabase ID
+      };
+      
+      console.log('[AuthContext] 📦 Full userData being sent:', backendData);
       
       const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(backendData)
       });
 
       console.log('[AuthContext] 📨 Signup response status:', response.status);
@@ -93,7 +126,10 @@ export const AuthProvider = ({ children }) => {
       console.log('[AuthContext] 📦 Signup response data:', data);
 
       if (!response.ok) {
-        console.log('[AuthContext] ❌ Signup failed:', data.error);
+        console.log('[AuthContext] ❌ Backend signup failed:', data.error);
+        // Rollback: Delete Supabase account if backend fails
+        console.warn('[AuthContext] ⚠️ Rolling back Supabase account...');
+        await supabase.auth.signOut();
         return { success: false, error: data.error || 'Signup failed' };
       }
 
@@ -114,12 +150,36 @@ export const AuthProvider = ({ children }) => {
     return user !== null;
   };
 
+  const refreshUser = () => {
+    // Re-read user from localStorage (useful after profile updates)
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        console.log('[AuthContext] ✅ User refreshed from localStorage');
+      } catch (err) {
+        console.error('[AuthContext] Failed to refresh user:', err);
+      }
+    }
+  };
+
+  const updateUserData = (newData) => {
+    // Update both state and localStorage
+    const updatedUser = { ...user, ...newData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+    console.log('[AuthContext] ✅ User data updated:', updatedUser);
+  };
+
   const value = {
     user,
     login,
     logout,
     signUp,
     isAuthenticated,
+    refreshUser,
+    updateUserData,
     loading
   };
 

@@ -119,30 +119,82 @@
   text-decoration: underline;
 }
 
-/* Dark mode support */
+/* ===================================================== */
+/* DARK MODE STYLES */
+/* ===================================================== */
+
+[data-theme="dark"] .page-container,
 .dark-mode .page-container {
-  background: var(--bg-primary);
+  background: #0f111b;
 }
 
+[data-theme="dark"] .login-card,
 .dark-mode .login-card {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: #1a1d29;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
+[data-theme="dark"] .input-field,
 .dark-mode .input-field {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+  background: #0b0c14;
+  color: #e6eef8;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
+[data-theme="dark"] .input-field::placeholder,
+.dark-mode .input-field::placeholder {
+  color: #6b7280;
+}
+
+[data-theme="dark"] .input-field:focus,
 .dark-mode .input-field:focus {
-  border-color: var(--accent-color);
+  border-color: #7c3aed;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
 }
 
+[data-theme="dark"] .input-field:disabled,
+.dark-mode .input-field:disabled {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .forgot-btn,
+.dark-mode .forgot-btn {
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .forgot-btn:hover,
+.dark-mode .forgot-btn:hover {
+  color: #c4b5fd;
+}
+
+[data-theme="dark"] .login-btn,
+.dark-mode .login-btn {
+  background: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+[data-theme="dark"] .login-btn:hover:not(:disabled),
+.dark-mode .login-btn:hover:not(:disabled) {
+  background: #6d28d9;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+}
+
+[data-theme="dark"] .signup-text,
 .dark-mode .signup-text {
-  color: var(--text-secondary);
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .signup-btn,
+.dark-mode .signup-btn {
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .signup-btn:hover,
+.dark-mode .signup-btn:hover {
+  color: #c4b5fd;
 }
 
 /* Responsive design */

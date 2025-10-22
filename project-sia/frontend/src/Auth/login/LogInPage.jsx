@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useDarkMode } from '../../context/DarkModeContext.jsx';
 import './Loginpage.css';
 
 export default function LoginPage() {
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,7 +54,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className={`page-container ${isDarkMode ? 'dark-mode' : ''}`} data-theme={isDarkMode ? 'dark' : 'light'}>
       <div className="login-card">
         <form onSubmit={handleLogin} className="login-form">
           {error && (

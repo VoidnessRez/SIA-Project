@@ -1,0 +1,578 @@
+/* Personal Info Container - Match SignUp Page Style */
+.personal-info-container {
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 120px 2rem 3rem 2rem !important;
+  background: #f5f5f5 !important;
+}
+
+.personal-info-box {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+  padding: 2.5rem 3rem !important;
+  width: 100% !important;
+  max-width: 750px !important;
+  border: 1px solid #e5e7eb !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.personal-info-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+  margin-bottom: 2rem !important;
+  padding-bottom: 1.5rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.personal-info-header h2 {
+  margin: 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  text-align: center !important;
+  flex: 1 !important;
+}
+
+.back-btn {
+  background: #e5e7eb !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.back-btn:hover {
+  background: #d1d5db !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Loading */
+.loading-spinner {
+  text-align: center !important;
+  padding: 20px !important;
+  color: #1f2937 !important;
+  font-size: 16px !important;
+}
+
+/* Form */
+.personal-info-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  visibility: visible !important;
+}
+
+/* Form Section - Match SignUp Style */
+.form-section {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  margin-bottom: 1.5rem !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.form-section h3 {
+  margin: 0 0 1rem 0 !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding-bottom: 0.75rem !important;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+
+/* Form Groups - Match SignUp Style EXACTLY */
+.form-group {
+  margin-bottom: 1rem !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block !important;
+  margin-bottom: 0.4rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  font-size: 0.875rem !important;
+}
+
+.field-hint {
+  font-size: 0.75rem !important;
+  color: #6b7280 !important;
+  margin: 6px 0 0 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100% !important;
+  padding: 0.75rem 0.875rem !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  font-size: 0.95rem !important;
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  box-sizing: border-box !important;
+  transition: all 0.3s ease !important;
+  font-family: inherit !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.form-group textarea {
+  resize: vertical !important;
+  min-height: 70px !important;
+  padding-top: 0.75rem !important;
+}
+
+/* Readonly fields (Address - requires admin approval) */
+.readonly-field {
+  background-color: #f3f4f6 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  border-color: #d1d5db !important;
+}
+
+.readonly-field:focus {
+  border-color: #d1d5db !important;
+  box-shadow: none !important;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Readonly fields - Match SignUp Style */
+.readonly-field {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  opacity: 0.8 !important;
+  color: #6b7280 !important;
+}
+
+.readonly-field:focus {
+  border-color: #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+/* Form Row */
+.form-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1rem !important;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.password-input-wrapper input {
+  padding-right: 45px !important;
+}
+
+.toggle-password-btn {
+  position: absolute !important;
+  right: 12px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  padding: 4px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.2s ease !important;
+  color: #6b7280 !important;
+}
+
+.toggle-password-btn:hover {
+  transform: scale(1.1) !important;
+}
+
+/* Section Header Toggle */
+.section-header-toggle {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 1rem !important;
+}
+
+.section-header-toggle h3 {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.toggle-section-btn {
+  background: #7c3aed !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  color: white !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.toggle-section-btn:hover {
+  background: #6d28d9 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Password Section */
+.password-section {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    overflow: visible;
+  }
+}
+
+.password-requirements {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.requirements-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #667eea;
+  margin: 0 0 8px 0;
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.password-requirements li {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4px 0;
+  transition: color 0.3s ease;
+}
+
+.password-requirements li.valid {
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* Messages */
+.message {
+  padding: 0.75rem 1rem !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  margin-bottom: 1rem !important;
+  text-align: center !important;
+}
+
+.message.success {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #059669 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Action Buttons */
+.form-actions {
+  display: flex !important;
+  gap: 1rem !important;
+  justify-content: flex-end !important;
+  padding-top: 1.5rem !important;
+  border-top: 1px solid var(--border-color, #e5e5e5) !important;
+  margin-top: 0.5rem !important;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: 1rem 2rem !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
+}
+
+.btn-cancel {
+  background: var(--bg-tertiary, #f0f0f0) !important;
+  color: var(--text-primary, #333) !important;
+  border: 1px solid var(--border-color, #e0e0e0) !important;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: var(--bg-hover, #e5e5e5) !important;
+}
+
+.btn-save {
+  background: var(--accent-color, #7c3aed) !important;
+  color: white !important;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: var(--accent-hover, #6d28d9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+.btn-cancel:disabled,
+.btn-save:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .personal-info-container {
+    padding: 80px 1rem 1rem 1rem !important;
+  }
+
+  .personal-info-box {
+    padding: 2rem 1.5rem !important;
+  }
+
+  .personal-info-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .personal-info-header h2 {
+    font-size: 20px !important;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-actions {
+    flex-direction: column !important;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    width: 100% !important;
+  }
+}
+
+/* ===================================================== */
+/* DARK MODE STYLES - Match Login Page */
+/* ===================================================== */
+
+[data-theme="dark"] .personal-info-container,
+.dark-mode .personal-info-container {
+  background: #0f111b !important;
+}
+
+[data-theme="dark"] .personal-info-box,
+.dark-mode .personal-info-box {
+  background: #1a1d29 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+[data-theme="dark"] .personal-info-header,
+.dark-mode .personal-info-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .personal-info-header h2,
+.dark-mode .personal-info-header h2 {
+  color: #e6eef8 !important;
+}
+
+[data-theme="dark"] .back-btn,
+.dark-mode .back-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e6eef8 !important;
+}
+
+[data-theme="dark"] .back-btn:hover,
+.dark-mode .back-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .form-section,
+.dark-mode .form-section {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .form-section h3,
+.dark-mode .form-section h3 {
+  color: #e6eef8 !important;
+}
+
+[data-theme="dark"] .form-group label,
+.dark-mode .form-group label {
+  color: #9ca3af !important;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+.dark-mode .form-group input,
+.dark-mode .form-group textarea {
+  background: #0b0c14 !important;
+  color: #e6eef8 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .form-group input::placeholder,
+[data-theme="dark"] .form-group textarea::placeholder,
+.dark-mode .form-group input::placeholder,
+.dark-mode .form-group textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group textarea:focus,
+.dark-mode .form-group input:focus,
+.dark-mode .form-group textarea:focus {
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
+}
+
+/* Readonly fields dark mode */
+[data-theme="dark"] .readonly-field,
+.dark-mode .readonly-field {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+  opacity: 0.8 !important;
+}
+
+[data-theme="dark"] .readonly-field:focus,
+.dark-mode .readonly-field:focus {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .toggle-password-btn,
+.dark-mode .toggle-password-btn {
+  color: #9ca3af !important;
+}
+
+[data-theme="dark"] .toggle-section-btn,
+.dark-mode .toggle-section-btn {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .toggle-section-btn:hover,
+.dark-mode .toggle-section-btn:hover {
+  background: #6d28d9 !important;
+}
+
+[data-theme="dark"] .field-hint,
+.dark-mode .field-hint {
+  color: #6b7280 !important;
+}
+
+[data-theme="dark"] .btn-cancel,
+.dark-mode .btn-cancel {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e6eef8 !important;
+}
+
+[data-theme="dark"] .btn-cancel:hover:not(:disabled),
+.dark-mode .btn-cancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+[data-theme="dark"] .btn-save,
+.dark-mode .btn-save {
+  background: #7c3aed !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+}
+
+[data-theme="dark"] .btn-save:hover:not(:disabled),
+.dark-mode .btn-save:hover:not(:disabled) {
+  background: #6d28d9 !important;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4) !important;
+}
+
+[data-theme="dark"] .form-actions,
+.dark-mode .form-actions {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .loading-spinner,
+.dark-mode .loading-spinner {
+  color: #e6eef8 !important;
+}

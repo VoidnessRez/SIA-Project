@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
+import uploadRouter from './routes/upload.js';
 
 dotenv.config();
 
@@ -12,32 +13,7 @@ app.use(express.json());
 
 app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
-
-// Simple endpoint to verify reCAPTCHA tokens server-side
-app.post('/api/verify-recaptcha', async (req, res) => {
-  const token = req.body && req.body.token;
-  if (!token) return res.status(400).json({ success: false, error: 'missing token' });
-
-  const secret = process.env.RECAPTCHA_SECRET;
-  if (!secret) return res.status(500).json({ success: false, error: 'recaptcha secret not configured' });
-
-  try {
-    const fetch = (await import('node-fetch')).default;
-    const params = new URLSearchParams();
-    params.append('secret', secret);
-    params.append('response', token);
-
-    const resp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: 'POST',
-      body: params
-    });
-    const data = await resp.json();
-    return res.json(data);
-  } catch (err) {
-    console.error('Error verifying recaptcha:', err);
-    return res.status(502).json({ success: false, error: 'recaptcha verification failed' });
-  }
-});
+app.use('/api/upload', uploadRouter);
 
 // Default port for backend is 5174 (as requested)
 const port = process.env.PORT || 5174;
@@ -49,8 +25,10 @@ const server = app.listen(port, () => {
   console.log(`🧭  Routes:`);
   console.log(`   - GET /api/products`);
   console.log(`   - POST /api/products (protected - add auth middleware)`);
-  console.log(`   - POST /api/auth/signup`);
   console.log(`   - POST /api/auth/login`);
+  console.log(`   - POST /api/auth/signup`);
+  console.log(`   - PUT /api/auth/profile/:userId`);
+  console.log(`   - POST /api/upload/avatar`);
   console.log(`\n`);
 });
 

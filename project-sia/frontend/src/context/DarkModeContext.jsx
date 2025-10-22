@@ -24,13 +24,17 @@ export const DarkModeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode);
 
   useEffect(() => {
-    // Apply dark mode class to document
+    // Apply dark mode class and data-theme attribute to document
     if (isDarkMode) {
       document.documentElement.classList.add('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'dark');
       document.body.classList.add('dark-mode');
+      document.body.setAttribute('data-theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
       document.body.classList.remove('dark-mode');
+      document.body.setAttribute('data-theme', 'light');
     }
 
     // Save to localStorage

@@ -89,6 +89,7 @@ const Header = () => {
               lastName={user?.last_name || ''}
               email={user?.email || ''}
               username={user?.username || 'Customer'}
+              avatarUrl={user?.avatar_url || ''}
               userRole="user" 
             />
           ) : (

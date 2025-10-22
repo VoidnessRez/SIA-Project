@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import * as phGeo from 'ph-geo-admin-divisions';
 import { getZipCode } from '../../data/zipCodes.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { useDarkMode } from '../../context/DarkModeContext.jsx';
 import './SignUpPage.css';
 
 const SignUpPage = () => {
+  const { isDarkMode } = useDarkMode();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -454,7 +456,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="signup-container">
+    <div className={`signup-container ${isDarkMode ? 'dark-mode' : ''}`} data-theme={isDarkMode ? 'dark' : 'light'}>
       <div className="signup-form">
         <h2>Create Account</h2>
         

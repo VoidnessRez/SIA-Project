@@ -18,6 +18,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   min-width: 200px; /* Ensure enough space for names */
   max-width: 280px; /* Prevent too wide */
+  overflow: visible;
+  position: relative;
 }
 
 /* Explicit light mode override when not in dark mode */
@@ -69,12 +71,157 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  overflow: visible;
+  position: relative;
+  cursor: pointer;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.user-avatar .avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .user-avatar svg {
   width: 24px;
   height: 24px;
   color: white;
+}
+
+/* Avatar Tooltip - Card Style with Image Preview */
+.avatar-tooltip {
+  position: absolute;
+  bottom: -145px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a1d29 0%, #2a2d3a 100%);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 16px;
+  padding: 0;
+  width: 200px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.user-avatar:hover .avatar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  bottom: -150px;
+}
+
+.avatar-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: #1a1d29;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-right: none;
+  border-bottom: none;
+  z-index: 1;
+}
+
+/* Image Preview Section */
+.avatar-tooltip-preview {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  border-radius: 16px 16px 0 0;
+}
+
+.tooltip-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tooltip-preview-placeholder {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.tooltip-preview-placeholder svg {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+}
+
+/* Content Section */
+.avatar-tooltip-content {
+  padding: 14px 16px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, #1a1d29 0%, #2a2d3a 100%);
+  border-radius: 0 0 16px 16px;
+}
+
+.avatar-tooltip-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.3px;
+}
+
+.avatar-tooltip-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #059669;
+  padding: 5px 14px;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.avatar-tooltip-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+  }
 }
 
 /* User Info */
@@ -163,6 +310,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-avatar-large .avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .user-avatar-large svg {
@@ -316,6 +471,37 @@
     max-width: 140px; /* Smaller max-width on mobile */
   }
 
+  /* Avatar Tooltip - Mobile Responsive */
+  .avatar-tooltip {
+    width: 180px;
+    bottom: -130px;
+    left: auto;
+    right: -20px;
+    transform: none;
+  }
+
+  .user-avatar:hover .avatar-tooltip {
+    bottom: -135px;
+  }
+
+  .avatar-tooltip::before {
+    left: 40px;
+    transform: rotate(45deg);
+  }
+
+  .avatar-tooltip-preview {
+    height: 100px;
+  }
+
+  .avatar-tooltip-name {
+    font-size: 14px;
+  }
+
+  .avatar-tooltip-status {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
   .user-dropdown-menu {
     min-width: 260px;
     right: -10px;
@@ -360,6 +546,39 @@
     border-radius: 50%;
   }
 
+  /* Avatar Tooltip - Extra Small Mobile */
+  .avatar-tooltip {
+    width: 160px;
+    bottom: -120px;
+    right: -10px;
+  }
+
+  .user-avatar:hover .avatar-tooltip {
+    bottom: -125px;
+  }
+
+  .avatar-tooltip::before {
+    left: 30px;
+  }
+
+  .avatar-tooltip-preview {
+    height: 90px;
+  }
+
+  .tooltip-preview-placeholder {
+    width: 50px;
+    height: 50px;
+  }
+
+  .tooltip-preview-placeholder svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .avatar-tooltip-content {
+    padding: 10px 12px 12px;
+  }
+
   .dropdown-arrow {
     display: none;
   }
@@ -367,6 +586,43 @@
   .user-dropdown-menu {
     right: -20px;
     min-width: 240px;
+  }
+}
+
+/* Extra Small Mobile - 360px and below */
+@media (max-width: 360px) {
+  /* Avatar Tooltip - Prevent Overflow */
+  .avatar-tooltip {
+    width: 150px;
+    bottom: -115px;
+    right: -5px;
+    left: auto;
+  }
+
+  .user-avatar:hover .avatar-tooltip {
+    bottom: -120px;
+  }
+
+  .avatar-tooltip::before {
+    left: 25px;
+  }
+
+  .avatar-tooltip-preview {
+    height: 85px;
+  }
+
+  .avatar-tooltip-name {
+    font-size: 13px;
+  }
+
+  .avatar-tooltip-status {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .avatar-tooltip-status::before {
+    width: 6px;
+    height: 6px;
   }
 }
 
@@ -695,5 +951,101 @@
 
 :root[data-theme="dark"] .user-email {
   color: #d1d5db;
+}
+
+/* Dark Mode - Avatar Tooltip (Light/White Card!) */
+.dark-mode .avatar-tooltip {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .avatar-tooltip::before {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .avatar-tooltip-content {
+  background: #ffffff;
+}
+
+.dark-mode .avatar-tooltip-name {
+  color: #1f2937;
+  text-shadow: none;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.dark-mode .tooltip-preview-placeholder {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e5e7eb;
+}
+
+.dark-mode .tooltip-preview-placeholder svg {
+  color: #667eea;
+}
+
+.dark-mode .avatar-tooltip-status {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dark-mode .avatar-tooltip-status::before {
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+
+/* Light Mode - Avatar Tooltip (Dark Card!) */
+body:not(.dark-mode) .avatar-tooltip,
+body.light-mode .avatar-tooltip {
+  background: linear-gradient(135deg, #1a1d29 0%, #2a2d3a 100%);
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+body:not(.dark-mode) .avatar-tooltip::before,
+body.light-mode .avatar-tooltip::before {
+  background: #1a1d29;
+  border-color: rgba(102, 126, 234, 0.4);
+}
+
+body:not(.dark-mode) .avatar-tooltip-content,
+body.light-mode .avatar-tooltip-content {
+  background: linear-gradient(135deg, #1a1d29 0%, #2a2d3a 100%);
+}
+
+body:not(.dark-mode) .avatar-tooltip-name,
+body.light-mode .avatar-tooltip-name {
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+}
+
+body:not(.dark-mode) .tooltip-preview-placeholder,
+body.light-mode .tooltip-preview-placeholder {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+body:not(.dark-mode) .tooltip-preview-placeholder svg,
+body.light-mode .tooltip-preview-placeholder svg {
+  color: #ffffff;
+}
+
+body:not(.dark-mode) .avatar-tooltip-status,
+body.light-mode .avatar-tooltip-status {
+  background: rgba(16, 185, 129, 0.25);
+  color: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+body:not(.dark-mode) .avatar-tooltip-status::before,
+body.light-mode .avatar-tooltip-status::before {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
 }
 
