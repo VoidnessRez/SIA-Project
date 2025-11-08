@@ -22,41 +22,46 @@ const AdminLayout = ({ children, title, description }) => {
     {
       section: 'INVENTORY',
       items: [
-        { path: '/admin/inventory', icon: '📦', label: 'Inventory Management', badge: null },
-        { path: '/admin/spare-parts', icon: '⚙️', label: 'Spare Parts', badge: null },
-        { path: '/admin/accessories', icon: '🛡️', label: 'Accessories', badge: null },
-        { path: '/admin/low-stock', icon: '⚠️', label: 'Low Stock Alerts', badge: '5' },
-        { path: '/admin/brands', icon: '🏷️', label: 'Brands Management', badge: null },
+        { path: '/admin/inventory', icon: '', label: 'Inventory Management', badge: null },
+        { path: '/admin/spare-parts', icon: '', label: 'Spare Parts', badge: null },
+        { path: '/admin/accessories', icon: '', label: 'Accessories', badge: null },
+        { path: '/admin/low-stock', icon: '', label: 'Low Stock Alerts', badge: '5' },
+        { path: '/admin/brands', icon: '', label: 'Brands Management', badge: null },
+        { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
+        { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
       ]
     },
     {
       section: 'ORDERS & SALES',
       items: [
-        { path: '/admin/orders', icon: '📋', label: 'Customer Orders', badge: '12' },
-        { path: '/admin/sales', icon: '💰', label: 'Sales Records', badge: null },
-        { path: '/admin/transactions', icon: '📊', label: 'Transactions', badge: null },
+        { path: '/admin/orders', icon: '', label: 'Customer Orders', badge: '12' },
+        { path: '/admin/sales', icon: '', label: 'Sales Records', badge: null },
+        { path: '/admin/transactions', icon: '', label: 'Transactions', badge: null },
       ]
     },
     {
       section: 'CUSTOMERS',
       items: [
-        { path: '/admin/customers', icon: '👥', label: 'Customer List', badge: null },
-        { path: '/admin/reviews', icon: '⭐', label: 'Reviews & Ratings', badge: '3' },
+        { path: '/admin/customers', icon: '', label: 'Customer List', badge: null },
+        { path: '/admin/reviews', icon: '', label: 'Reviews & Ratings', badge: '3' },
       ]
     },
     {
       section: 'REPORTS',
       items: [
-        { path: '/admin/reports/sales', icon: '📈', label: 'Sales Reports', badge: null },
-        { path: '/admin/reports/inventory', icon: '📉', label: 'Inventory Reports', badge: null },
-        { path: '/admin/reports/analytics', icon: '🎯', label: 'Analytics', badge: null },
+        { path: '/admin/reports/sales', icon: '', label: 'Sales Reports', badge: null },
+        { path: '/admin/reports/inventory', icon: '', label: 'Inventory Reports', badge: null },
+        { path: '/admin/reports/analytics', icon: '', label: 'Analytics', badge: null },
+        { path: '/admin/modules', icon: '', label: 'Return Management', badge: null },
+        { path: '/admin/feedbacks', icon: '', label: 'Feedback', badge: null },
+        { path: '/admin/messages', icon: '', label: 'Messages', badge: null },
       ]
     },
     {
       section: 'SETTINGS',
       items: [
-        { path: '/admin/settings', icon: '⚙️', label: 'System Settings', badge: null },
-        { path: '/admin/users', icon: '👤', label: 'Admin Users', badge: null },
+        { path: '/admin/settings', icon: '', label: 'System Settings', badge: null },
+        { path: '/admin/users', icon: '', label: 'Admin Users', badge: null },
       ]
     }
   ];

@@ -4,9 +4,24 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import './Products.css';
 
-const BACKEND_URL = 'http://localhost:5174';
+  const BACKEND_URL = 'http://localhost:5174';
 
-const Products = () => {
+  // Product emoji mapping based on name/type
+  const getProductEmoji = (name, partTypeName, productType) => {
+    const nameLower = (name || '').toLowerCase();
+    const partTypeLower = (partTypeName || '').toLowerCase();
+    
+    if (nameLower.includes('brake') || partTypeLower.includes('brake')) return '🛑';
+    if (nameLower.includes('filter') || partTypeLower.includes('filter')) return '🌬️';
+    if (nameLower.includes('spark') || nameLower.includes('plug') || partTypeLower.includes('plug')) return '⚡';
+    if (nameLower.includes('battery') || partTypeLower.includes('battery')) return '🔋';
+    if (nameLower.includes('oil') || partTypeLower.includes('oil')) return '🛢️';
+    if (nameLower.includes('mat') || nameLower.includes('floor')) return '🟫';
+    if (nameLower.includes('wheel') || nameLower.includes('steering')) return '🎡';
+    if (nameLower.includes('freshener') || nameLower.includes('air')) return '🌬️';
+    if (productType === 'accessory') return '🎁';
+    return '⚙️';
+  };const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeBrand, setActiveBrand] = useState('all');
@@ -37,27 +52,27 @@ const Products = () => {
       if (data.success && data.data && data.data.length > 0) {
         console.log('✅ Products loaded from API:', data.data.length);
         // Transform API data to match existing structure
-        const transformedProducts = data.data.map(product => ({
-          id: product.id,
-          name: product.name,
-          price: parseFloat(product.selling_price || 0),
-          category: product.category === 'accessory' ? 'accessories' : 'parts',
-          brand: product.brand_code?.toLowerCase() || 'universal',
-          partType: product.part_type?.code || 'other',
-          image: product.image_url || (product.product_type === 'sparepart' ? '⚙️' : '🛡️'),
-          images: [
-            product.image_url || '⚙️',
-            product.image_2 || product.image_url || '⚙️',
-            product.image_3 || product.image_url || '⚙️'
-          ].filter(Boolean),
-          rating: parseFloat(product.rating || 0),
-          stock: product.stock_quantity || 0,
-          description: product.description || 'No description available',
-          sku: product.sku,
-          brandName: product.brand_name,
-          partTypeName: product.part_type_name,
-          productType: product.product_type
-        }));
+        const transformedProducts = data.data.map(product => {
+          const emoji = getProductEmoji(product.name, product.part_type_name, product.product_type);
+          console.log('🔍 Product:', product.name, '| Emoji:', emoji, '| Type:', product.product_type);
+          return {
+            id: product.id,
+            name: product.name,
+            price: parseFloat(product.selling_price || 0),
+            category: product.category === 'accessory' ? 'accessories' : 'parts',
+            brand: product.brand_code?.toLowerCase() || 'universal',
+            partType: product.part_type?.code || 'other',
+            image: emoji,
+            images: [emoji, emoji, emoji],
+            rating: parseFloat(product.rating || 0),
+            stock: product.stock_quantity || 0,
+            description: product.description || 'No description available',
+            sku: product.sku,
+            brandName: product.brand_name,
+            partTypeName: product.part_type_name,
+            productType: product.product_type
+          };
+        });
         
         setProductsFromAPI(transformedProducts);
         setUseAPIData(true);
@@ -424,16 +439,6 @@ const Products = () => {
             ⏳ Loading products...
           </div>
         )}
-        {!loading && useAPIData && (
-          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(76, 175, 80, 0.3)', borderRadius: '8px', display: 'inline-block', color: 'white' }}>
-            ✅ Live data from inventory system
-          </div>
-        )}
-        {!loading && !useAPIData && (
-          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255, 193, 7, 0.3)', borderRadius: '8px', display: 'inline-block', color: 'white' }}>
-            ⚠️ Using sample data (backend not connected)
-          </div>
-        )}
       </div>
 
       <div className="products-container">
@@ -548,10 +553,12 @@ const Products = () => {
             </div>
           ) : (
             <div className="products-grid">
-              {sortedProducts.map(product => (
-                <div key={product.id} className="product-card">
+              {sortedProducts.map((product, index) => (
+                <div key={`${product.productType}-${product.id}`} className="product-card">
                   <div className="product-image">
-                    <span className="product-emoji">{product.image}</span>
+                    <div className="product-emoji">
+                      {product.image || '⚙️'}
+                    </div>
                     <div className="product-overlay">
                       <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                         Quick View

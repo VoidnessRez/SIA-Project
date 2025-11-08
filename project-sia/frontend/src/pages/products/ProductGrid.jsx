@@ -260,7 +260,9 @@ const ProductGrid = () => {
           {filteredProducts.map(product => (
             <div key={product.id} className="product-card">
               <div className="product-image">
-                <span className="product-emoji">{product.image}</span>
+                <div className="product-emoji">
+                  {product.image || '⚙️'}
+                </div>
                 <div className="product-overlay">
                   <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                     Quick View
