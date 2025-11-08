@@ -85,7 +85,7 @@ const AdminAuthModal = ({ isOpen, onClose }) => {
 
       setLoading(false);
       onClose();
-      navigate('/inventory');
+      navigate('/admin/inventory');
     } catch (err) {
       setError('Network error — please try again');
       setLoading(false);

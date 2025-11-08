@@ -4,6 +4,7 @@ import cors from 'cors';
 import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
+import inventoryRouter from './routes/inventory.js';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/inventory', inventoryRouter);
 
 // Default port for backend is 5174 (as requested)
 const port = process.env.PORT || 5174;
@@ -29,6 +31,15 @@ const server = app.listen(port, () => {
   console.log(`   - POST /api/auth/signup`);
   console.log(`   - PUT /api/auth/profile/:userId`);
   console.log(`   - POST /api/upload/avatar`);
+  console.log(`   📦 INVENTORY ROUTES:`);
+  console.log(`   - GET /api/inventory/products (all products)`);
+  console.log(`   - GET /api/inventory/spare-parts`);
+  console.log(`   - GET /api/inventory/accessories`);
+  console.log(`   - GET /api/inventory/brands`);
+  console.log(`   - GET /api/inventory/part-types`);
+  console.log(`   - GET /api/inventory/low-stock`);
+  console.log(`   - POST/PUT/DELETE /api/inventory/spare-parts/:id`);
+  console.log(`   - POST/PUT/DELETE /api/inventory/accessories/:id`);
   console.log(`\n`);
 });
 

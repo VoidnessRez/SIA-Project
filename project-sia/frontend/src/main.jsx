@@ -1,6 +1,6 @@
 import { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import ProtectedRoute from '../router/pRoutes/ProtectedRoute.jsx';
@@ -15,6 +15,7 @@ import Header from './components/header/Header.jsx';
 import FloatingCart from './components/cart/FloatingCart.jsx';
 import AdminAuthModal from './AdminAuth/AdminAuthModal.jsx';
 import UserPersonalInfo from './components/UserProfile/UserPersonalInfo.jsx';
+import InventoryPage from './admin/inventory/InventoryPage.jsx';
 import './index.css';
 import './darkMode.css';
 
@@ -22,6 +23,24 @@ console.log('📦 [main.jsx] Module loaded! UserPersonalInfo imported:', UserPer
 
 const App = () => {
   const [showAdminModal, setShowAdminModal] = useState(false);
+
+  return (
+    <AuthProvider>
+      <DarkModeProvider>
+        <BrowserRouter>
+          <AppContent 
+            showAdminModal={showAdminModal}
+            setShowAdminModal={setShowAdminModal}
+          />
+        </BrowserRouter>
+      </DarkModeProvider>
+    </AuthProvider>
+  );
+};
+
+const AppContent = ({ showAdminModal, setShowAdminModal }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -33,18 +52,15 @@ const App = () => {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setShowAdminModal]);
 
   return (
-    <AuthProvider>
-      <DarkModeProvider>
-        <BrowserRouter>
-          <Header />
-          <Routes>
+    <>
+      {/* Only show Header and FloatingCart on non-admin routes */}
+      {!isAdminRoute && <Header />}
+      
+      <Routes>
             {/* Public routes - all pages visible */}
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
@@ -72,15 +88,19 @@ const App = () => {
                 return <UserPersonalInfo />;
               })()}
             />
+            
+            {/* Admin Inventory Page */}
+            <Route path="/admin/inventory" element={<InventoryPage />} />
           </Routes>
-          <FloatingCart itemCount={0} />
+          
+          {/* Only show FloatingCart on non-admin routes */}
+          {!isAdminRoute && <FloatingCart itemCount={0} />}
+          
           <AdminAuthModal 
             isOpen={showAdminModal} 
             onClose={() => setShowAdminModal(false)} 
           />
-        </BrowserRouter>
-      </DarkModeProvider>
-    </AuthProvider>
+        </>
   );
 };
 

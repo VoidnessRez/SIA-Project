@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import './Products.css';
+
+const BACKEND_URL = 'http://localhost:5174';
 
 const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,12 +16,66 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [productsFromAPI, setProductsFromAPI] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [useAPIData, setUseAPIData] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Enhanced product data
-  const products = [
+  // Fetch products from API on mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      console.log('🛍️ Fetching products from API...');
+      const response = await fetch(`${BACKEND_URL}/api/inventory/products`);
+      const data = await response.json();
+      
+      if (data.success && data.data && data.data.length > 0) {
+        console.log('✅ Products loaded from API:', data.data.length);
+        // Transform API data to match existing structure
+        const transformedProducts = data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          price: parseFloat(product.selling_price || 0),
+          category: product.category === 'accessory' ? 'accessories' : 'parts',
+          brand: product.brand_code?.toLowerCase() || 'universal',
+          partType: product.part_type?.code || 'other',
+          image: product.image_url || (product.product_type === 'sparepart' ? '⚙️' : '🛡️'),
+          images: [
+            product.image_url || '⚙️',
+            product.image_2 || product.image_url || '⚙️',
+            product.image_3 || product.image_url || '⚙️'
+          ].filter(Boolean),
+          rating: parseFloat(product.rating || 0),
+          stock: product.stock_quantity || 0,
+          description: product.description || 'No description available',
+          sku: product.sku,
+          brandName: product.brand_name,
+          partTypeName: product.part_type_name,
+          productType: product.product_type
+        }));
+        
+        setProductsFromAPI(transformedProducts);
+        setUseAPIData(true);
+      } else {
+        console.log('⚠️ No products from API, using mock data');
+        setUseAPIData(false);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching products:', error);
+      console.log('⚠️ Using mock data as fallback');
+      setUseAPIData(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock product data (fallback if API fails)
+  const mockProducts = [
     { 
       id: 1, 
       name: 'Brake Pads Set', 
@@ -232,6 +288,9 @@ const Products = () => {
     },
   ];
 
+  // Use API data if available, otherwise use mock data
+  const products = useAPIData ? productsFromAPI : mockProducts;
+
   const categories = [
     { id: 'all', name: 'All Products', icon: '🏍️' },
     { id: 'parts', name: 'Spare Parts', icon: '⚙️' },
@@ -360,6 +419,21 @@ const Products = () => {
       <div className="products-hero">
         <h1>Shop Motorcycle Parts & Accessories</h1>
         <p>Find genuine parts and quality accessories for your motorcycle</p>
+        {loading && (
+          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.2)', borderRadius: '8px', display: 'inline-block' }}>
+            ⏳ Loading products...
+          </div>
+        )}
+        {!loading && useAPIData && (
+          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(76, 175, 80, 0.3)', borderRadius: '8px', display: 'inline-block', color: 'white' }}>
+            ✅ Live data from inventory system
+          </div>
+        )}
+        {!loading && !useAPIData && (
+          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255, 193, 7, 0.3)', borderRadius: '8px', display: 'inline-block', color: 'white' }}>
+            ⚠️ Using sample data (backend not connected)
+          </div>
+        )}
       </div>
 
       <div className="products-container">
