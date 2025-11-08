@@ -61,7 +61,8 @@ const AdminLayout = ({ children, title, description }) => {
       section: 'SETTINGS',
       items: [
         { path: '/admin/settings', icon: '', label: 'System Settings', badge: null },
-        { path: '/admin/users', icon: '', label: 'Admin Users', badge: null },
+        { path: '/admin/adminUsers', icon: '', label: 'Admin Users', badge: null },
+        { path: '/admin/customer', icon: '', label: 'User Overview', badge: null },
       ]
     }
   ];

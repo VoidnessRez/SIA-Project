@@ -92,7 +92,7 @@
   margin-bottom: 1.5rem;
 }
 
-.stat-card {
+.inventory-stat-card {
   background: white;
   color: #2c3e50;
   padding: 1.25rem;
@@ -105,12 +105,12 @@
   transition: all 0.2s ease;
 }
 
-.stat-card:hover {
+.inventory-stat-card:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-.stat-card h3 {
+.inventory-stat-card h3 {
   font-size: 0.8rem;
   opacity: 0.7;
   margin-bottom: 0.5rem;
@@ -120,7 +120,7 @@
   color: #7f8c8d;
 }
 
-.stat-card p {
+.inventory-stat-card p {
   font-size: 1.75rem;
   font-weight: bold;
   margin: 0;
@@ -163,7 +163,7 @@
   background: #f8f9fa;
 }
 
-.product-image {
+.inventory-product-image {
   width: 45px;
   height: 45px;
   object-fit: contain;
