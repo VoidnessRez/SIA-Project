@@ -1,27 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import './Products.css';
 
-  const BACKEND_URL = 'http://localhost:5174';
-
-  // Product emoji mapping based on name/type
-  const getProductEmoji = (name, partTypeName, productType) => {
-    const nameLower = (name || '').toLowerCase();
-    const partTypeLower = (partTypeName || '').toLowerCase();
-    
-    if (nameLower.includes('brake') || partTypeLower.includes('brake')) return '🛑';
-    if (nameLower.includes('filter') || partTypeLower.includes('filter')) return '🌬️';
-    if (nameLower.includes('spark') || nameLower.includes('plug') || partTypeLower.includes('plug')) return '⚡';
-    if (nameLower.includes('battery') || partTypeLower.includes('battery')) return '🔋';
-    if (nameLower.includes('oil') || partTypeLower.includes('oil')) return '🛢️';
-    if (nameLower.includes('mat') || nameLower.includes('floor')) return '🟫';
-    if (nameLower.includes('wheel') || nameLower.includes('steering')) return '🎡';
-    if (nameLower.includes('freshener') || nameLower.includes('air')) return '🌬️';
-    if (productType === 'accessory') return '🎁';
-    return '⚙️';
-  };const Products = () => {
+const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeBrand, setActiveBrand] = useState('all');
@@ -31,66 +14,12 @@ import './Products.css';
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [productsFromAPI, setProductsFromAPI] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [useAPIData, setUseAPIData] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch products from API on mount
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      console.log('🛍️ Fetching products from API...');
-      const response = await fetch(`${BACKEND_URL}/api/inventory/products`);
-      const data = await response.json();
-      
-      if (data.success && data.data && data.data.length > 0) {
-        console.log('✅ Products loaded from API:', data.data.length);
-        // Transform API data to match existing structure
-        const transformedProducts = data.data.map(product => {
-          const emoji = getProductEmoji(product.name, product.part_type_name, product.product_type);
-          console.log('🔍 Product:', product.name, '| Emoji:', emoji, '| Type:', product.product_type);
-          return {
-            id: product.id,
-            name: product.name,
-            price: parseFloat(product.selling_price || 0),
-            category: product.category === 'accessory' ? 'accessories' : 'parts',
-            brand: product.brand_code?.toLowerCase() || 'universal',
-            partType: product.part_type?.code || 'other',
-            image: emoji,
-            images: [emoji, emoji, emoji],
-            rating: parseFloat(product.rating || 0),
-            stock: product.stock_quantity || 0,
-            description: product.description || 'No description available',
-            sku: product.sku,
-            brandName: product.brand_name,
-            partTypeName: product.part_type_name,
-            productType: product.product_type
-          };
-        });
-        
-        setProductsFromAPI(transformedProducts);
-        setUseAPIData(true);
-      } else {
-        console.log('⚠️ No products from API, using mock data');
-        setUseAPIData(false);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching products:', error);
-      console.log('⚠️ Using mock data as fallback');
-      setUseAPIData(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Mock product data (fallback if API fails)
-  const mockProducts = [
+  // Enhanced product data
+  const products = [
     { 
       id: 1, 
       name: 'Brake Pads Set', 
@@ -303,9 +232,6 @@ import './Products.css';
     },
   ];
 
-  // Use API data if available, otherwise use mock data
-  const products = useAPIData ? productsFromAPI : mockProducts;
-
   const categories = [
     { id: 'all', name: 'All Products', icon: '🏍️' },
     { id: 'parts', name: 'Spare Parts', icon: '⚙️' },
@@ -434,11 +360,6 @@ import './Products.css';
       <div className="products-hero">
         <h1>Shop Motorcycle Parts & Accessories</h1>
         <p>Find genuine parts and quality accessories for your motorcycle</p>
-        {loading && (
-          <div style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.2)', borderRadius: '8px', display: 'inline-block' }}>
-            ⏳ Loading products...
-          </div>
-        )}
       </div>
 
       <div className="products-container">
@@ -553,12 +474,10 @@ import './Products.css';
             </div>
           ) : (
             <div className="products-grid">
-              {sortedProducts.map((product, index) => (
-                <div key={`${product.productType}-${product.id}`} className="product-card">
+              {sortedProducts.map(product => (
+                <div key={product.id} className="product-card">
                   <div className="product-image">
-                    <div className="product-emoji">
-                      {product.image || '⚙️'}
-                    </div>
+                    <span className="product-emoji">{product.image}</span>
                     <div className="product-overlay">
                       <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                         Quick View

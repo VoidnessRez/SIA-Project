@@ -1,6 +1,5 @@
 import express from 'express';
 import { supabase } from '../supabaseClient.js';
-import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -462,88 +461,3 @@ router.put('/profile/:userId', async (req, res) => {
 });
 
 export default router;
-
-// POST /api/auth/send-otp
-// body: { email }
-router.post('/send-otp', async (req, res) => {
-  console.log('[Backend] 📧 POST /api/auth/send-otp - Request received');
-  console.log('[Backend] 📦 Request body:', { email: req.body?.email });
-  
-  const { email } = req.body;
-  
-  if (!email) {
-    console.log('[Backend] ❌ Missing email');
-    return res.status(400).json({ error: 'Email is required' });
-  }
-  
-  try {
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log('[Backend] 🔢 Generated OTP:', otp);
-    
-    // Send OTP email
-    const result = await emailService.sendOTP(email, otp);
-    
-    if (result.success) {
-      console.log('[Backend] ✅ OTP email sent successfully');
-      return res.json({ 
-        success: true, 
-        message: 'OTP sent successfully',
-        otp: otp, // In production, store this securely instead of returning
-        provider: result.provider
-      });
-    } else {
-      console.error('[Backend] ❌ Failed to send OTP email:', result.error);
-      return res.status(500).json({ 
-        error: 'Failed to send OTP email',
-        details: result.error 
-      });
-    }
-  } catch (error) {
-    console.error('[Backend] 💥 Send OTP error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      details: error.message 
-    });
-  }
-});
-
-// POST /api/auth/security-alert
-// body: { email, alertType, details }
-router.post('/security-alert', async (req, res) => {
-  console.log('[Backend] 🚨 POST /api/auth/security-alert - Request received');
-  console.log('[Backend] 📦 Request body:', req.body);
-  
-  const { email, alertType, details } = req.body;
-  
-  if (!email || !alertType) {
-    console.log('[Backend] ❌ Missing email or alertType');
-    return res.status(400).json({ error: 'Email and alertType are required' });
-  }
-  
-  try {
-    // Send security alert email
-    const result = await emailService.sendSecurityAlert(email, alertType, details);
-    
-    if (result.success) {
-      console.log('[Backend] ✅ Security alert email sent successfully');
-      return res.json({ 
-        success: true, 
-        message: 'Security alert sent successfully',
-        provider: result.provider
-      });
-    } else {
-      console.error('[Backend] ❌ Failed to send security alert email:', result.error);
-      return res.status(500).json({ 
-        error: 'Failed to send security alert email',
-        details: result.error 
-      });
-    }
-  } catch (error) {
-    console.error('[Backend] 💥 Send security alert error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      details: error.message 
-    });
-  }
-});

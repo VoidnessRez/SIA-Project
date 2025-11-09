@@ -4,9 +4,9 @@ import './StatsSection.css';
 const StatsSection = () => {
   const stats = [
     { label: 'Available Products', value: '500+', icon: '🏍️', color: '#ff6b35' },
-    { label: 'Happy Customers', value: '1,200+', icon: '😊', color: '#e67e22' }, // Changed from green to orange
-    { label: 'Brands Available', value: '4', icon: '🏷️', color: '#3498db' }, // Changed to blue
-    { label: 'Years in Business', value: '10+', icon: '⭐', color: '#f39c12' }, // Changed to golden yellow
+    { label: 'Happy Customers', value: '1,200+', icon: '😊', color: '#5cb85c' },
+    { label: 'Brands Available', value: '4', icon: '🏷️', color: '#5bc0de' },
+    { label: 'Years in Business', value: '10+', icon: '⭐', color: '#f7b801' },
   ];
 
   return (
@@ -15,11 +15,7 @@ const StatsSection = () => {
         <h2>Why Choose Mejia Spareparts?</h2>
         <div className="stats-grid">
           {stats.map((stat, index) => (
-            <div key={index} className="stat-card">
-              <div 
-                className="stat-card-border" 
-                style={{backgroundColor: stat.color, border: 'none'}}
-              ></div>
+            <div key={index} className="stat-card" style={{'--accent-color': stat.color}}>
               <div className="stat-icon">{stat.icon}</div>
               <div className="stat-content">
                 <h3 className="stat-value">{stat.value}</h3>

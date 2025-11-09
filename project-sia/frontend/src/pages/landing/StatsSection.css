@@ -34,14 +34,14 @@
   overflow: hidden;
 }
 
-.stat-card-border {
+.stat-card::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 4px;
-  /* backgroundColor will be set via inline style */
-  z-index: 10;
+  background: var(--accent-color, #667eea);
 }
 
 .stat-card:hover {
