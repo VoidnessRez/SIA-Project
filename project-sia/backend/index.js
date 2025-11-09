@@ -4,7 +4,7 @@ import cors from 'cors';
 import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
-import inventoryRouter from './routes/inventory.js';
+import recaptchaRouter from './routes/recaptcha.js';
 
 dotenv.config();
 
@@ -12,10 +12,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+console.log('📦 Loading routes...');
 app.use('/api/products', productsRouter);
+console.log('   ✓ Products routes loaded');
 app.use('/api/auth', authRouter);
+console.log('   ✓ Auth routes loaded');
 app.use('/api/upload', uploadRouter);
-app.use('/api/inventory', inventoryRouter);
+console.log('   ✓ Upload routes loaded');
+app.use('/api/recaptcha', recaptchaRouter);
+console.log('   ✓ reCAPTCHA routes loaded');
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    routes: {
+      products: '/api/products',
+      auth: '/api/auth',
+      upload: '/api/upload',
+      recaptcha: '/api/recaptcha/verify'
+    }
+  });
+});
 
 // Default port for backend is 5174 (as requested)
 const port = process.env.PORT || 5174;
@@ -24,22 +43,22 @@ const server = app.listen(port, () => {
   console.log(`\n🚀  Backend starting...`);
   console.log(`✅  Listening on http://localhost:${port}`);
   console.log(`🔒  Supabase URL: ${process.env.SUPABASE_URL ? 'set' : 'NOT SET'}`);
-  console.log(`🧭  Routes:`);
-  console.log(`   - GET /api/products`);
-  console.log(`   - POST /api/products (protected - add auth middleware)`);
-  console.log(`   - POST /api/auth/login`);
-  console.log(`   - POST /api/auth/signup`);
-  console.log(`   - PUT /api/auth/profile/:userId`);
-  console.log(`   - POST /api/upload/avatar`);
-  console.log(`   📦 INVENTORY ROUTES:`);
-  console.log(`   - GET /api/inventory/products (all products)`);
-  console.log(`   - GET /api/inventory/spare-parts`);
-  console.log(`   - GET /api/inventory/accessories`);
-  console.log(`   - GET /api/inventory/brands`);
-  console.log(`   - GET /api/inventory/part-types`);
-  console.log(`   - GET /api/inventory/low-stock`);
-  console.log(`   - POST/PUT/DELETE /api/inventory/spare-parts/:id`);
-  console.log(`   - POST/PUT/DELETE /api/inventory/accessories/:id`);
+  console.log(`🔐  reCAPTCHA Secret: ${process.env.RECAPTCHA_SECRET ? 'set ✓' : 'NOT SET ✗'}`);
+  console.log(`🧭  Available Routes:`);
+  console.log(`   📦 Products:`);
+  console.log(`      - GET    /api/products`);
+  console.log(`      - POST   /api/products (protected)`);
+  console.log(`   🔐 Auth:`);
+  console.log(`      - POST   /api/auth/login`);
+  console.log(`      - POST   /api/auth/signup`);
+  console.log(`      - PUT    /api/auth/profile/:userId`);
+  console.log(`   📤 Upload:`);
+  console.log(`      - POST   /api/upload/avatar`);
+  console.log(`   🤖 reCAPTCHA:`);
+  console.log(`      - POST   /api/recaptcha/verify`);
+  console.log(`   💚 Health:`);
+  console.log(`      - GET    /api/health`);
+  console.log(`\n💡 Tip: Visit http://localhost:${port}/api/health to check server status`);
   console.log(`\n`);
 });
 

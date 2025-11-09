@@ -105,16 +105,23 @@ const SignUpPage = () => {
 
   // Load reCAPTCHA script and render widget if site key exists
   useEffect(() => {
-    if (!RECAPTCHA_SITE_KEY) return;
-  console.log('[SignUpPage] reCAPTCHA site key present, starting loader');
-  setRecaptchaLoading(true);
-  setRecaptchaLoadFailed(false);
+    if (!RECAPTCHA_SITE_KEY) {
+      console.warn('[SignUpPage] No RECAPTCHA_SITE_KEY found in environment');
+      return;
+    }
+    
+    console.log('[SignUpPage] reCAPTCHA site key present, starting loader');
+    setRecaptchaLoading(true);
+    setRecaptchaLoadFailed(false);
 
     // If grecaptcha already present, render immediately
     const tryRender = () => {
       console.log('[SignUpPage] tryRender called, grecaptcha present?', !!window.grecaptcha, 'widgetId', recaptchaWidgetId);
       try {
-        if (!window.grecaptcha) return;
+        if (!window.grecaptcha || !window.grecaptcha.render) {
+          console.log('[SignUpPage] grecaptcha not ready yet');
+          return;
+        }
 
         // Avoid double rendering
         if (recaptchaWidgetId !== null) {
@@ -123,23 +130,39 @@ const SignUpPage = () => {
         }
 
         // Prefer the actual DOM node (safer than id string when element may not exist yet)
-        const container = (recaptchaRef && recaptchaRef.current) || document.getElementById('recaptcha');
+        const container = recaptchaRef.current || document.getElementById('recaptcha');
         if (!container) {
           console.log('[SignUpPage] recaptcha container not in DOM yet; deferring render');
           return;
         }
 
-        const id = window.grecaptcha.render(container, { sitekey: RECAPTCHA_SITE_KEY });
+        console.log('[SignUpPage] Attempting to render reCAPTCHA widget...');
+        const id = window.grecaptcha.render(container, { 
+          sitekey: RECAPTCHA_SITE_KEY,
+          theme: isDarkMode ? 'dark' : 'light',
+          callback: function() {
+            console.log('[SignUpPage] ✅ reCAPTCHA completed by user');
+            setRecaptchaLoaded(true);
+            setRecaptchaLoading(false);
+            setRecaptchaLoadFailed(false);
+          },
+          'expired-callback': function() {
+            console.log('[SignUpPage] ⚠️ reCAPTCHA expired');
+          }
+        });
         console.log('[SignUpPage] grecaptcha.render returned widget id', id);
         setRecaptchaWidgetId(id);
         setRecaptchaLoaded(true);
         setRecaptchaLoading(false);
+        setRecaptchaLoadFailed(false);
       } catch (err) {
         console.error('[SignUpPage] grecaptcha.render error', err);
+        setRecaptchaLoading(false);
+        setRecaptchaLoadFailed(true);
       }
     };
 
-    if (window.grecaptcha) {
+    if (window.grecaptcha && window.grecaptcha.render) {
       tryRender();
       return;
     }
@@ -149,9 +172,9 @@ const SignUpPage = () => {
     const previousOnLoad = window.__recaptchaOnLoad;
     window.__recaptchaOnLoad = () => {
       console.log('[SignUpPage] __recaptchaOnLoad invoked');
-      tryRender();
+      setTimeout(() => tryRender(), 100); // Small delay to ensure grecaptcha is fully ready
       if (typeof previousOnLoad === 'function') {
-        try { previousOnLoad(); } catch (e) { /* ignore */ }
+        try { previousOnLoad(); } catch (e) { console.error('Previous onload error:', e); }
       }
     };
 
@@ -159,11 +182,14 @@ const SignUpPage = () => {
     const scriptSelector = 'script[src*="recaptcha/api.js"]';
     let scriptEl = document.querySelector(scriptSelector);
     if (!scriptEl) {
+      console.log('[SignUpPage] Adding reCAPTCHA script to page...');
       scriptEl = document.createElement('script');
       scriptEl.src = 'https://www.google.com/recaptcha/api.js?onload=__recaptchaOnLoad&render=explicit';
       scriptEl.async = true;
       scriptEl.defer = true;
-      scriptEl.onload = () => console.log('[SignUpPage] recaptcha script loaded (onload)');
+      scriptEl.onload = () => {
+        console.log('[SignUpPage] recaptcha script loaded successfully');
+      };
       scriptEl.onerror = (e) => {
         console.error('[SignUpPage] recaptcha script failed to load', e);
         setRecaptchaLoading(false);
@@ -172,23 +198,31 @@ const SignUpPage = () => {
       document.head.appendChild(scriptEl);
     } else {
       console.log('[SignUpPage] recaptcha script already present in document');
+      // Script exists but maybe grecaptcha isn't ready yet
+      if (window.grecaptcha && window.grecaptcha.render) {
+        tryRender();
+      }
     }
 
-    // Start an 8s timeout fallback in case widget never becomes available
+    // Start a 10s timeout fallback in case widget never becomes available
     const timeout = setTimeout(() => {
       if (!window.grecaptcha || recaptchaWidgetId === null) {
-        console.warn('[SignUpPage] reCAPTCHA did not initialize within timeout; enabling fallback');
+        console.warn('[SignUpPage] reCAPTCHA did not initialize within timeout');
         setRecaptchaLoading(false);
         setRecaptchaLoadFailed(true);
       }
-    }, 8000);
+    }, 10000);
 
     return () => {
       // restore previous onload if any
-      try { window.__recaptchaOnLoad = previousOnLoad; } catch (e) {}
-      try { clearTimeout(timeout); } catch (e) {}
+      try { 
+        if (previousOnLoad) {
+          window.__recaptchaOnLoad = previousOnLoad;
+        }
+      } catch (e) { console.error('Cleanup error:', e); }
+      try { clearTimeout(timeout); } catch (e) { console.error('Timeout clear error:', e); }
     };
-  }, [RECAPTCHA_SITE_KEY]);
+  }, [RECAPTCHA_SITE_KEY, isDarkMode]);
 
   // If the recaptcha script loaded before the container mounted, retry a few times
   useEffect(() => {
@@ -236,15 +270,27 @@ const SignUpPage = () => {
         console.log('[SignUpPage] account step: recaptcha container still not mounted');
         return;
       }
-      const id = window.grecaptcha.render(container, { sitekey: RECAPTCHA_SITE_KEY });
+      const id = window.grecaptcha.render(container, { 
+        sitekey: RECAPTCHA_SITE_KEY,
+        theme: isDarkMode ? 'dark' : 'light',
+        callback: function() {
+          console.log('[SignUpPage] ✅ reCAPTCHA completed by user (step render)');
+          setRecaptchaLoaded(true);
+          setRecaptchaLoading(false);
+          setRecaptchaLoadFailed(false);
+        }
+      });
       console.log('[SignUpPage] grecaptcha.render (on step visible) returned widget id', id);
       setRecaptchaWidgetId(id);
       setRecaptchaLoaded(true);
       setRecaptchaLoading(false);
+      setRecaptchaLoadFailed(false);
     } catch (e) {
       console.error('[SignUpPage] grecaptcha.render (on step visible) error', e);
+      setRecaptchaLoadFailed(true);
+      setRecaptchaLoading(false);
     }
-  }, [currentStep, RECAPTCHA_SITE_KEY, recaptchaWidgetId]);
+  }, [currentStep, RECAPTCHA_SITE_KEY, recaptchaWidgetId, isDarkMode]);
 
   // Debug output to quickly inspect state when user hits submit
 
@@ -346,9 +392,17 @@ const SignUpPage = () => {
     // reCAPTCHA Verification (REQUIRED)
     if (RECAPTCHA_SITE_KEY) {
       console.log('[SignUpPage] 🔍 Checking reCAPTCHA...');
+      console.log('[SignUpPage] States:', { recaptchaLoaded, recaptchaLoadFailed, recaptchaLoading, recaptchaWidgetId });
       
-      // Check if widget loaded
-      if (recaptchaLoadFailed) {
+      // Check if widget is still loading
+      if (recaptchaLoading && !recaptchaLoaded) {
+        console.log('[SignUpPage] ⏳ reCAPTCHA still loading');
+        setError('reCAPTCHA is still loading. Please wait a moment.');
+        return;
+      }
+      
+      // Check if widget failed to load
+      if (recaptchaLoadFailed && !recaptchaLoaded) {
         console.log('[SignUpPage] ❌ reCAPTCHA failed to load');
         setError('reCAPTCHA failed to load. Please refresh the page and try again.');
         return;
@@ -358,7 +412,7 @@ const SignUpPage = () => {
         const grecaptcha = window.grecaptcha;
         if (!grecaptcha || recaptchaWidgetId === null) {
           console.warn('[SignUpPage] ❌ reCAPTCHA not ready');
-          setError('reCAPTCHA not ready. Please wait and try again.');
+          setError('reCAPTCHA not ready. Please wait a moment and try again.');
           return;
         }
 
@@ -367,28 +421,39 @@ const SignUpPage = () => {
         
         if (!token) {
           console.log('[SignUpPage] ❌ reCAPTCHA not checked');
-          setError('Please complete the reCAPTCHA verification to continue.');
+          setError('Please complete the reCAPTCHA verification by checking the box.');
           return;
         }
 
         // Verify token server-side
         console.log('[SignUpPage] 📡 Verifying reCAPTCHA with backend...');
-        const resp = await fetch('http://localhost:5174/api/verify-recaptcha', {
+        const resp = await fetch('http://localhost:5174/api/recaptcha/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token })
         });
+        
+        if (!resp.ok) {
+          throw new Error(`Server responded with ${resp.status}`);
+        }
+        
         const data = await resp.json();
         
         if (!data.success) {
           console.log('[SignUpPage] ❌ reCAPTCHA verification failed');
           setError('reCAPTCHA verification failed. Please try again.');
+          // Reset the widget so user can try again
+          try {
+            grecaptcha.reset(recaptchaWidgetId);
+          } catch (e) {
+            console.error('Failed to reset reCAPTCHA:', e);
+          }
           return;
         }
         console.log('[SignUpPage] ✅ reCAPTCHA verified successfully');
       } catch (err) {
         console.error('[SignUpPage] 💥 reCAPTCHA verification error:', err);
-        setError('Failed to verify reCAPTCHA. Please try again.');
+        setError('Failed to verify reCAPTCHA. Please check your connection and try again.');
         return;
       }
     } else {
@@ -710,22 +775,44 @@ const SignUpPage = () => {
                 <label style={{ display: 'block', marginBottom: '6px' }}>Verify you are a human *</label>
                 {RECAPTCHA_SITE_KEY ? (
                   <>
-                    {recaptchaLoading && !recaptchaLoadFailed && (
-                      <div style={{ marginTop: '6px', color: '#666' }}>Loading reCAPTCHA...</div>
+                    {recaptchaLoading && !recaptchaLoaded && !recaptchaLoadFailed && (
+                      <div style={{ marginTop: '6px', color: '#666', fontSize: '14px' }}>
+                        <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: '8px' }}>⏳</span>
+                        Loading reCAPTCHA...
+                      </div>
                     )}
-                    {/* Error message hidden for testing - widget will still work when loaded */}
-                    {/* {!recaptchaLoading && recaptchaLoadFailed && (
-                      <>
-                        <div style={{ marginTop: '6px', color: '#f87171' }}>
-                          reCAPTCHA failed to load. Please try again later.
+                    {recaptchaLoadFailed && !recaptchaLoaded && (
+                      <div style={{ marginTop: '6px', padding: '10px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px' }}>
+                        <div style={{ color: '#dc2626', fontSize: '14px', marginBottom: '6px', fontWeight: '500' }}>
+                          ⚠️ reCAPTCHA failed to load
                         </div>
-                      </>
-                    )} */}
+                        <div style={{ color: '#7f1d1d', fontSize: '13px', marginBottom: '8px' }}>
+                          This could be due to network issues or ad blockers.
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => window.location.reload()}
+                          style={{ 
+                            padding: '6px 12px', 
+                            background: '#dc2626', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Refresh Page
+                        </button>
+                      </div>
+                    )}
                     <div id="recaptcha" ref={recaptchaRef} style={{ marginTop: '6px' }} />
                   </>
                 ) : (
-                  // Error message hidden - widget container still present
-                  <div id="recaptcha" ref={recaptchaRef} style={{ marginTop: '6px' }} />
+                  <div style={{ marginTop: '6px', padding: '10px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px', color: '#dc2626', fontSize: '14px' }}>
+                    ⚠️ reCAPTCHA is not configured. Please contact the administrator.
+                  </div>
                 )}
               </div>
             </div>

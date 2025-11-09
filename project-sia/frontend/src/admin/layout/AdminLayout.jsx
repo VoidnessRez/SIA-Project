@@ -29,6 +29,7 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/brands', icon: '', label: 'Brands Management', badge: null },
         { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
         { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
+        { path: '/admin/delivers', icon: '', label: 'Restock management', badge: null },
       ]
     },
     {
