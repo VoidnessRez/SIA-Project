@@ -471,6 +471,75 @@
   border-left: 3px solid rgba(240, 173, 78, 0.3);
 }
 
+/* Loading Animation Styles */
+.admin-auth-icon.admin-auth-loading {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  animation: none;
+}
+
+.admin-auth-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-auth-loading-content {
+  padding: 2rem 0;
+  animation: fadeIn 0.5s ease 0.3s backwards;
+}
+
+.admin-auth-loading-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.5s ease 0.5s backwards;
+}
+
+.admin-auth-progress-bar {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  animation: fadeIn 0.5s ease 0.7s backwards;
+}
+
+.admin-auth-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  animation: slideRight 5s ease-in-out forwards;
+}
+
+@keyframes slideRight {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.admin-auth-loading-subtext {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-top: 1rem;
+  animation: fadeIn 0.5s ease 0.9s backwards;
+}
+
 @media (prefers-color-scheme: dark) {
   .admin-auth-form label { color: #cfd8e3; }
   .admin-auth-form input { background: #132033; border-color: #263544; color: #e6eef6; }

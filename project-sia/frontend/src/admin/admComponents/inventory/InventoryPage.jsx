@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../layout/AdminLayout';
+import AdminLayout from '../../../AdminAuth/layout/AdminLayout';
 import './Shared.css';
 
 const BACKEND_URL = 'http://localhost:5174';
@@ -12,6 +12,8 @@ const InventoryPage = () => {
   const [partTypes, setPartTypes] = useState([]);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -41,9 +43,21 @@ const InventoryPage = () => {
 
   const fetchAllData = async () => {
     setLoading(true);
+    setLoadingProgress(0);
     setError(null);
     
     try {
+      // Simulate progress for visual feedback
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 100);
+
       const [spData, accData, brandsData, typesData, lowStockData] = await Promise.all([
         fetch(`${BACKEND_URL}/api/inventory/spare-parts`).then(r => r.json()),
         fetch(`${BACKEND_URL}/api/inventory/accessories`).then(r => r.json()),
@@ -52,16 +66,25 @@ const InventoryPage = () => {
         fetch(`${BACKEND_URL}/api/inventory/low-stock`).then(r => r.json())
       ]);
 
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+
       if (spData.success) setSpareParts(spData.data || []);
       if (accData.success) setAccessories(accData.data || []);
       if (brandsData.success) setBrands(brandsData.data || {});
       if (typesData.success) setPartTypes(typesData.data || []);
       if (lowStockData.success) setLowStockItems(lowStockData.data || []);
+
+      // Delay to show 100% completion
+      setTimeout(() => {
+        setLoading(false);
+        setInitialLoad(false);
+      }, 300);
     } catch (err) {
       console.error('Error fetching inventory data:', err);
       setError('Failed to load inventory data. Please check if backend is running.');
-    } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -217,56 +240,94 @@ const InventoryPage = () => {
       title="Inventory Management" 
       description="Manage your spare parts and accessories inventory"
     >
-      <div className="inventory-page-content">
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <h3>Total Products</h3>
-            <p>{stats.totalProducts}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Spare Parts</h3>
-            <p>{stats.totalSpareParts}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Accessories</h3>
-            <p>{stats.totalAccessories}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Low Stock Items</h3>
-            <p>{stats.lowStockCount}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Total Inventory Value</h3>
-            <p>₱{stats.totalValue.toLocaleString()}</p>
-          </div>
+      {/* Loading Progress Bar */}
+      {initialLoad && loadingProgress < 100 && (
+        <div className="loading-bar-container">
+          <div 
+            className="loading-bar" 
+            style={{ width: `${loadingProgress}%` }}
+          ></div>
         </div>
+      )}
 
-        {/* Tabs */}
-        {/* <div className="inventory-tabs">
-          <button
-            className={`tab-button ${activeTab === 'spare-parts' ? 'active' : ''}`}
-            onClick={() => setActiveTab('spare-parts')}
-          >
-            ⚙️ Spare Parts ({spareParts.length})
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'accessories' ? 'active' : ''}`}
-            onClick={() => setActiveTab('accessories')}
-          >
-            🛡️ Accessories ({accessories.length})
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'low-stock' ? 'active' : ''}`}
-            onClick={() => setActiveTab('low-stock')}
-          >
-            ⚠️ Low Stock ({lowStockItems.length})
-          </button>
-        </div> */}
+      <div className="inventory-page-content">
+        {loading && initialLoad ? (
+          /* Skeleton Loading */
+          <>
+            {/* Skeleton Stats Cards */}
+            <div className="stats-grid">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="stat-card skeleton-card">
+                  <div className="skeleton-title"></div>
+                  <div className="skeleton-value"></div>
+                </div>
+              ))}
+            </div>
 
-        {/* Content */}
-        <div className="inventory-content">
-          {error && <div className="error-message">{error}</div>}
+            {/* Skeleton Content */}
+            <div className="inventory-content">
+              <div className="content-header">
+                <div className="skeleton-header"></div>
+                <div className="skeleton-button"></div>
+              </div>
+              <div className="skeleton-table">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="skeleton-row"></div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Stats Cards */}
+            <div className="stats-grid">
+              <div className="stat-card">
+                <h3>Total Products</h3>
+                <p>{stats.totalProducts}</p>
+              </div>
+              <div className="stat-card">
+                <h3>Spare Parts</h3>
+                <p>{stats.totalSpareParts}</p>
+              </div>
+              <div className="stat-card">
+                <h3>Accessories</h3>
+                <p>{stats.totalAccessories}</p>
+              </div>
+              <div className="stat-card">
+                <h3>Low Stock Items</h3>
+                <p>{stats.lowStockCount}</p>
+              </div>
+              <div className="stat-card">
+                <h3>Total Inventory Value</h3>
+                <p>₱{stats.totalValue.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            {/* <div className="inventory-tabs">
+              <button
+                className={`tab-button ${activeTab === 'spare-parts' ? 'active' : ''}`}
+                onClick={() => setActiveTab('spare-parts')}
+              >
+                ⚙️ Spare Parts ({spareParts.length})
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'accessories' ? 'active' : ''}`}
+                onClick={() => setActiveTab('accessories')}
+              >
+                🛡️ Accessories ({accessories.length})
+              </button>
+              <button
+                className={`tab-button ${activeTab === 'low-stock' ? 'active' : ''}`}
+                onClick={() => setActiveTab('low-stock')}
+              >
+                ⚠️ Low Stock ({lowStockItems.length})
+              </button>
+            </div> */}
+
+            {/* Content */}
+            <div className="inventory-content">
+              {error && <div className="error-message">{error}</div>}
 
           <div className="content-header">
             <h2>
@@ -281,9 +342,7 @@ const InventoryPage = () => {
             )}
           </div>
 
-          {loading ? (
-            <div className="loading-spinner">⏳ Loading...</div>
-          ) : getCurrentProducts().length === 0 ? (
+          {getCurrentProducts().length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📦</div>
               <h3>No Products Found</h3>
@@ -314,7 +373,7 @@ const InventoryPage = () => {
                 {getCurrentProducts().map((product) => (
                   <tr key={product.id}>
                     <td>
-                      <div className="product-image">{product.image_url || '⚙️'}</div>
+                      <div className="inventory-product-image">{product.image_url || '⚙️'}</div>
                     </td>
                     <td>{product.sku}</td>
                     <td>{product.name}</td>
@@ -347,7 +406,9 @@ const InventoryPage = () => {
               </tbody>
             </table>
           )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Add/Edit Modal */}

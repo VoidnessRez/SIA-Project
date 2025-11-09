@@ -5,6 +5,7 @@ import productsRouter from './routes/products.js';
 import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
 import recaptchaRouter from './routes/recaptcha.js';
+import inventoryRouter from './routes/inventory.js';
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use('/api/upload', uploadRouter);
 console.log('   ✓ Upload routes loaded');
 app.use('/api/recaptcha', recaptchaRouter);
 console.log('   ✓ reCAPTCHA routes loaded');
+app.use('/api/inventory', inventoryRouter);
+console.log('   ✓ Inventory routes loaded');
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -31,7 +34,8 @@ app.get('/api/health', (req, res) => {
       products: '/api/products',
       auth: '/api/auth',
       upload: '/api/upload',
-      recaptcha: '/api/recaptcha/verify'
+      recaptcha: '/api/recaptcha/verify',
+      inventory: '/api/inventory'
     }
   });
 });
@@ -56,7 +60,16 @@ const server = app.listen(port, () => {
   console.log(`      - POST   /api/upload/avatar`);
   console.log(`   🤖 reCAPTCHA:`);
   console.log(`      - POST   /api/recaptcha/verify`);
-  console.log(`   💚 Health:`);
+  console.log(`   � Inventory:`);
+  console.log(`      - GET    /api/inventory/spare-parts`);
+  console.log(`      - POST   /api/inventory/spare-parts (protected)`);
+  console.log(`      - GET    /api/inventory/accessories`);
+  console.log(`      - POST   /api/inventory/accessories (protected)`);
+  console.log(`      - GET    /api/inventory/products`);
+  console.log(`      - GET    /api/inventory/brands`);
+  console.log(`      - GET    /api/inventory/part-types`);
+  console.log(`      - GET    /api/inventory/low-stock`);
+  console.log(`   �💚 Health:`);
   console.log(`      - GET    /api/health`);
   console.log(`\n💡 Tip: Visit http://localhost:${port}/api/health to check server status`);
   console.log(`\n`);

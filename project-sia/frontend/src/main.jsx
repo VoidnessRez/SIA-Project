@@ -15,7 +15,14 @@ import Header from './components/header/Header.jsx';
 import FloatingCart from './components/cart/FloatingCart.jsx';
 import AdminAuthModal from './AdminAuth/AdminAuthModal.jsx';
 import UserPersonalInfo from './components/UserProfile/UserPersonalInfo.jsx';
-import InventoryPage from './admin/inventory/InventoryPage.jsx';
+import InventoryPage from './admin/admComponents/inventory/InventoryPage.jsx';
+import SpareParts from './admin/admComponents/inventory/spareParts/SpareParts.jsx';
+import Accessories from './admin/admComponents/inventory/accessories/Accessories.jsx';
+import LowStockAlerts from './admin/admComponents/inventory/stockAlerts/LowStockAlerts.jsx';
+import BrandsManagement from './admin/admComponents/inventory/brandsManagement/BrandsManagement.jsx';
+import ItemPickup from './admin/admComponents/inventory/itemPickup/ItemPickup.jsx';
+import ReturnedItems from './admin/admComponents/inventory/returnedItems/ReturnedItems.jsx';
+import RestockManagement from './admin/admComponents/inventory/restockManagement/RestockManagement.jsx';
 import './index.css';
 import './darkMode.css';
 
@@ -91,6 +98,13 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             
             {/* Admin Inventory Page */}
             <Route path="/admin/inventory" element={<InventoryPage />} />
+            <Route path="/admin/spare-parts" element={<SpareParts />} />
+            <Route path="/admin/accessories" element={<Accessories />} />
+            <Route path="/admin/low-stock" element={<LowStockAlerts />} />
+            <Route path="/admin/brands" element={<BrandsManagement />} />
+            <Route path="/admin/pickup" element={<ItemPickup />} />
+            <Route path="/admin/returnModule" element={<ReturnedItems />} />
+            <Route path="/admin/delivers" element={<RestockManagement />} />
           </Routes>
           
           {/* Only show FloatingCart on non-admin routes */}
