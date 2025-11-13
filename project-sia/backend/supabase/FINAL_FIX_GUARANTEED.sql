@@ -1,9 +1,3 @@
--- =====================================================
--- FINAL FIX - 100% GUARANTEED
--- =====================================================
--- This will fix the "new row violates RLS" error
--- Copy ALL of this and run in Supabase SQL Editor
--- =====================================================
 
 -- Step 1: Make sure bucket is PUBLIC
 UPDATE storage.buckets
