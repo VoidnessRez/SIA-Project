@@ -1,8 +1,3 @@
--- =====================================================
--- DIAGNOSTIC SCRIPT - Find out WHY upload is failing
--- =====================================================
--- Run this FIRST to see what's wrong
--- =====================================================
 
 -- 1. Check if you're logged in
 SELECT 
@@ -11,11 +6,6 @@ SELECT
     WHEN auth.uid() IS NULL THEN '❌ NOT LOGGED IN!'
     ELSE '✅ Logged in'
   END as "Status";
-
--- Expected: Should show your user ID and "✅ Logged in"
--- If NULL: You're not authenticated in Supabase Dashboard
-
--- =====================================================
 
 -- 2. Check if profiles bucket exists
 SELECT 

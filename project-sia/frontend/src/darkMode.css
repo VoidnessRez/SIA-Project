@@ -131,10 +131,25 @@ body.dark-mode {
   border-color: var(--border-color);
 }
 
-/* Dark mode for Buttons */
-.dark-mode button:not(.cta-button):not(.add-to-cart-btn):not(.checkout-btn):not(.logout-item):not(.admin-auth-showpass) {
+/* Dark mode for Buttons (exclude admin auth buttons) */
+.dark-mode button:not(.cta-button):not(.add-to-cart-btn):not(.checkout-btn):not(.logout-item):not(.admin-auth-showpass):not(.admin-auth-btn):not(.admin-auth-login):not(.admin-auth-cancel):not(.admin-auth-send-otp):not(.admin-auth-back) {
   color: var(--text-primary);
 }
+
+/* Exclude all admin-auth elements from dark mode */
+.dark-mode .admin-auth-overlay,
+.dark-mode .admin-auth-modal,
+.dark-mode .admin-auth-modal *,
+.dark-mode .admin-auth-content,
+.dark-mode .admin-auth-form,
+.dark-mode .admin-auth-privacy-content,
+.dark-mode .admin-auth-warning-box {
+  /* Override: Force light mode colors */
+  color: initial !important;
+  background: initial !important;
+  border-color: initial !important;
+}
+
 
 .dark-mode .stats-section {
   background: var(--bg-primary);
@@ -222,45 +237,9 @@ body.dark-mode {
   background: var(--bg-tertiary);
 }
 
-/* Dark mode for Admin Auth Modal */
-.dark-mode .admin-auth-modal {
-  background: var(--bg-primary);
-  border-color: var(--border-color);
-}
+/* Admin Auth Modal - ALWAYS LIGHT MODE (No dark mode for admin panels) */
+/* Removed dark mode styles to keep admin interface consistent */
 
-.dark-mode .admin-auth-content h2 {
-  color: var(--text-primary);
-}
-
-.dark-mode .admin-auth-content p {
-  color: var(--text-secondary);
-}
-
-.dark-mode .admin-auth-form label {
-  color: var(--text-secondary);
-}
-
-.dark-mode .admin-auth-form input {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-.dark-mode .admin-auth-cancel {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
-}
-
-.dark-mode .admin-auth-cancel:hover {
-  background: var(--bg-tertiary);
-}
-
-.dark-mode .admin-auth-error {
-  background: rgba(176, 0, 32, 0.12);
-  color: #ffdfe1;
-  border-color: rgba(176, 0, 32, 0.24);
-}
 
 /* Dark mode for Pages */
 .dark-mode .page-header {
@@ -294,6 +273,9 @@ body.dark-mode {
 /* Dark mode for Product Modals */
 .dark-mode .quick-view-modal {
   background: rgba(0, 0, 0, 0.85);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .dark-mode .modal-overlay {

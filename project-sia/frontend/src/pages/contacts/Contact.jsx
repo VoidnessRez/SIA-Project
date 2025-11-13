@@ -67,7 +67,7 @@ const Contact = () => {
             <div className="contact-card">
               <div className="contact-icon">📍</div>
               <h3>Location</h3>
-              <p className="contact-detail">Manila, Philippines</p>
+              <p className="contact-detail">Antipolo, Philippines</p>
               <p className="contact-subtext">Visit our shop</p>
             </div>
           </div>

@@ -25,15 +25,19 @@
 
 /* Modal Container */
 .admin-auth-modal {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
   border-radius: 20px;
   padding: 2.5rem;
-  max-width: 450px;
+  max-width: 500px;
   width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  /* Force light theme - Override dark mode */
+  color: #2c3e50 !important;
 }
 
 @keyframes slideUp {
@@ -52,7 +56,7 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.1) !important;
   border: none;
   border-radius: 50%;
   width: 35px;
@@ -60,7 +64,7 @@
   font-size: 1.8rem;
   line-height: 1;
   cursor: pointer;
-  color: #666;
+  color: #666 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,8 +72,8 @@
 }
 
 .admin-auth-close:hover {
-  background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1) !important;
+  color: #dc3545 !important;
   transform: rotate(90deg);
 }
 
@@ -89,6 +93,10 @@
   align-items: center;
   justify-content: center;
   animation: pulse 2s infinite;
+}
+
+.admin-auth-icon.admin-auth-warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
 }
 
 .admin-auth-icon svg {
@@ -112,7 +120,7 @@
 .admin-auth-content h2 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-  color: #2c3e50;
+  color: #2c3e50 !important;
   font-weight: 700;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -122,7 +130,7 @@
 
 .admin-auth-content p {
   font-size: 1.1rem;
-  color: #555;
+  color: #555 !important;
   margin-bottom: 2rem;
   line-height: 1.6;
 }
@@ -163,14 +171,14 @@
 }
 
 .admin-auth-cancel {
-  background: #f8f9fa;
-  color: #666;
-  border: 2px solid #dee2e6;
+  background: #f8f9fa !important;
+  color: #666 !important;
+  border: 2px solid #dee2e6 !important;
 }
 
 .admin-auth-cancel:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
   transform: translateY(-2px);
 }
 
@@ -188,22 +196,23 @@
 }
 
 .admin-auth-hint kbd {
-  background: var(--bg-secondary);
+  background: #f8f9fa !important;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid #ddd !important;
   font-family: monospace;
   font-size: 0.8rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: #333;
+  color: #333 !important;
   font-weight: 600;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .admin-auth-modal {
-    padding: 2rem;
+    padding: 1.5rem;
     max-width: 95%;
+    max-height: 95vh;
   }
 
   .admin-auth-content h2 {
@@ -225,43 +234,28 @@
   .admin-auth-hint small {
     font-size: 0.75rem;
   }
-}
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .admin-auth-modal {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-color: rgba(255, 255, 255, 0.1);
+  .admin-auth-warning-box {
+    padding: 1rem;
   }
 
-  .admin-auth-content h2 {
-    color: #fff;
+  .admin-auth-warning-box h3 {
+    font-size: 1.1rem;
   }
 
-  .admin-auth-content p {
-    color: #b8b8b8;
+  .admin-auth-warning-box p,
+  .admin-auth-warning-box li {
+    font-size: 0.85rem;
   }
 
-  .admin-auth-cancel {
-    background: #2c3e50;
-    color: #fff;
-    border-color: #34495e;
-  }
-
-  .admin-auth-cancel:hover {
-    background: #34495e;
-  }
-
-  .admin-auth-hint {
-    background: rgba(102, 126, 234, 0.1);
-  }
-
-  .admin-auth-hint kbd {
-    background: #2c3e50;
-    color: #fff;
-    border-color: #34495e;
+  .admin-auth-privacy-content {
+    max-height: 300px;
   }
 }
+
+/* ⚠️ DARK MODE DISABLED FOR ADMIN AUTH MODAL */
+/* Admin authentication always uses light theme for security and consistency */
+/* This is intentional to maintain professional appearance and clear visibility */
 
 /* Form styles */
 .admin-auth-form {
@@ -276,7 +270,7 @@
 
 .admin-auth-form label {
   font-size: 0.9rem;
-  color: #556;
+  color: #556 !important;
   margin-bottom: 0.25rem;
   display: block;
 }
@@ -287,9 +281,9 @@
   width: 100%;
   padding: 0.7rem 0.9rem;
   border-radius: 10px;
-  border: 1px solid #e6e6e9;
-  background: #fff;
-  color: #222;
+  border: 1px solid #e6e6e9 !important;
+  background: #fff !important;
+  color: #222 !important;
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -312,8 +306,8 @@
 
 .admin-auth-showpass {
   border: none;
-  background: transparent;
-  color: #556;
+  background: transparent !important;
+  color: #556 !important;
   font-weight: 700;
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
@@ -322,13 +316,13 @@
 }
 
 .admin-auth-showpass:hover {
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,0,0,0.04) !important;
 }
 
 .admin-auth-error {
-  color: #b00020;
-  background: rgba(176, 0, 32, 0.06);
-  border: 1px solid rgba(176,0,32,0.12);
+  color: #b00020 !important;
+  background: rgba(176, 0, 32, 0.06) !important;
+  border: 1px solid rgba(176,0,32,0.12) !important;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 0.95rem;
@@ -340,10 +334,202 @@
   margin-top: 0.25rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  .admin-auth-form label { color: #cfd8e3; }
-  .admin-auth-form input { background: #132033; border-color: #263544; color: #e6eef6; }
-  .admin-auth-showpass { color: #cfd8e3; }
-  .admin-auth-error { background: rgba(176,0,32,0.12); color: #ffdfe1; border-color: rgba(176,0,32,0.24); }
+/* OTP Verification Styles */
+.admin-auth-email-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
 }
+
+.admin-auth-email-group input {
+  flex: 1;
+}
+
+.admin-auth-send-otp {
+  padding: 0.7rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.admin-auth-send-otp:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.admin-auth-send-otp:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Privacy Warning Styles */
+.admin-auth-privacy-content {
+  text-align: left;
+  margin: 1.5rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.admin-auth-intro-text {
+  padding: 1rem;
+  background: rgba(102, 126, 234, 0.05) !important;
+  border-radius: 10px;
+  border: 1px dashed rgba(102, 126, 234, 0.3) !important;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.admin-auth-intro-text p {
+  color: #2c3e50 !important;
+  margin: 0.5rem 0 !important;
+}
+
+.admin-auth-intro-text a {
+  color: #667eea !important;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.admin-auth-warning-box {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+  border: 2px solid #f0ad4e !important;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 15px rgba(240, 173, 78, 0.2);
+}
+
+.admin-auth-warning-box h3 {
+  color: #d68910 !important;
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.admin-auth-warning-box p {
+  color: #6c5700 !important;
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.admin-auth-warning-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.admin-auth-warning-box li {
+  padding: 0.7rem 0;
+  color: #6c5700 !important;
+  border-bottom: 1px solid rgba(240, 173, 78, 0.3);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-auth-warning-box li:last-child {
+  border-bottom: none;
+}
+
+.admin-auth-terms {
+  background: rgba(255, 255, 255, 0.8) !important;
+  padding: 1.2rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  border: 1px solid rgba(240, 173, 78, 0.3) !important;
+}
+
+.admin-auth-terms h4 {
+  color: #b7950b !important;
+  margin: 0 0 0.8rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.admin-auth-terms p {
+  margin: 0.4rem 0;
+  font-size: 0.85rem;
+  color: #6c5700 !important;
+  padding-left: 0.5rem;
+  border-left: 3px solid rgba(240, 173, 78, 0.3) !important;
+}
+
+/* Loading Animation Styles */
+.admin-auth-icon.admin-auth-loading {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  animation: none;
+}
+
+.admin-auth-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-auth-loading-content {
+  padding: 2rem 0;
+  animation: fadeIn 0.5s ease 0.3s backwards;
+}
+
+.admin-auth-loading-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50 !important;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.5s ease 0.5s backwards;
+}
+
+.admin-auth-progress-bar {
+  height: 6px;
+  background: #e9ecef !important;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  animation: fadeIn 0.5s ease 0.7s backwards;
+}
+
+.admin-auth-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  animation: slideRight 5s ease-in-out forwards;
+}
+
+@keyframes slideRight {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.admin-auth-loading-subtext {
+  font-size: 0.9rem;
+  color: #7f8c8d !important;
+  margin-top: 1rem;
+  animation: fadeIn 0.5s ease 0.9s backwards;
+}
+
+/* ⚠️ REMOVED DARK MODE SUPPORT - Admin Auth is always light theme */
+/* This ensures the admin modal stays consistent regardless of site theme */
 
