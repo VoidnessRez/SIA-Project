@@ -23,6 +23,9 @@ import BrandsManagement from './admin/admComponents/inventory/brandsManagement/B
 import ItemPickup from './admin/admComponents/inventory/itemPickup/ItemPickup.jsx';
 import ReturnedItems from './admin/admComponents/inventory/returnedItems/ReturnedItems.jsx';
 import RestockManagement from './admin/admComponents/inventory/restockManagement/RestockManagement.jsx';
+import CustomerOrders from './admin/admComponents/ordersAndSales/customerOrders/CustomerOrders.jsx';
+import Checkout from './pages/checkout/Checkout.jsx';
+import PageNotFound from './pages/notfound/PageNotFound.jsx';
 import './index.css';
 import './darkMode.css';
 
@@ -87,6 +90,19 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
               } 
             />
             
+            {/* Checkout Page - Protected */}
+            <Route 
+              path="/checkout" 
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Page Not Found - Shopee Payment */}
+            <Route path="/page-not-found" element={<PageNotFound />} />
+            
             {/* User Personal Info - NO PROTECTION FOR TESTING */}
             <Route 
               path="/personal-info" 
@@ -105,6 +121,9 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             <Route path="/admin/pickup" element={<ItemPickup />} />
             <Route path="/admin/returnModule" element={<ReturnedItems />} />
             <Route path="/admin/delivers" element={<RestockManagement />} />
+            
+            {/* Admin Orders & Sales */}
+            <Route path="/admin/orders" element={<CustomerOrders />} />
           </Routes>
           
           {/* Only show FloatingCart on non-admin routes */}

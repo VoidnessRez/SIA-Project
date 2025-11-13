@@ -20,12 +20,13 @@ const UserPersonalInfo = () => {
     first_name: '',
     last_name: '',
     phone: '',
-    // Address fields
+    // Address fields from addresses table (read-only)
     street_address: '',
+    barangay: '',
     city: '',
     province: '',
-    zipcode: '',
-    country: 'Philippines'
+    region: '',
+    zipcode: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -73,7 +74,7 @@ const UserPersonalInfo = () => {
         throw profileError;
       }
 
-      // Fetch primary address
+      // Fetch primary address from addresses table
       if (profile?.id) {
         const { data: address, error: addressError } = await supabase
           .from('addresses')
@@ -92,10 +93,11 @@ const UserPersonalInfo = () => {
           last_name: profile?.last_name || '',
           phone: profile?.phone || '',
           street_address: address?.street || '',
+          barangay: address?.barangay || '',
           city: address?.city || '',
           province: address?.province || '',
-          zipcode: address?.zip_code || '',
-          country: address?.country || 'Philippines'
+          region: address?.region || '',
+          zipcode: address?.zip_code || ''
         };
 
         console.log('[UserPersonalInfo] ✅ Setting form data:', formDataToSet);
@@ -109,10 +111,11 @@ const UserPersonalInfo = () => {
           last_name: '',
           phone: '',
           street_address: '',
+          barangay: '',
           city: '',
           province: '',
-          zipcode: '',
-          country: 'Philippines'
+          region: '',
+          zipcode: ''
         });
       }
     } catch (error) {
@@ -189,25 +192,24 @@ const UserPersonalInfo = () => {
           first_name: formData.first_name?.trim(),
           last_name: formData.last_name?.trim(),
           phone: formData.phone,
-          street_address: formData.street_address,
-          city: formData.city,
-          province: formData.province,
-          zip_code: formData.zipcode,
-          country: formData.country || 'Philippines'
+          bio: formData.bio
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error('[UserPersonalInfo] ❌ Update failed:', errorData);
-        throw new Error(errorData.error || 'Failed to update profile');
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : (errorData.error || 'Failed to update profile');
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
       console.log('[UserPersonalInfo] ✅ Profile updated successfully:', result);
       setMessage({ type: 'success', text: 'Profile updated successfully! ✅' });
       
-      // Update user context with new data
+      // Update user context with new data (NOT address - that needs admin approval)
       updateUserData({
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -412,15 +414,15 @@ const UserPersonalInfo = () => {
           )}
         </div>
 
-        {/* Address Info */}
-        <div className="form-section">
-          <h3>📍 Address Information</h3>
-          <p className="field-hint" style={{ marginBottom: '1rem', color: '#f59e0b', fontWeight: '500' }}>
+        {/* Address Info - READ ONLY */}
+        <div className="form-section" style={{ marginBottom: '24px', padding: '20px', background: '#262b35', borderRadius: '8px' }}>
+          <h3 style={{ color: 'white', marginBottom: '20px' }}>📍 Address Information</h3>
+          <p style={{ fontSize: '12px', color: '#f59e0b', marginBottom: '16px', padding: '10px', background: 'rgba(245, 158, 11, 0.1)', borderLeft: '3px solid #f59e0b', borderRadius: '4px' }}>
             ⚠️ Address changes require admin approval. Contact support to update your address.
           </p>
           
-          <div className="form-group">
-            <label htmlFor="street_address">Street Address</label>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label htmlFor="street_address" style={{ display: 'block', color: '#e5e7eb', marginBottom: '8px', fontSize: '14px' }}>Street Address</label>
             <input
               type="text"
               id="street_address"
@@ -428,14 +430,28 @@ const UserPersonalInfo = () => {
               value={formData.street_address}
               disabled
               readOnly
-              placeholder="House No., Street, Barangay"
-              className="readonly-field"
+              placeholder="No address saved"
+              style={{ width: '100%', padding: '12px', background: '#1a1d29', border: '1px solid #374151', borderRadius: '6px', color: '#9ca3af', fontSize: '14px', cursor: 'not-allowed', opacity: '0.7' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label htmlFor="barangay" style={{ display: 'block', color: '#e5e7eb', marginBottom: '8px', fontSize: '14px' }}>Barangay</label>
+            <input
+              type="text"
+              id="barangay"
+              name="barangay"
+              value={formData.barangay}
+              disabled
+              readOnly
+              placeholder="No barangay saved"
+              style={{ width: '100%', padding: '12px', background: '#1a1d29', border: '1px solid #374151', borderRadius: '6px', color: '#9ca3af', fontSize: '14px', cursor: 'not-allowed', opacity: '0.7' }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div className="form-group">
-              <label htmlFor="city">City</label>
+              <label htmlFor="city" style={{ display: 'block', color: '#e5e7eb', marginBottom: '8px', fontSize: '14px' }}>City/Municipality</label>
               <input
                 type="text"
                 id="city"
@@ -443,53 +459,43 @@ const UserPersonalInfo = () => {
                 value={formData.city}
                 disabled
                 readOnly
-                placeholder="City"
-                className="readonly-field"
+                placeholder="No city saved"
+                style={{ width: '100%', padding: '12px', background: '#1a1d29', border: '1px solid #374151', borderRadius: '6px', color: '#9ca3af', fontSize: '14px', cursor: 'not-allowed', opacity: '0.7' }}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="zipcode">Zipcode</label>
+              <label htmlFor="province" style={{ display: 'block', color: '#e5e7eb', marginBottom: '8px', fontSize: '14px' }}>Province</label>
               <input
                 type="text"
-                id="zipcode"
-                name="zipcode"
-                value={formData.zipcode}
+                id="province"
+                name="province"
+                value={formData.province}
                 disabled
                 readOnly
-                placeholder="1234"
-                className="readonly-field"
+                placeholder="No province saved"
+                style={{ width: '100%', padding: '12px', background: '#1a1d29', border: '1px solid #374151', borderRadius: '6px', color: '#9ca3af', fontSize: '14px', cursor: 'not-allowed', opacity: '0.7' }}
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="province">Province</label>
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label htmlFor="zipcode" style={{ display: 'block', color: '#e5e7eb', marginBottom: '8px', fontSize: '14px' }}>Zip Code</label>
             <input
               type="text"
-              id="province"
-              name="province"
-              value={formData.province}
+              id="zipcode"
+              name="zipcode"
+              value={formData.zipcode}
               disabled
               readOnly
-              placeholder="Province"
-              className="readonly-field"
+              placeholder="No zipcode saved"
+              style={{ width: '100%', padding: '12px', background: '#1a1d29', border: '1px solid #374151', borderRadius: '6px', color: '#9ca3af', fontSize: '14px', cursor: 'not-allowed', opacity: '0.7' }}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="country">Country</label>
-            <input
-              type="text"
-              id="country"
-              name="country"
-              value={formData.country}
-              disabled
-              readOnly
-              placeholder="Philippines"
-              className="readonly-field"
-            />
-          </div>
+          <p style={{ fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>
+            📧 To update your address, please contact our support team.
+          </p>
         </div>
 
         {/* Message Display */}

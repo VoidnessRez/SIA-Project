@@ -40,7 +40,7 @@ const Header = () => {
             className={`nav-link ${isActive('/') ? 'active' : ''}`}
             onClick={handleNavClick}
           >
-            <span className="nav-icon">🏠</span>
+            <span className="nav-icon"></span>
             <span>Home</span>
           </Link>
           <Link 
@@ -48,7 +48,7 @@ const Header = () => {
             className={`nav-link ${isActive('/products') ? 'active' : ''}`}
             onClick={handleNavClick}
           >
-            <span className="nav-icon">📦</span>
+            <span className="nav-icon"></span>
             <span>Products</span>
           </Link>
           <Link 
@@ -56,7 +56,7 @@ const Header = () => {
             className={`nav-link ${isActive('/brands') ? 'active' : ''}`}
             onClick={handleNavClick}
           >
-            <span className="nav-icon">🏷️</span>
+            <span className="nav-icon"></span>
             <span>Brands</span>
           </Link>
           <Link 
@@ -64,7 +64,7 @@ const Header = () => {
             className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
             onClick={handleNavClick}
           >
-            <span className="nav-icon">📋</span>
+            <span className="nav-icon"></span>
             <span>Orders</span>
           </Link>
           <Link 
@@ -72,7 +72,7 @@ const Header = () => {
             className={`nav-link ${isActive('/contact') ? 'active' : ''}`}
             onClick={handleNavClick}
           >
-            <span className="nav-icon">📞</span>
+            <span className="nav-icon"></span>
             <span>Contact</span>
           </Link>
         </nav>
@@ -80,7 +80,7 @@ const Header = () => {
         <div className="header-actions">
           <div className="search-box">
             <input type="text" placeholder="Search products..." />
-            <button className="search-btn">🔍</button>
+            <button className="search-btn"></button>
           </div>
           
           {isAuthenticated() ? (

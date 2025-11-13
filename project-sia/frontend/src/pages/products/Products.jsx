@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
+import Toast from '../../components/toast/Toast';
 import './Products.css';
 
   const BACKEND_URL = 'http://localhost:5174';
@@ -27,16 +28,30 @@ import './Products.css';
   const [activeBrand, setActiveBrand] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    // Load cart from localStorage on mount
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [productsFromAPI, setProductsFromAPI] = useState([]);
   const [loading, setLoading] = useState(true);
   const [useAPIData, setUseAPIData] = useState(false);
+  const [toast, setToast] = useState(null);
   
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   // Fetch products from API on mount
   useEffect(() => {
@@ -402,10 +417,11 @@ import './Products.css';
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
+      showToast(`Increased ${product.name} quantity in cart!`, 'success');
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
+      showToast(`Added ${product.name} to cart!`, 'success');
     }
-    alert(`Added ${product.name} to cart!`);
   };
 
   const closeQuickView = () => {
@@ -704,6 +720,15 @@ import './Products.css';
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };

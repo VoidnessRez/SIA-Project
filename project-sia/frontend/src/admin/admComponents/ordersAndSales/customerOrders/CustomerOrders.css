@@ -1,0 +1,807 @@
+/* ================================================
+   CUSTOMER ORDERS - MATCHES INVENTORY THEME
+   ================================================ */
+
+@import '../../inventory/Shared.css';
+
+/* ================================================
+   CONTAINER
+   ================================================ */
+
+/* AdminLayout provides all container styling, no custom styles needed */
+
+/* ================================================
+   PENDING BADGE (Top Right Alert)
+   ================================================ */
+
+.pending-badge {
+  padding: 0.65rem 1.35rem;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  color: #B45309;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid #FCD34D;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+  }
+}
+
+/* ================================================
+   CONTROLS SECTION (Filters + Search)
+   ================================================ */
+
+.orders-controls {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 14px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+  /* Hide scrollbar but keep functionality */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari */
+}
+
+/* Ensure buttons don't shrink */
+.filter-tabs > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.filter-tab {
+  /* Uses shared.css .filter-buttons button styles */
+  padding: 0.65rem 1.35rem;
+  background: white;
+  color: var(--inv-gray-600);
+  border: 2px solid var(--inv-gray-200);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.filter-tab:hover {
+  background: var(--inv-gray-50);
+  border-color: var(--inv-primary);
+  color: var(--inv-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 111, 217, 0.15);
+}
+
+.filter-tab.active {
+  background: linear-gradient(135deg, var(--inv-primary) 0%, var(--inv-primary-dark) 100%);
+  color: white;
+  border-color: var(--inv-primary);
+  box-shadow: 0 6px 20px -5px rgba(91, 111, 217, 0.35);
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  /* Uses shared.css form input styles */
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border: 2px solid var(--inv-gray-200);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--inv-gray-900);
+  transition: all 0.25s ease;
+  background: white;
+  font-family: inherit;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--inv-primary);
+  box-shadow: 0 0 0 4px rgba(91, 111, 217, 0.1);
+  background: #F8FAFF;
+}
+
+.search-box input::placeholder {
+  color: var(--inv-gray-400);
+}
+
+/* ================================================
+   LOADING STATE (Uses Shared.css styles)
+   ================================================ */
+
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.loading-state .spinner {
+  border: 4px solid var(--inv-gray-200);
+  border-top: 4px solid var(--inv-primary);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: var(--inv-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ================================================
+   EMPTY STATE (Uses Shared.css no-data-container)
+   ================================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.empty-state p {
+  color: var(--inv-gray-400);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* ================================================
+   ORDERS LIST (Card Grid - Like Inventory Items)
+   ================================================ */
+
+.orders-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 1.5rem;
+}
+
+.order-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--inv-primary) 0%, var(--inv-primary-dark) 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(91, 111, 217, 0.15);
+  border-color: var(--inv-primary-light);
+}
+
+.order-card:hover::before {
+  transform: scaleX(1);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--inv-gray-100);
+}
+
+.order-id-section h3 {
+  color: var(--inv-gray-900);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.order-amount {
+  color: var(--inv-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detail-row .label {
+  color: var(--inv-gray-600);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.detail-row .value {
+  color: var(--inv-gray-900);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ================================================
+   ORDER ITEMS TABLE (Inside Modal)
+   ================================================ */
+
+.order-items-section {
+  margin-bottom: 2rem;
+}
+
+.items-table {
+  /* Uses shared.css .inventory-table styles */
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.items-table thead {
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+}
+
+.items-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--inv-gray-700);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 2px solid var(--inv-gray-200);
+}
+
+.items-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--inv-gray-100);
+  color: var(--inv-gray-700);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.items-table tbody tr {
+  transition: all 0.25s ease;
+}
+
+.items-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(91, 111, 217, 0.03) 0%, rgba(91, 111, 217, 0.01) 100%);
+}
+
+.items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ================================================
+   ORDER SUMMARY
+   ================================================ */
+
+.order-summary-section {
+  background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  color: var(--inv-gray-700);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.summary-row.total {
+  border-top: 2px solid var(--inv-gray-300);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  color: var(--inv-gray-900);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.summary-row span:last-child {
+  font-weight: 700;
+  color: var(--inv-primary);
+}
+
+.summary-row.total span:last-child {
+  color: var(--inv-success);
+  font-size: 1.3rem;
+}
+
+/* ================================================
+   INFO SECTIONS (Inside Modal)
+   ================================================ */
+
+.order-info-section,
+.customer-info-section,
+.delivery-info-section,
+.admin-notes-section {
+  margin-bottom: 2rem;
+}
+
+.order-info-section h3,
+.customer-info-section h3,
+.delivery-info-section h3,
+.order-items-section h3,
+.admin-notes-section h3 {
+  color: var(--inv-gray-900);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--inv-gray-100);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  color: var(--inv-gray-600);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-item span {
+  color: var(--inv-gray-900);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.delivery-info-section p {
+  color: var(--inv-gray-700);
+  font-size: 0.95rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.delivery-info-section p strong {
+  color: var(--inv-gray-800);
+  font-weight: 700;
+  display: inline-block;
+  min-width: 100px;
+}
+
+/* ================================================
+   ADMIN NOTES
+   ================================================ */
+
+.admin-notes-section textarea {
+  /* Uses shared.css form textarea styles */
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border: 2px solid var(--inv-gray-200);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--inv-gray-900);
+  transition: all 0.25s ease;
+  background: white;
+  font-family: inherit;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.admin-notes-section textarea:focus {
+  outline: none;
+  border-color: var(--inv-primary);
+  box-shadow: 0 0 0 4px rgba(91, 111, 217, 0.1);
+  background: #F8FAFF;
+}
+
+/* ================================================
+   MODAL FOOTER & ACTION BUTTONS
+   ================================================ */
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.75rem 2rem;
+  border-top: 2px solid var(--inv-gray-100);
+  background: var(--inv-gray-50);
+  flex-wrap: wrap;
+}
+
+.btn-approve,
+.btn-decline,
+.btn-process,
+.btn-ship,
+.btn-deliver {
+  /* Similar to shared.css action buttons */
+  padding: 0.85rem 1.75rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.btn-approve,
+.btn-deliver {
+  background: linear-gradient(135deg, var(--inv-success) 0%, var(--inv-success-dark) 100%);
+  color: white;
+  box-shadow: 0 6px 20px -5px rgba(16, 185, 129, 0.35);
+}
+
+.btn-approve:hover,
+.btn-deliver:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -5px rgba(16, 185, 129, 0.45);
+}
+
+.btn-decline {
+  background: linear-gradient(135deg, var(--inv-danger) 0%, var(--inv-danger-dark) 100%);
+  color: white;
+  box-shadow: 0 6px 20px -5px rgba(239, 68, 68, 0.35);
+}
+
+.btn-decline:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -5px rgba(239, 68, 68, 0.45);
+}
+
+.btn-process {
+  background: linear-gradient(135deg, var(--inv-info) 0%, #2563EB 100%);
+  color: white;
+  box-shadow: 0 6px 20px -5px rgba(59, 130, 246, 0.35);
+}
+
+.btn-process:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -5px rgba(59, 130, 246, 0.45);
+}
+
+.btn-ship {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  color: white;
+  box-shadow: 0 6px 20px -5px rgba(139, 92, 246, 0.35);
+}
+
+.btn-ship:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -5px rgba(139, 92, 246, 0.45);
+}
+
+.btn-approve:disabled,
+.btn-decline:disabled,
+.btn-process:disabled,
+.btn-ship:disabled,
+.btn-deliver:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ================================================
+   SKELETON LOADING (Controls + Cards)
+   ================================================ */
+
+/* Skeleton Filter Buttons */
+.skeleton-filter-btn {
+  height: 42px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.skeleton-filter-btn.active {
+  background: linear-gradient(90deg, #d0d0d0 25%, #c0c0c0 50%, #d0d0d0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Skeleton Search Box */
+.skeleton-search-box {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+}
+
+/* Skeleton Order Cards Grid */
+.orders-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 1.5rem;
+}
+
+.order-skeleton-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-order-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--inv-gray-100);
+}
+
+.skeleton-order-number {
+  width: 150px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-order-amount {
+  width: 100px;
+  height: 28px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-detail-line {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-detail-line:last-child {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+   ================================================ */
+
+@media (max-width: 1200px) {
+  .orders-list,
+  .orders-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-controls {
+    padding: 1.25rem;
+  }
+
+  .filter-tabs {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-tab {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .orders-list,
+  .orders-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-card {
+    padding: 1.25rem;
+  }
+
+  .order-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .order-amount {
+    font-size: 1.3rem;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .detail-row .value {
+    text-align: left;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .items-table {
+    font-size: 0.85rem;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .pending-badge {
+    width: 100%;
+    text-align: center;
+  }
+
+  .order-id-section h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* ================================================
+   NEW BADGE STYLES
+   ================================================ */
+
+.fulfillment-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.fulfillment-badge:hover {
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
+}
+
+.payment-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.payment-badge:hover {
+  box-shadow: 0 2px 8px rgba(22, 101, 52, 0.2);
+}
+
+/* ================================================
+   DELIVERY INFO STYLES
+   ================================================ */
+
+.delivery-info-section {
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #BAE6FD;
+  margin: 1.5rem 0;
+}
+
+.delivery-info-section h3 {
+  color: #0369a1;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.delivery-info-section p {
+  color: var(--inv-gray-700);
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.delivery-info-section strong {
+  color: #075985;
+  font-weight: 700;
+}
