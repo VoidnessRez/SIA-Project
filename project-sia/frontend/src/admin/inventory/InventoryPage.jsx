@@ -219,24 +219,24 @@ const InventoryPage = () => {
     >
       <div className="inventory-page-content">
         {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card">
+        <div className="inventory-stats-grid">
+          <div className="inventory-stat-card">
             <h3>Total Products</h3>
             <p>{stats.totalProducts}</p>
           </div>
-          <div className="stat-card">
+          <div className="inventory-stat-card">
             <h3>Spare Parts</h3>
             <p>{stats.totalSpareParts}</p>
           </div>
-          <div className="stat-card">
+          <div className="inventory-stat-card">
             <h3>Accessories</h3>
             <p>{stats.totalAccessories}</p>
           </div>
-          <div className="stat-card">
+          <div className="inventory-stat-card">
             <h3>Low Stock Items</h3>
             <p>{stats.lowStockCount}</p>
           </div>
-          <div className="stat-card">
+          <div className="inventory-stat-card">
             <h3>Total Inventory Value</h3>
             <p>₱{stats.totalValue.toLocaleString()}</p>
           </div>

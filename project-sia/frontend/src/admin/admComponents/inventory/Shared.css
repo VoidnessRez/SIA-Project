@@ -644,14 +644,14 @@
    STATS CARDS (InventoryPage.jsx)
    ================================================ */
 
-.stats-grid {
+.inventory-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2.5rem;
 }
 
-.stat-card {
+.inventory-stat-card {
   background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
   padding: 1.75rem 2rem;
   border-radius: 14px;
@@ -663,11 +663,11 @@
 }
 
 /* Make the 5th card (Total Inventory Value) wider */
-.stat-card:nth-child(5) {
+.inventory-stat-card:nth-child(5) {
   grid-column: span 2;
 }
 
-.stat-card::before {
+.inventory-stat-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -680,17 +680,17 @@
   transition: transform 0.3s ease;
 }
 
-.stat-card:hover {
+.inventory-stat-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 32px rgba(91, 111, 217, 0.15);
   border-color: var(--inv-primary-light);
 }
 
-.stat-card:hover::before {
+.inventory-stat-card:hover::before {
   transform: scaleX(1);
 }
 
-.stat-card h3 {
+.inventory-stat-card h3 {
   margin: 0 0 1rem 0;
   color: var(--inv-gray-600);
   font-size: 0.85rem;
@@ -699,7 +699,7 @@
   letter-spacing: 1px;
 }
 
-.stat-card p {
+.inventory-stat-card p {
   margin: 0;
   color: var(--inv-primary);
   font-size: 2.2rem;
@@ -708,23 +708,23 @@
   word-break: break-word;
 }
 
-.stat-card:nth-child(1) p {
+.inventory-stat-card:nth-child(1) p {
   color: var(--inv-primary);
 }
 
-.stat-card:nth-child(2) p {
+.inventory-stat-card:nth-child(2) p {
   color: #8B5CF6;
 }
 
-.stat-card:nth-child(3) p {
+.inventory-stat-card:nth-child(3) p {
   color: #10B981;
 }
 
-.stat-card:nth-child(4) p {
+.inventory-stat-card:nth-child(4) p {
   color: #F59E0B;
 }
 
-.stat-card:nth-child(5) p {
+.inventory-stat-card:nth-child(5) p {
   color: #EF4444;
 }
 
@@ -1042,7 +1042,7 @@
 }
 
 /* Skeleton Loading */
-.skeleton-card {
+.inventory-skeleton-card {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;

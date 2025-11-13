@@ -4,9 +4,9 @@ import './Shared.css';
 const SkeletonLoader = ({ type = 'table', rows = 5 }) => {
   if (type === 'stats') {
     return (
-      <div className="stats-grid">
+      <div className="inventory-stats-grid">
         {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="stat-card skeleton-card">
+          <div key={i} className="inventory-stat-card inventory-skeleton-card">
             <div className="skeleton-title"></div>
             <div className="skeleton-value"></div>
           </div>
@@ -34,9 +34,9 @@ const SkeletonLoader = ({ type = 'table', rows = 5 }) => {
   if (type === 'full') {
     return (
       <>
-        <div className="stats-grid">
+        <div className="inventory-stats-grid">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="stat-card skeleton-card">
+            <div key={i} className="inventory-stat-card inventory-skeleton-card">
               <div className="skeleton-title"></div>
               <div className="skeleton-value"></div>
             </div>
