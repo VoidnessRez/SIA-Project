@@ -49,7 +49,7 @@ const Header = () => {
             onClick={handleNavClick}
           >
             <span className="nav-icon"></span>
-            <span>Products</span>
+             <span>Buy Now!</span>{/*ght be better as "Products" but this is temporary */}
           </Link>
           <Link 
             to="/brands" 

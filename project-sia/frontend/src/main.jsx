@@ -24,6 +24,19 @@ import ItemPickup from './admin/admComponents/inventory/itemPickup/ItemPickup.js
 import ReturnedItems from './admin/admComponents/inventory/returnedItems/ReturnedItems.jsx';
 import RestockManagement from './admin/admComponents/inventory/restockManagement/RestockManagement.jsx';
 import CustomerOrders from './admin/admComponents/ordersAndSales/customerOrders/CustomerOrders.jsx';
+import SalesRecords from './admin/admComponents/ordersAndSales/salesRecords/SalesRecords.jsx';
+import Transactions from './admin/admComponents/ordersAndSales/transactions/Transactions.jsx';
+import UnverifiedUsers from './admin/admComponents/customers/customerList/UnverifiedUsers.jsx';
+import VerifiedUsers from './admin/admComponents/customers/customerList/VerifiedUsers.jsx';
+import Reviews from './admin/admComponents/customers/reviews/Reviews.jsx';
+import SalesReports from './admin/admComponents/reports/salesReports/SalesReports.jsx';
+import InventoryReports from './admin/admComponents/reports/inventoryReports/InventoryReports.jsx';
+import ReturnManagement from './admin/admComponents/reports/returnManagement/ReturnManagement.jsx';
+import Feedback from './admin/admComponents/reports/feedback/Feedback.jsx';
+import Messages from './admin/admComponents/reports/messages/Messages.jsx';
+import SystemSettings from './admin/admComponents/settings/systemSettings/SystemSettings.jsx';
+import AdminUsers from './admin/admComponents/settings/adminUsers/AdminUsers.jsx';
+import UserOverview from './admin/admComponents/settings/userOverview/UserOverview.jsx';
 import Checkout from './pages/checkout/Checkout.jsx';
 import PageNotFound from './pages/notfound/PageNotFound.jsx';
 import './index.css';
@@ -124,6 +137,25 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             
             {/* Admin Orders & Sales */}
             <Route path="/admin/orders" element={<CustomerOrders />} />
+            <Route path="/admin/sales" element={<SalesRecords />} />
+            <Route path="/admin/transactions" element={<Transactions />} />
+
+            {/* Admin Users & Reviews */}
+            <Route path="/admin/unv_users" element={<UnverifiedUsers />} />
+            <Route path="/admin/ver_users" element={<VerifiedUsers />} />
+            <Route path="/admin/reviews" element={<Reviews />} />
+
+            {/* Admin Reports */}
+            <Route path="/admin/reports/sales" element={<SalesReports />} />
+            <Route path="/admin/reports/inventory" element={<InventoryReports />} />
+            <Route path="/admin/modules" element={<ReturnManagement />} />
+            <Route path="/admin/feedbacks" element={<Feedback />} />
+            <Route path="/admin/messages" element={<Messages />} />
+
+            {/* Admin Settings */}
+            <Route path="/admin/settings" element={<SystemSettings />} />
+            <Route path="/admin/adminUsers" element={<AdminUsers />} />
+            <Route path="/admin/customer" element={<UserOverview />} />
           </Routes>
           
           {/* Only show FloatingCart on non-admin routes */}
