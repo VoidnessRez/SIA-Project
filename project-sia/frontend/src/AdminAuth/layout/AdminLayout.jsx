@@ -5,7 +5,7 @@ import './AdminLayout.css';
 const AdminLayout = ({ children, title, description }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [stickmanMode, setStickmanMode] = useState('walking'); // walking, running, riding
+  const [stickmanMode, setStickmanMode] = useState('walking'); 
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarNavRef = useRef(null);
@@ -113,6 +113,7 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
         { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
         { path: '/admin/delivers', icon: '', label: 'Restock management', badge: null },
+        { path: '/admin/priceHistory', icon: '', label: 'Price History Overview', badge: null },
       ]
     },
     {

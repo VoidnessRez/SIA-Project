@@ -47,9 +47,16 @@ export async function getSparePartById(req, res) {
 
 export async function createSparePart(req, res) {
   try {
+    // Rename brand_id to sparepart_brand_id if it exists
+    const payload = { ...req.body };
+    if (payload.brand_id !== undefined) {
+      payload.sparepart_brand_id = payload.brand_id;
+      delete payload.brand_id;
+    }
+
     const { data, error } = await supabase
       .from('spare_parts')
-      .insert([req.body])
+      .insert([payload])
       .select();
 
     if (error) throw error;
@@ -63,9 +70,17 @@ export async function createSparePart(req, res) {
 export async function updateSparePart(req, res) {
   try {
     const { id } = req.params;
+    
+    // Rename brand_id to sparepart_brand_id if it exists
+    const payload = { ...req.body };
+    if (payload.brand_id !== undefined) {
+      payload.sparepart_brand_id = payload.brand_id;
+      delete payload.brand_id;
+    }
+
     const { data, error } = await supabase
       .from('spare_parts')
-      .update(req.body)
+      .update(payload)
       .eq('id', id)
       .select();
 
@@ -141,9 +156,16 @@ export async function getAccessoryById(req, res) {
 
 export async function createAccessory(req, res) {
   try {
+    // Rename brand_id to accessory_brand_id if it exists
+    const payload = { ...req.body };
+    if (payload.brand_id !== undefined) {
+      payload.accessory_brand_id = payload.brand_id;
+      delete payload.brand_id;
+    }
+
     const { data, error } = await supabase
       .from('accessories')
-      .insert([req.body])
+      .insert([payload])
       .select();
 
     if (error) throw error;
@@ -157,9 +179,17 @@ export async function createAccessory(req, res) {
 export async function updateAccessory(req, res) {
   try {
     const { id } = req.params;
+    
+    // Rename brand_id to accessory_brand_id if it exists
+    const payload = { ...req.body };
+    if (payload.brand_id !== undefined) {
+      payload.accessory_brand_id = payload.brand_id;
+      delete payload.brand_id;
+    }
+
     const { data, error } = await supabase
       .from('accessories')
-      .update(req.body)
+      .update(payload)
       .eq('id', id)
       .select();
 

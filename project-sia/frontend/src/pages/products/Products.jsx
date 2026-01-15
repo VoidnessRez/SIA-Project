@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
@@ -41,6 +41,9 @@ import './Products.css';
   const [useAPIData, setUseAPIData] = useState(false);
   const [toast, setToast] = useState(null);
   
+  // Ref to track if we're updating from external source (to prevent loop)
+  const isExternalUpdate = useRef(false);
+  
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -48,9 +51,35 @@ import './Products.css';
     setToast({ message, type });
   };
 
+  // Listen for cart updates from other components (like CartModal deletions)
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      const savedCart = localStorage.getItem('cart');
+      const updatedCart = savedCart ? JSON.parse(savedCart) : [];
+      console.log('🔄 Cart updated from localStorage:', updatedCart);
+      isExternalUpdate.current = true; // Mark as external update
+      setCart(updatedCart);
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
+
   // Save cart to localStorage whenever it changes
   useEffect(() => {
+    // Skip saving if this was triggered by external update
+    if (isExternalUpdate.current) {
+      isExternalUpdate.current = false;
+      return;
+    }
+    
+    console.log('💾 Saving cart to localStorage:', cart);
     localStorage.setItem('cart', JSON.stringify(cart));
+    // Dispatch custom event to notify FloatingCart
+    window.dispatchEvent(new Event('cartUpdated'));
   }, [cart]);
 
   // Fetch products from API on mount
@@ -405,21 +434,31 @@ import './Products.css';
   };
 
   const handleAddToCart = (product) => {
+    console.log('🛒 handleAddToCart called with product:', product);
+    console.log('🔐 isAuthenticated:', isAuthenticated());
+    
     if (!isAuthenticated()) {
+      console.log('❌ Not authenticated, showing auth modal');
       setShowAuthModal(true);
       return;
     }
     
+    console.log('📦 Current cart before adding:', cart);
+    
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
-      setCart(cart.map(item => 
+      const updatedCart = cart.map(item => 
         item.id === product.id 
           ? { ...item, quantity: item.quantity + 1 }
           : item
-      ));
+      );
+      console.log('➕ Increasing quantity, new cart:', updatedCart);
+      setCart(updatedCart);
       showToast(`Increased ${product.name} quantity in cart!`, 'success');
     } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
+      const newCart = [...cart, { ...product, quantity: 1 }];
+      console.log('✨ Adding new item, new cart:', newCart);
+      setCart(newCart);
       showToast(`Added ${product.name} to cart!`, 'success');
     }
   };

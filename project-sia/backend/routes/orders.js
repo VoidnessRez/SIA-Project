@@ -1,5 +1,6 @@
 import express from 'express';
 import { supabase } from '../supabaseClient.js';
+import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -115,9 +116,45 @@ router.post('/create', async (req, res) => {
       console.log('[Orders API] ✅ Order items created:', orderItems.length);
     }
 
+    // Send receipt email
+    try {
+      // Transform items to match email template format
+      const emailItems = items.map(item => ({
+        id: item.product_id,
+        name: item.product_name,
+        sku: item.product_sku || 'N/A',
+        image: item.product_image || '⚙️',
+        price: parseFloat(item.unit_price || 0),
+        quantity: parseInt(item.quantity || 1)
+      }));
+
+      await emailService.sendOrderReceipt({
+        orderNumber: orderData.order_number,
+        customerName: customer_name,
+        customerEmail: customer_email,
+        items: emailItems,
+        subtotal: subtotal,
+        tax: tax_amount || 0,
+        shippingFee: shipping_fee || 0,
+        discount: discount_amount > 0 ? {
+          type: req.body.discount_type || 'Discount',
+          amount: discount_amount
+        } : null,
+        total: total_amount,
+        paymentMethod: payment_method,
+        timestamp: orderData.order_date
+      });
+      console.log('[Orders API] 📧 Receipt email sent');
+    } catch (emailError) {
+      console.error('[Orders API] ⚠️ Failed to send receipt email:', emailError);
+      // Don't fail the order if email fails
+    }
+
     res.status(201).json({
       success: true,
       message: 'Order created successfully',
+      orderId: orderData.id,
+      orderNumber: orderData.order_number,
       data: {
         order_id: orderData.id,
         order_number: orderData.order_number,

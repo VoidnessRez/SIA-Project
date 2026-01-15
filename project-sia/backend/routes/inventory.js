@@ -1,23 +1,23 @@
 import express from 'express';
 import {
-  // Spare Parts
+  // spare parts
   getAllSpareParts,
   getSparePartById,
   createSparePart,
   updateSparePart,
   deleteSparePart,
-  // Accessories
+  // accessories
   getAllAccessories,
   getAccessoryById,
   createAccessory,
   updateAccessory,
   deleteAccessory,
-  // Combined Products
+  // combined products
   getAllProducts,
-  // Brands & Types
+  // brands and types
   getAllBrands,
   getPartTypes,
-  // Stock & Transactions
+  // stock and transactions
   getLowStockItems,
   createInventoryTransaction,
   getInventoryTransactions
@@ -25,43 +25,40 @@ import {
 
 const router = express.Router();
 
-// =====================================================
-// SPARE PARTS ROUTES
-// =====================================================
+
+// --spare parts routes--
+
 router.get('/spare-parts', getAllSpareParts);
 router.get('/spare-parts/:id', getSparePartById);
 router.post('/spare-parts', createSparePart);
 router.put('/spare-parts/:id', updateSparePart);
 router.delete('/spare-parts/:id', deleteSparePart);
 
-// =====================================================
-// ACCESSORIES ROUTES
-// =====================================================
+
+// --accessories routes--
 router.get('/accessories', getAllAccessories);
 router.get('/accessories/:id', getAccessoryById);
 router.post('/accessories', createAccessory);
 router.put('/accessories/:id', updateAccessory);
 router.delete('/accessories/:id', deleteAccessory);
 
-// =====================================================
-// COMBINED PRODUCTS (for customer ordering system)
-// =====================================================
+
+// --combined products (for customer ordering system)--
+
 router.get('/products', getAllProducts);
 
-// =====================================================
-// BRANDS & TYPES
-// =====================================================
+
+// --brands & types--
 router.get('/brands', getAllBrands);
 router.get('/part-types', getPartTypes);
 
-// =====================================================
-// STOCK MANAGEMENT
-// =====================================================
+// --stock management--
+ 
+
+
 router.get('/low-stock', getLowStockItems);
 
-// =====================================================
-// INVENTORY TRANSACTIONS
-// =====================================================
+// --inventory transactions--
 router.get('/transactions', getInventoryTransactions);
 router.post('/transactions', createInventoryTransaction);
 

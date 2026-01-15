@@ -12,6 +12,7 @@ const Accessories = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [brands, setBrands] = useState({});
+  const [stockFilter, setStockFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -22,6 +23,7 @@ const Accessories = () => {
     stock_quantity: 0,
     reorder_level: 10,
     reorder_quantity: 20,
+    overstock_level: 100,
     brand_id: '',
     image_url: '🎁',
     unit: 'piece'
@@ -63,6 +65,7 @@ const Accessories = () => {
       stock_quantity: 0,
       reorder_level: 10,
       reorder_quantity: 20,
+      overstock_level: 100,
       brand_id: '',
       image_url: '🎁',
       unit: 'piece'
@@ -81,6 +84,7 @@ const Accessories = () => {
       stock_quantity: item.stock_quantity || 0,
       reorder_level: item.reorder_level || 10,
       reorder_quantity: item.reorder_quantity || 20,
+      overstock_level: item.overstock_level || 100,
       brand_id: item.accessory_brand_id,
       image_url: item.image_url || '🎁',
       unit: item.unit || 'piece'
@@ -147,6 +151,27 @@ const Accessories = () => {
     }));
   };
 
+  // Helper function to determine stock status
+  const getStockStatus = (item) => {
+    if (item.stock_quantity <= item.reorder_level) return 'low';
+    if (item.stock_quantity >= (item.overstock_level || 100)) return 'overstocked';
+    return 'normal';
+  };
+
+  // Filter accessories by stock status
+  const filteredAccessories = accessories.filter(item => {
+    if (stockFilter === 'all') return true;
+    return getStockStatus(item) === stockFilter;
+  });
+
+  // Calculate stock statistics
+  const stockStats = {
+    total: accessories.length,
+    low: accessories.filter(i => getStockStatus(i) === 'low').length,
+    normal: accessories.filter(i => getStockStatus(i) === 'normal').length,
+    overstocked: accessories.filter(i => getStockStatus(i) === 'overstocked').length
+  };
+
   if (loading) return (
     <AdminLayout title="Accessories" description="Manage motorcycle accessories inventory">
       <SkeletonLoader type="content" rows={8} />
@@ -161,10 +186,70 @@ const Accessories = () => {
 
   return (
     <AdminLayout title="Accessories" description="Manage motorcycle accessories inventory">
-      <div className="inventory-container">
+      <div className="inventory-container accessories">
         <div className="inventory-header">
           <h2>Accessories Inventory</h2>
           <button className="add-btn" onClick={handleAddItem}>+ Add Accessory</button>
+        </div>
+
+        {/* Stock Status Dashboard */}
+        <div className="stock-dashboard">
+          <div className="stat-card total">
+            <span className="stat-icon">📦</span>
+            <div className="stat-info">
+              <div className="stat-value">{stockStats.total}</div>
+              <div className="stat-label">Total Items</div>
+            </div>
+          </div>
+          <div className="stat-card low">
+            <span className="stat-icon">🔴</span>
+            <div className="stat-info">
+              <div className="stat-value">{stockStats.low}</div>
+              <div className="stat-label">Low Stock</div>
+            </div>
+          </div>
+          <div className="stat-card normal">
+            <span className="stat-icon">🟢</span>
+            <div className="stat-info">
+              <div className="stat-value">{stockStats.normal}</div>
+              <div className="stat-label">Normal Stock</div>
+            </div>
+          </div>
+          <div className="stat-card overstocked">
+            <span className="stat-icon">🟡</span>
+            <div className="stat-info">
+              <div className="stat-value">{stockStats.overstocked}</div>
+              <div className="stat-label">Overstocked</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stock Filter Buttons */}
+        <div className="stock-filters">
+          <button 
+            className={stockFilter === 'all' ? 'filter-btn active' : 'filter-btn'}
+            onClick={() => setStockFilter('all')}
+          >
+            All Items ({stockStats.total})
+          </button>
+          <button 
+            className={stockFilter === 'low' ? 'filter-btn active low' : 'filter-btn low'}
+            onClick={() => setStockFilter('low')}
+          >
+            🔴 Low Stock ({stockStats.low})
+          </button>
+          <button 
+            className={stockFilter === 'normal' ? 'filter-btn active normal' : 'filter-btn normal'}
+            onClick={() => setStockFilter('normal')}
+          >
+            🟢 Normal ({stockStats.normal})
+          </button>
+          <button 
+            className={stockFilter === 'overstocked' ? 'filter-btn active overstocked' : 'filter-btn overstocked'}
+            onClick={() => setStockFilter('overstocked')}
+          >
+            🟡 Overstocked ({stockStats.overstocked})
+          </button>
         </div>
 
         <div className="inventory-table">
@@ -178,28 +263,43 @@ const Accessories = () => {
                 <th>Price</th>
                 <th>Stock</th>
                 <th>Reorder Level</th>
+                <th>Overstock Level</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {accessories.length > 0 ? (
-                accessories.map(item => (
-                  <tr key={item.id}>
-                    <td>{item.sku}</td>
-                    <td>{item.name}</td>
-                    <td>{item.brand_name || 'N/A'}</td>
-                    <td>₱{item.cost_price?.toFixed(2)}</td>
-                    <td>₱{item.selling_price?.toFixed(2)}</td>
-                    <td className={item.stock_quantity < item.reorder_level ? 'low-stock' : ''}>{item.stock_quantity}</td>
-                    <td>{item.reorder_level}</td>
-                    <td className="actions">
-                      <button className="edit-btn" onClick={() => handleEditItem(item)}>Edit</button>
-                      <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))
+              {filteredAccessories.length > 0 ? (
+                filteredAccessories.map(item => {
+                  const status = getStockStatus(item);
+                  return (
+                    <tr key={item.id}>
+                      <td>{item.sku}</td>
+                      <td>{item.name}</td>
+                      <td>{item.brand_name || 'N/A'}</td>
+                      <td>₱{item.cost_price?.toFixed(2)}</td>
+                      <td>₱{item.selling_price?.toFixed(2)}</td>
+                      <td className={`stock-cell ${status}`}>
+                        <span className="stock-value">{item.stock_quantity}</span>
+                      </td>
+                      <td>{item.reorder_level}</td>
+                      <td>{item.overstock_level || 100}</td>
+                      <td>
+                        <span className={`status-badge ${status}`}>
+                          {status === 'low' && '🔴 Low'}
+                          {status === 'normal' && '🟢 Normal'}
+                          {status === 'overstocked' && '🟡 Overstocked'}
+                        </span>
+                      </td>
+                      <td className="actions">
+                        <button className="edit-btn" onClick={() => handleEditItem(item)}>Edit</button>
+                        <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
-                <tr><td colSpan="8" className="no-data">No accessories found</td></tr>
+                <tr><td colSpan="10" className="no-data">No accessories found for this filter</td></tr>
               )}
             </tbody>
           </table>
@@ -247,8 +347,9 @@ const Accessories = () => {
                     <input type="number" name="stock_quantity" value={formData.stock_quantity} onChange={handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <label>Reorder Level</label>
+                    <label>Reorder Level (Min)</label>
                     <input type="number" name="reorder_level" value={formData.reorder_level} onChange={handleInputChange} />
+                    <small>Alert when stock falls below this</small>
                   </div>
                   <div className="form-group">
                     <label>Reorder Qty</label>
@@ -256,12 +357,20 @@ const Accessories = () => {
                   </div>
                 </div>
 
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Overstock Level (Max)</label>
+                    <input type="number" name="overstock_level" value={formData.overstock_level} onChange={handleInputChange} />
+                    <small>Alert when stock exceeds this</small>
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <label>Brand</label>
                   <select name="brand_id" value={formData.brand_id} onChange={handleInputChange}>
                     <option value="">Select Brand</option>
-                    {Object.entries(brands.accessory || {}).map(([key, value]) => (
-                      <option key={key} value={key}>{value}</option>
+                    {Object.entries(brands.accessory || {}).map(([key, brand]) => (
+                      <option key={key} value={key}>{typeof brand === 'object' ? brand.name : brand}</option>
                     ))}
                   </select>
                 </div>

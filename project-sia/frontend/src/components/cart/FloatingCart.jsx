@@ -18,11 +18,27 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
     };
     
     loadCart();
-    // Refresh cart when modal opens
-    if (isCartOpen) {
+
+    // Listen for storage changes (when cart is updated from other components)
+    const handleStorageChange = (e) => {
+      if (e.key === 'cart' || e.type === 'storage') {
+        loadCart();
+      }
+    };
+
+    // Listen for custom cart update events
+    const handleCartUpdate = () => {
       loadCart();
-    }
-  }, [isCartOpen]);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
 
   // Don't render cart if user is not logged in
   if (!isAuthenticated()) {
@@ -35,12 +51,16 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
     );
     setLocalCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    // Notify other components about cart update
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleRemoveItem = (itemId) => {
     const updatedCart = localCart.filter(item => item.id !== itemId);
     setLocalCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    // Notify other components about cart update
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleCheckout = (items) => {

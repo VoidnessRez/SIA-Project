@@ -195,8 +195,43 @@ const ProductGrid = () => {
       setShowAuthModal(true);
       return;
     }
-    // TODO: Add to cart logic
-    alert(`Added ${product.name} to cart!`);
+    
+    // Get current cart from localStorage
+    const savedCart = localStorage.getItem('cart');
+    const cart = savedCart ? JSON.parse(savedCart) : [];
+    
+    // Check if product already exists in cart
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    let updatedCart;
+    if (existingItem) {
+      // Increase quantity
+      updatedCart = cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+      alert(`Increased ${product.name} quantity in cart!`);
+    } else {
+      // Add new item with quantity 1
+      // Parse price if it's a string
+      const price = typeof product.price === 'string' 
+        ? parseFloat(product.price.replace(/[₱,]/g, ''))
+        : product.price;
+      
+      updatedCart = [...cart, { 
+        ...product, 
+        price: price,
+        quantity: 1 
+      }];
+      alert(`Added ${product.name} to cart!`);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // Dispatch event to update FloatingCart immediately
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const closeQuickView = () => {

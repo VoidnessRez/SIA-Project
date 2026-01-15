@@ -9,6 +9,7 @@ import Products from './pages/products/Products.jsx';
 import Brands from './pages/brand/Brands.jsx';
 import Orders from './pages/orders/Orders.jsx';
 import Contact from './pages/contacts/Contact.jsx';
+import Checkout from './pages/checkout/Checkout.jsx';
 import LoginPage from './Auth/login/LogInPage.jsx';
 import SignUpPage from './Auth/signup/SignUpPage.jsx';
 import Header from './components/header/Header.jsx';
@@ -37,7 +38,6 @@ import Messages from './admin/admComponents/reports/messages/Messages.jsx';
 import SystemSettings from './admin/admComponents/settings/systemSettings/SystemSettings.jsx';
 import AdminUsers from './admin/admComponents/settings/adminUsers/AdminUsers.jsx';
 import UserOverview from './admin/admComponents/settings/userOverview/UserOverview.jsx';
-import Checkout from './pages/checkout/Checkout.jsx';
 import PageNotFound from './pages/notfound/PageNotFound.jsx';
 import './index.css';
 import './darkMode.css';
@@ -93,7 +93,15 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             <Route path="/brands" element={<Brands />} />
             <Route path="/contact" element={<Contact />} />
             
-            {/* Protected route - only Orders needs login */}
+            {/* Protected routes - require login */}
+            <Route 
+              path="/checkout" 
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/orders" 
               element={
