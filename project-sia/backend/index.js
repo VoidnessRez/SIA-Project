@@ -44,7 +44,18 @@ app.get('/api/health', (req, res) => {
 });
 
 // Start server only when this file is the main module.
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// Fix for Windows path comparison
+import { fileURLToPath } from 'url';
+import { resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const mainFilePath = resolve(process.argv[1]);
+const isMain = __filename === mainFilePath || 
+               import.meta.url === `file:///${process.argv[1]}` ||
+               import.meta.url === `file://${process.argv[1]}`;
+
+console.log('🔍 Debug:', { __filename, mainFilePath, isMain });
+
 let server;
 if (isMain) {
   const port = process.env.PORT || 5174;
@@ -89,12 +100,14 @@ if (isMain) {
 // Graceful shutdown and unhandled error handlers (safe when no server)
 process.on('uncaughtException', (err) => {
   console.error('💥 Uncaught Exception:', err);
-  process.exit(1);
+  // Don't exit immediately - log the error but keep server running
+  console.warn('⚠️ Server continuing despite uncaught exception');
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('💥 Unhandled Rejection:', reason);
-  process.exit(1);
+  // Don't exit immediately - log the error but keep server running
+  console.warn('⚠️ Server continuing despite unhandled rejection');
 });
 
 process.on('SIGINT', () => {

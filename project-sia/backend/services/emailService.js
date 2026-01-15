@@ -4,7 +4,10 @@ import nodemailer from 'nodemailer';
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.initializeTransporter();
+    // Call async initialization but catch any errors to prevent unhandled rejections
+    this.initializeTransporter().catch(err => {
+      console.error('❌ Failed to initialize email service:', err);
+    });
   }
 
   async initializeTransporter() {
@@ -48,6 +51,8 @@ class EmailService {
         console.log('Test account:', testAccount.user);
       } catch (testError) {
         console.error('❌ Fallback email service failed:', testError.message);
+        console.warn('⚠️ Email service will be unavailable, but server will continue running');
+        // Don't throw - let the server continue without email service
       }
     }
   }
