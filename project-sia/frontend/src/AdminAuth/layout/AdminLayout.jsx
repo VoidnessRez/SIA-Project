@@ -1,13 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './AdminLayout.css';
 
 const AdminLayout = ({ children, title, description }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [stickmanMode, setStickmanMode] = useState('walking'); // walking, running, riding
+  const [stickmanMode, setStickmanMode] = useState('walking'); 
   const location = useLocation();
   const navigate = useNavigate();
+  const sidebarNavRef = useRef(null);
+
+  // Restore sidebar scroll position on mount
+  useEffect(() => {
+    const savedScrollPosition = sessionStorage.getItem('adminSidebarScroll');
+    if (savedScrollPosition && sidebarNavRef.current) {
+      sidebarNavRef.current.scrollTop = parseInt(savedScrollPosition, 10);
+    }
+  }, []);
+
+  // Save sidebar scroll position whenever it changes
+  useEffect(() => {
+    const handleScroll = () => {
+      if (sidebarNavRef.current) {
+        sessionStorage.setItem('adminSidebarScroll', sidebarNavRef.current.scrollTop.toString());
+      }
+    };
+
+    const navElement = sidebarNavRef.current;
+    if (navElement) {
+      navElement.addEventListener('scroll', handleScroll);
+      return () => navElement.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   // Update time every second
   useEffect(() => {
@@ -89,6 +113,7 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
         { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
         { path: '/admin/delivers', icon: '', label: 'Restock management', badge: null },
+        { path: '/admin/priceHistory', icon: '', label: 'Price History Overview', badge: null },
       ]
     },
     {
@@ -100,9 +125,10 @@ const AdminLayout = ({ children, title, description }) => {
       ]
     },
     {
-      section: 'CUSTOMERS',
+      section: 'USERS & REVIEWS',
       items: [
-        { path: '/admin/customers', icon: '', label: 'Customer List', badge: null },
+        { path: '/admin/unv_users', icon: '', label: 'Unverified Users', badge: null },
+        { path: '/admin/ver_users', icon: '', label: 'Verified Users', badge: null },
         { path: '/admin/reviews', icon: '', label: 'Reviews & Ratings', badge: '3' },
       ]
     },
@@ -141,7 +167,7 @@ const AdminLayout = ({ children, title, description }) => {
           </div>
         </div>
 
-        <nav className="admin-sidebar-nav">
+        <nav className="admin-sidebar-nav" ref={sidebarNavRef}>
           {navItems.map((section, idx) => (
             <div key={idx} className="admin-nav-section">
               <div className="admin-nav-section-title">{section.section}</div>

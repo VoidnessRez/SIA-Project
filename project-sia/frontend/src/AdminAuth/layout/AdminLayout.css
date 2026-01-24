@@ -55,7 +55,9 @@
 .admin-sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 0;
+ /*👉 padding: 1rem 0;
+ scroll-behavior: smooth;
+  overscroll-behavior: contain;👈*/
 }
 
 .admin-nav-section {

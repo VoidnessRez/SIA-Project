@@ -1,62 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import CartModal from './CartModal.jsx';
 import './FloatingCart.css';
 
 const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [localCart, setLocalCart] = useState([]);
   const { isAuthenticated } = useAuth();
+
+  // Load cart from localStorage
+  useEffect(() => {
+    const loadCart = () => {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        setLocalCart(JSON.parse(savedCart));
+      }
+    };
+    
+    loadCart();
+
+    // Listen for storage changes (when cart is updated from other components)
+    const handleStorageChange = (e) => {
+      if (e.key === 'cart' || e.type === 'storage') {
+        loadCart();
+      }
+    };
+
+    // Listen for custom cart update events
+    const handleCartUpdate = () => {
+      loadCart();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
 
   // Don't render cart if user is not logged in
   if (!isAuthenticated()) {
     return null;
   }
 
-  // Sample cart items for demonstration
-  const sampleItems = cartItems.length > 0 ? cartItems : [
-    {
-      id: 1,
-      name: 'Motorcycle Chain Set',
-      brand: 'RK Chain',
-      price: 2500,
-      quantity: 2,
-      image: null
-    },
-    {
-      id: 2,
-      name: 'Brake Pads Front',
-      brand: 'Brembo',
-      price: 1200,
-      quantity: 1,
-      image: null
-    },
-    {
-      id: 3,
-      name: 'Engine Oil Filter',
-      brand: 'K&N',
-      price: 450,
-      quantity: 3,
-      image: null
-    }
-  ];
-
   const handleUpdateQuantity = (itemId, newQuantity) => {
-    // TODO: Implement cart update logic
-    console.log(`Update item ${itemId} to quantity ${newQuantity}`);
+    const updatedCart = localCart.map(item =>
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    );
+    setLocalCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    // Notify other components about cart update
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleRemoveItem = (itemId) => {
-    // TODO: Implement cart remove logic
-    console.log(`Remove item ${itemId}`);
+    const updatedCart = localCart.filter(item => item.id !== itemId);
+    setLocalCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    // Notify other components about cart update
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleCheckout = (items) => {
-    // TODO: Implement checkout logic
-    console.log('Checkout items:', items);
-    alert('Checkout functionality - To be implemented');
+    // Cart will be read from localStorage in Checkout page
+    window.location.href = '/checkout';
   };
 
-  const displayItemCount = cartItems.length > 0 ? cartItems.length : sampleItems.length;
+  const displayItemCount = localCart.length;
 
   return (
     <>
@@ -69,7 +81,7 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
       <CartModal
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
-        cartItems={sampleItems}
+        cartItems={localCart}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}

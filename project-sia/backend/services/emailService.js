@@ -3,39 +3,47 @@ import nodemailer from 'nodemailer';
 // Email service configuration
 class EmailService {
   constructor() {
-    this.transporter = null;
-    this.initializeTransporter();
+    this.adminTransporter = null;
+    this.ordersTransporter = null;
+    this.initializeTransporters().catch(err => {
+      console.error('❌ Failed to initialize email service:', err);
+    });
   }
 
-  async initializeTransporter() {
+  async initializeTransporters() {
     try {
-      // Use Gmail SMTP (you can change to other providers)
-      this.transporter = nodemailer.createTransport({
+      // Admin Email Transporter (for OTP, security alerts)
+      this.adminTransporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com',
-          pass: process.env.EMAIL_PASS || 'your-app-password' // Use App Password, not regular password
-        },
-        // Alternative: Use a different SMTP service
-        // host: 'smtp.ethereal.email', // For testing
-        // port: 587,
-        // secure: false,
-        // auth: {
-        //   user: 'ethereal-user',
-        //   pass: 'ethereal-pass'
-        // }
+          user: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com',
+          pass: process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || 'your-app-password'
+        }
       });
 
-      // Verify connection
-      await this.transporter.verify();
-      console.log('✅ Email service connected successfully');
+      // Orders Email Transporter (for order receipts)
+      this.ordersTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || 'mejia.spareparts.system@gmail.com',
+          pass: process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || 'your-app-password'
+        }
+      });
+
+      // Verify both connections
+      await this.adminTransporter.verify();
+      console.log('✅ Admin email service connected');
+      
+      await this.ordersTransporter.verify();
+      console.log('✅ Orders email service connected');
+      
     } catch (error) {
       console.error('❌ Email service connection failed:', error.message);
       
       // Fallback to Ethereal Email for testing
       try {
         const testAccount = await nodemailer.createTestAccount();
-        this.transporter = nodemailer.createTransport({
+        this.adminTransporter = nodemailer.createTransport({
           host: 'smtp.ethereal.email',
           port: 587,
           secure: false,
@@ -44,23 +52,26 @@ class EmailService {
             pass: testAccount.pass,
           },
         });
+        this.ordersTransporter = this.adminTransporter; // Use same for both in test mode
         console.log('📧 Using Ethereal Email for testing');
         console.log('Test account:', testAccount.user);
       } catch (testError) {
         console.error('❌ Fallback email service failed:', testError.message);
+        console.warn('⚠️ Email service will be unavailable, but server will continue running');
+        // Don't throw - let the server continue without email service
       }
     }
   }
 
   async sendOTP(email, otpCode, adminUser = 'Admin') {
-    if (!this.transporter) {
-      throw new Error('Email service not initialized');
+    if (!this.adminTransporter) {
+      throw new Error('Admin email service not initialized');
     }
 
     const mailOptions = {
       from: {
-        name: 'MSAdevsUnit3',
-        address: process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
+        name: 'Mejia Spareparts Admin',
+        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
       },
       to: email,
       subject: '🔐 Admin Access Verification Code',
@@ -143,7 +154,7 @@ class EmailService {
     };
 
     try {
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await this.adminTransporter.sendMail(mailOptions);
       console.log('✅ OTP email sent successfully:', info.messageId);
       
       // For Ethereal Email, provide preview URL
@@ -163,14 +174,16 @@ class EmailService {
   }
 
   async sendSecurityAlert(email, alertType, details = {}) {
-    if (!this.transporter) {
-      throw new Error('Email service not initialized');
+    if (!this.adminTransporter) {
+      throw new Error('Admin email service not initialized');
     }
+
+    const { action = alertType, adminUser = 'Unknown', ipAddress = 'Unknown' } = details;
 
     const mailOptions = {
       from: {
-        name: 'MSAdevsUnit3',
-        address: process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
+        name: 'Mejia Spareparts Admin',
+        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
       },
       to: email,
       subject: '🚨 Admin Security Alert',
@@ -205,10 +218,202 @@ class EmailService {
     };
 
     try {
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await this.adminTransporter.sendMail(mailOptions);
       return { success: true, messageId: info.messageId };
     } catch (error) {
       console.error('❌ Failed to send security alert:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send order receipt email (uses Orders email)
+   */
+  async sendOrderReceipt(orderDetails) {
+    if (!this.ordersTransporter) {
+      throw new Error('Orders email service not initialized');
+    }
+
+    const {
+      orderNumber,
+      customerName,
+      customerEmail,
+      items = [],
+      subtotal = 0,
+      tax = 0,
+      shippingFee = 0,
+      discount = null,
+      total = 0,
+      paymentMethod,
+      timestamp
+    } = orderDetails;
+
+    // Ensure numeric values with defaults
+    const safeSubtotal = parseFloat(subtotal) || 0;
+    const safeTax = parseFloat(tax) || 0;
+    const safeShippingFee = parseFloat(shippingFee) || 0;
+    const safeTotal = parseFloat(total) || 0;
+    const safeDiscount = discount ? {
+      type: discount.type || 'Discount',
+      amount: parseFloat(discount.amount) || 0
+    } : null;
+
+    // Generate items HTML
+    const itemsHtml = items.map(item => {
+      const price = parseFloat(item.price) || 0;
+      const quantity = parseInt(item.quantity) || 1;
+      const total = price * quantity;
+      
+      return `
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #f0f0f0;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px;">${item.image || '⚙️'}</span>
+            <div>
+              <strong>${item.name || 'Unknown Product'}</strong>
+              <br/>
+              <small style="color: #999;">${item.sku || 'N/A'}</small>
+            </div>
+          </div>
+        </td>
+        <td style="padding: 12px; text-align: center; border-bottom: 1px solid #f0f0f0;">${quantity}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #f0f0f0;">₱${price.toLocaleString()}</td>
+        <td style="padding: 12px; text-align: right; border-bottom: 1px solid #f0f0f0;">₱${total.toLocaleString()}</td>
+      </tr>
+    `;
+    }).join('');
+
+    const mailOptions = {
+      from: {
+        name: 'Mejia Spareparts',
+        address: process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
+      },
+      to: customerEmail,
+      subject: `Order Confirmation - ${orderNumber}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
+          <div style="max-width: 700px; margin: 0 auto; background-color: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 10px;">🏍️</div>
+              <h1 style="color: white; margin: 0; font-size: 24px;">Mejia Spareparts</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0;">and Accessories</p>
+            </div>
+
+            <!-- Success Badge -->
+            <div style="background: #f8f9fa; padding: 20px; text-align: center;">
+              <div style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 10px 25px; border-radius: 25px; font-weight: 600;">
+                ✅ Order Placed Successfully
+              </div>
+            </div>
+
+            <!-- Order Info -->
+            <div style="padding: 30px;">
+              <h2 style="color: #333; margin-bottom: 20px;">Order Details</h2>
+              
+              <div style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0;"><strong>Order Number:</strong></td>
+                    <td style="padding: 8px 0; text-align: right;">${orderNumber}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;"><strong>Date:</strong></td>
+                    <td style="padding: 8px 0; text-align: right;">${new Date(timestamp).toLocaleString('en-PH')}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;"><strong>Customer:</strong></td>
+                    <td style="padding: 8px 0; text-align: right;">${customerName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;"><strong>Payment Method:</strong></td>
+                    <td style="padding: 8px 0; text-align: right;">${paymentMethod}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Items -->
+              <h3 style="color: #333; margin: 20px 0 15px 0;">Order Items</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #f8f9fa;">
+                    <th style="padding: 12px; text-align: left; font-size: 12px; color: #666; text-transform: uppercase;">Item</th>
+                    <th style="padding: 12px; text-align: center; font-size: 12px; color: #666; text-transform: uppercase;">Qty</th>
+                    <th style="padding: 12px; text-align: right; font-size: 12px; color: #666; text-transform: uppercase;">Price</th>
+                    <th style="padding: 12px; text-align: right; font-size: 12px; color: #666; text-transform: uppercase;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+              </table>
+
+              <!-- Totals -->
+              <div style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin-top: 20px;">
+                <table style="width: 100%;">
+                  <tr>
+                    <td style="padding: 8px 0;">Subtotal:</td>
+                    <td style="padding: 8px 0; text-align: right;">₱${safeSubtotal.toLocaleString()}</td>
+                  </tr>
+                  ${safeShippingFee > 0 ? `
+                  <tr>
+                    <td style="padding: 8px 0;">🚚 Shipping Fee:</td>
+                    <td style="padding: 8px 0; text-align: right;">₱${safeShippingFee.toLocaleString()}</td>
+                  </tr>
+                  ` : ''}
+                  ${safeTax > 0 ? `
+                  <tr>
+                    <td style="padding: 8px 0;">📋 Tax (12%):</td>
+                    <td style="padding: 8px 0; text-align: right;">₱${safeTax.toLocaleString()}</td>
+                  </tr>
+                  ` : ''}
+                  ${safeDiscount && safeDiscount.amount > 0 ? `
+                  <tr style="color: #28a745; font-weight: 600;">
+                    <td style="padding: 8px 0;">🎉 ${safeDiscount.type} (20%):</td>
+                    <td style="padding: 8px 0; text-align: right;">-₱${safeDiscount.amount.toLocaleString()}</td>
+                  </tr>
+                  ` : ''}
+                  <tr style="border-top: 3px solid #667eea; font-size: 18px; font-weight: 700; color: #667eea;">
+                    <td style="padding: 15px 0 0 0;">TOTAL:</td>
+                    <td style="padding: 15px 0 0 0; text-align: right;">₱${safeTotal.toLocaleString()}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Status Notice -->
+              <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <p style="margin: 0; color: #856404; font-weight: 600;">⚠️ Order Status: PENDING APPROVAL</p>
+                <p style="margin: 10px 0 0 0; color: #856404;">Your order has been received and is pending approval from our admin team. You will receive an email notification once your order is approved and ready for processing.</p>
+              </div>
+
+              <!-- Contact Info -->
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0; color: #666;">
+                <p><strong>Contact Us:</strong></p>
+                <p>📧 support@mejiaspareparts.com</p>
+                <p>📞 09123456789</p>
+                <p>📍 Antipolo City, Rizal</p>
+              </div>
+
+              <!-- Footer -->
+              <div style="text-align: center; margin-top: 20px;">
+                <p style="color: #333; font-weight: 600; margin: 10px 0;">Thank you for shopping with us!</p>
+                <p style="color: #999; font-size: 14px; font-style: italic; margin: 5px 0;">Your trusted motorcycle parts supplier</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    try {
+      const info = await this.ordersTransporter.sendMail(mailOptions);
+      console.log('✅ Receipt email sent:', info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('❌ Failed to send receipt email:', error);
       throw error;
     }
   }

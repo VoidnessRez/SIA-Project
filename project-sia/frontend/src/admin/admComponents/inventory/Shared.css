@@ -2,7 +2,7 @@
    INVENTORY - SHARED/COMMON STYLES
    ================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
   /* Primary Colors - Matching Sidebar Theme */
@@ -48,7 +48,7 @@
 }
 
 * {
-  font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, Dosis;
 }
 
 /* ================================================
@@ -1102,5 +1102,356 @@
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+/* ================================================
+   STOCK MANAGEMENT - DASHBOARD & FILTERS
+   ================================================ */
+
+/* Stock Dashboard - Summary Cards */
+.accessories .stock-dashboard,
+.spare-parts .stock-dashboard,
+.restock-management .stock-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.accessories .stat-card,
+.spare-parts .stat-card,
+.restock-management .stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+}
+
+.accessories .stat-card:hover,
+.spare-parts .stat-card:hover,
+.restock-management .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.accessories .stat-card.total,
+.spare-parts .stat-card.total,
+.restock-management .stat-card.total {
+  border-color: rgba(102, 126, 234, 0.2);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, white 100%);
+}
+
+.accessories .stat-card.total:hover,
+.spare-parts .stat-card.total:hover,
+.restock-management .stat-card.total:hover {
+  border-color: rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.accessories .stat-card.low,
+.spare-parts .stat-card.low,
+.restock-management .stat-card.low {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, white 100%);
+}
+
+.accessories .stat-card.low:hover,
+.spare-parts .stat-card.low:hover,
+.restock-management .stat-card.low:hover {
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+}
+
+.accessories .stat-card.normal,
+.spare-parts .stat-card.normal,
+.restock-management .stat-card.normal {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, white 100%);
+}
+
+.accessories .stat-card.normal:hover,
+.spare-parts .stat-card.normal:hover,
+.restock-management .stat-card.normal:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+.accessories .stat-card.overstocked,
+.spare-parts .stat-card.overstocked,
+.restock-management .stat-card.overstocked {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, white 100%);
+}
+
+.accessories .stat-card.overstocked:hover,
+.spare-parts .stat-card.overstocked:hover,
+.restock-management .stat-card.overstocked:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+}
+
+.accessories .stat-icon,
+.spare-parts .stat-icon,
+.restock-management .stat-icon {
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.accessories .stat-info,
+.spare-parts .stat-info,
+.restock-management .stat-info {
+  flex: 1;
+}
+
+.accessories .stat-value,
+.spare-parts .stat-value,
+.restock-management .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--inv-gray-900);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.accessories .stat-label,
+.spare-parts .stat-label,
+.restock-management .stat-label {
+  font-size: 0.85rem;
+  color: var(--inv-gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stock Filter Buttons */
+.accessories .stock-filters,
+.spare-parts .stock-filters,
+.restock-management .stock-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.accessories .filter-btn,
+.spare-parts .filter-btn,
+.restock-management .filter-btn {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: var(--inv-gray-600);
+  border: 2px solid var(--inv-gray-200);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.accessories .filter-btn:hover,
+.spare-parts .filter-btn:hover,
+.restock-management .filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.accessories .filter-btn.active,
+.spare-parts .filter-btn.active,
+.restock-management .filter-btn.active {
+  background: linear-gradient(135deg, var(--inv-primary) 0%, var(--inv-primary-dark) 100%);
+  color: white;
+  border-color: var(--inv-primary);
+  box-shadow: 0 6px 20px -5px rgba(91, 111, 217, 0.35);
+}
+
+.accessories .filter-btn.low:not(.active),
+.spare-parts .filter-btn.low:not(.active),
+.restock-management .filter-btn.low:not(.active) {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--inv-danger);
+}
+
+.accessories .filter-btn.low:not(.active):hover,
+.spare-parts .filter-btn.low:not(.active):hover,
+.restock-management .filter-btn.low:not(.active):hover {
+  background: var(--inv-danger-light);
+  border-color: var(--inv-danger);
+}
+
+.accessories .filter-btn.low.active,
+.spare-parts .filter-btn.low.active,
+.restock-management .filter-btn.low.active {
+  background: linear-gradient(135deg, var(--inv-danger) 0%, var(--inv-danger-dark) 100%);
+  border-color: var(--inv-danger);
+}
+
+.accessories .filter-btn.normal:not(.active),
+.spare-parts .filter-btn.normal:not(.active),
+.restock-management .filter-btn.normal:not(.active) {
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--inv-success);
+}
+
+.accessories .filter-btn.normal:not(.active):hover,
+.spare-parts .filter-btn.normal:not(.active):hover,
+.restock-management .filter-btn.normal:not(.active):hover {
+  background: var(--inv-success-light);
+  border-color: var(--inv-success);
+}
+
+.accessories .filter-btn.normal.active,
+.spare-parts .filter-btn.normal.active,
+.restock-management .filter-btn.normal.active {
+  background: linear-gradient(135deg, var(--inv-success) 0%, var(--inv-success-dark) 100%);
+  border-color: var(--inv-success);
+}
+
+.accessories .filter-btn.overstocked:not(.active),
+.spare-parts .filter-btn.overstocked:not(.active),
+.restock-management .filter-btn.overstocked:not(.active) {
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--inv-warning);
+}
+
+.accessories .filter-btn.overstocked:not(.active):hover,
+.spare-parts .filter-btn.overstocked:not(.active):hover,
+.restock-management .filter-btn.overstocked:not(.active):hover {
+  background: var(--inv-warning-light);
+  border-color: var(--inv-warning);
+}
+
+.accessories .filter-btn.overstocked.active,
+.spare-parts .filter-btn.overstocked.active,
+.restock-management .filter-btn.overstocked.active {
+  background: linear-gradient(135deg, var(--inv-warning) 0%, #D97706 100%);
+  border-color: var(--inv-warning);
+}
+
+/* Stock Status Cells */
+.stock-cell {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.stock-cell.low {
+  color: var(--inv-danger);
+}
+
+.stock-cell.low .stock-value {
+  background: var(--inv-danger-light);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.stock-cell.normal {
+  color: var(--inv-success);
+}
+
+.stock-cell.normal .stock-value {
+  background: var(--inv-success-light);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.stock-cell.overstocked {
+  color: var(--inv-warning);
+}
+
+.stock-cell.overstocked .stock-value {
+  background: var(--inv-warning-light);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Status Badge Updates */
+.status-badge.low {
+  background: var(--inv-danger-light);
+  color: var(--inv-danger-dark);
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.status-badge.normal {
+  background: var(--inv-success-light);
+  color: var(--inv-success-dark);
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.status-badge.overstocked {
+  background: var(--inv-warning-light);
+  color: #B45309;
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Form Small Text */
+.form-group small {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--inv-gray-500);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .accessories .stock-dashboard,
+  .spare-parts .stock-dashboard,
+  .restock-management .stock-dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  .accessories .stock-filters,
+  .spare-parts .stock-filters,
+  .restock-management .stock-filters {
+    flex-direction: column;
+  }
+  
+  .accessories .filter-btn,
+  .spare-parts .filter-btn,
+  .restock-management .filter-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

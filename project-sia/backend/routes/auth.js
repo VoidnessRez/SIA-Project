@@ -210,6 +210,34 @@ router.post('/login', async (req, res) => {
       console.log('[Backend] ✅ Profile data found:', profileData);
     }
 
+    // Fetch address data from addresses table
+    console.log('[Backend] 📍 Fetching address data for profile_id:', user.id);
+    const { data: addressData, error: addressError } = await supabase
+      .from('addresses')
+      .select('street, barangay, city, province, region, zip_code')
+      .eq('profile_id', user.id)
+      .eq('is_primary', true)
+      .single();
+
+    if (addressError) {
+      if (addressError.code === 'PGRST116') {
+        console.log('[Backend] ℹ️ No address data found (PGRST116 - no rows)');
+      } else {
+        console.warn('[Backend] ⚠️ Address fetch error:', addressError);
+      }
+    } else if (addressData) {
+      console.log('[Backend] ✅ Address data found:', {
+        street: addressData.street,
+        barangay: addressData.barangay,
+        city: addressData.city,
+        province: addressData.province,
+        region: addressData.region,
+        zip_code: addressData.zip_code
+      });
+    } else {
+      console.log('[Backend] ℹ️ Address query returned null/undefined');
+    }
+
     // ✅ MIGRATE USER TO SUPABASE AUTH (for storage access)
     console.log('[Backend] 🔄 Checking if user has Supabase Auth account...');
     
@@ -274,7 +302,7 @@ router.post('/login', async (req, res) => {
       console.log('[Backend] ✅ User already has Supabase Auth account:', supabaseUserId);
     }
 
-    // success - do NOT return password, include profile data
+    // success - do NOT return password, include profile data and address from addresses table
     const { password: _p, ...safeUser } = user;
     const userWithProfile = {
       ...safeUser,
@@ -285,10 +313,26 @@ router.post('/login', async (req, res) => {
       gender: profileData?.gender || null,
       birthday: profileData?.birthday || null,
       avatar_url: profileData?.avatar_url || null,
-      bio: profileData?.bio || null
+      bio: profileData?.bio || null,
+      // Address from addresses table (read-only, requires admin approval to change)
+      address: addressData?.street || null,
+      barangay: addressData?.barangay || null,
+      city: addressData?.city || null,
+      province: addressData?.province || null,
+      region: addressData?.region || null,
+      zip_code: addressData?.zip_code || null
     };
     
     console.log('[Backend] 🎉 Login successful for user:', safeUser.username);
+    console.log('[Backend] 📦 Returning user object with address:', {
+      username: userWithProfile.username,
+      hasAddress: !!userWithProfile.address,
+      address: userWithProfile.address,
+      barangay: userWithProfile.barangay,
+      city: userWithProfile.city,
+      province: userWithProfile.province,
+      zip_code: userWithProfile.zip_code
+    });
     return res.json({ user: userWithProfile });
   } catch (err) {
     console.error('[Backend] 💥 Login error:', err);
@@ -314,15 +358,16 @@ router.put('/profile/:userId', async (req, res) => {
     first_name,
     last_name,
     phone,
-    bio,
-    street_address,
-    city,
-    province,
-    zip_code,
-    country
+    bio
   } = req.body;
 
   try {
+    // Validate userId
+    if (!userId) {
+      console.error('[Backend] ❌ Missing userId');
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
     // 1. Update auth_users table (username and email)
     if (username || email) {
       console.log('[Backend] 💾 Updating auth_users...');
@@ -337,7 +382,10 @@ router.put('/profile/:userId', async (req, res) => {
 
       if (userError) {
         console.error('[Backend] ❌ Failed to update auth_users:', userError);
-        throw userError;
+        return res.status(500).json({ 
+          error: 'Failed to update user credentials',
+          details: userError.message 
+        });
       }
       console.log('[Backend] ✅ auth_users updated');
     }
@@ -355,6 +403,7 @@ router.put('/profile/:userId', async (req, res) => {
       throw fetchError;
     }
 
+    // Update profile (NOT address - addresses need admin approval)
     const profileData = {
       first_name,
       last_name,
@@ -373,7 +422,10 @@ router.put('/profile/:userId', async (req, res) => {
 
       if (createError) {
         console.error('[Backend] ❌ Failed to create profile:', createError);
-        throw createError;
+        return res.status(500).json({ 
+          error: 'Failed to create profile',
+          details: createError.message 
+        });
       }
       console.log('[Backend] ✅ Profile created');
     } else {
@@ -386,63 +438,12 @@ router.put('/profile/:userId', async (req, res) => {
 
       if (updateError) {
         console.error('[Backend] ❌ Failed to update profile:', updateError);
-        throw updateError;
+        return res.status(500).json({ 
+          error: 'Failed to update profile',
+          details: updateError.message 
+        });
       }
       console.log('[Backend] ✅ Profile updated');
-    }
-
-    // 3. Update or create address
-    if (street_address || city || province) {
-      console.log('[Backend] 💾 Handling address...');
-      const { data: existingAddress, error: addressFetchError } = await supabase
-        .from('addresses')
-        .select('id')
-        .eq('profile_id', userId)
-        .limit(1);
-
-      if (addressFetchError) {
-        console.error('[Backend] ⚠️ Error fetching address:', addressFetchError);
-      }
-
-      const addressData = {
-        street,
-        city,
-        province,
-        zip_code,
-        country: country || 'Philippines'
-      };
-
-      if (!existingAddress || existingAddress.length === 0) {
-        // Create new address
-        console.log('[Backend] 💾 Creating new address...');
-        addressData.profile_id = userId;
-        addressData.is_primary = true;
-        
-        const { error: createAddressError } = await supabase
-          .from('addresses')
-          .insert([addressData]);
-
-        if (createAddressError) {
-          console.error('[Backend] ⚠️ Failed to create address:', createAddressError);
-          // Don't fail the whole request if address fails
-        } else {
-          console.log('[Backend] ✅ Address created');
-        }
-      } else {
-        // Update existing address
-        console.log('[Backend] 💾 Updating existing address...');
-        const { error: updateAddressError } = await supabase
-          .from('addresses')
-          .update(addressData)
-          .eq('id', existingAddress[0].id);
-
-        if (updateAddressError) {
-          console.error('[Backend] ⚠️ Failed to update address:', updateAddressError);
-          // Don't fail the whole request if address fails
-        } else {
-          console.log('[Backend] ✅ Address updated');
-        }
-      }
     }
 
     console.log('[Backend] 🎉 Profile update completed successfully!');
