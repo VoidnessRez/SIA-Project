@@ -661,6 +661,32 @@
   color: #555;
 }
 
+/* Wholesale Discount Row */
+.calc-row.discount-row {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  border-left: 4px solid #4caf50;
+}
+
+.calc-row.discount-row span {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.calc-row.discount-row small {
+  display: block;
+  font-size: 0.8rem;
+  color: #558b2f;
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.discount-amount {
+  text-align: right;
+}
+
 .free-shipping {
   color: #28a745;
   font-weight: 700;

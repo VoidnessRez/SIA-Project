@@ -109,11 +109,14 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/spare-parts', icon: '', label: 'Spare Parts', badge: null },
         { path: '/admin/accessories', icon: '', label: 'Accessories', badge: null },
         { path: '/admin/low-stock', icon: '', label: 'Low Stock Alerts', badge: '5' },
+        { path: '/admin/overstock', icon: '', label: 'Overstock Alerts', badge: null },
         { path: '/admin/brands', icon: '', label: 'Brands Management', badge: null },
         { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
         { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
         { path: '/admin/delivers', icon: '', label: 'Restock management', badge: null },
         { path: '/admin/priceHistory', icon: '', label: 'Price History Overview', badge: null },
+        { path: '/admin/stock-release', icon: '📤', label: 'Stock Release', badge: null },
+        { path: '/admin/inventory-transactions', icon: '📊', label: 'Transaction History', badge: null },
       ]
     },
     {

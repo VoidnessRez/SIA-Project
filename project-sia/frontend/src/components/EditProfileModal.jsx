@@ -111,7 +111,8 @@ const EditProfileModal = ({ isOpen, onClose }) => {
       formDataToSend.append('avatar', selectedFile);
       formDataToSend.append('userId', user.id);
 
-      const uploadResponse = await fetch('http://localhost:5174/api/upload/avatar', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const uploadResponse = await fetch(`${API_URL}/api/upload/avatar`, {
         method: 'POST',
         body: formDataToSend,
       });

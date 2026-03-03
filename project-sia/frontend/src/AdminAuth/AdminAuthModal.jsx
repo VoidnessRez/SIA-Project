@@ -110,7 +110,8 @@ const AdminAuthModal = ({ isOpen, onClose }) => {
   const sendOtpEmail = async (email, otpCode) => {
     try {
       // Use backend API for email sending (it has Nodemailer configured)
-      const backendResponse = await fetch('http://localhost:5174/api/auth/send-otp', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const backendResponse = await fetch(`${API_URL}/api/auth/send-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

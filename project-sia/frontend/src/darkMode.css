@@ -1613,3 +1613,56 @@ body.dark-mode {
 .dark-mode .receipt-container .footer-tagline {
   color: #666 !important;
 }
+
+/* ============================================
+   ADMIN PANEL - FORCE LIGHT MODE ALWAYS
+   ============================================ */
+
+/* Prevent dark mode from affecting ANY admin panel components */
+.dark-mode .admin-layout,
+.dark-mode .admin-layout *,
+.dark-mode .admin-sidebar,
+.dark-mode .admin-sidebar *,
+.dark-mode .admin-content,
+.dark-mode .admin-content *,
+.dark-mode .admin-header,
+.dark-mode .admin-main,
+.dark-mode [class*="admin-"] {
+  /* Reset to original light mode colors - let component CSS handle styling */
+  --bg-primary: #ffffff !important;
+  --bg-secondary: #f9fafb !important;
+  --bg-tertiary: #f3f4f6 !important;
+  --text-primary: #111827 !important;
+  --text-secondary: #6b7280 !important;
+  --text-tertiary: #9ca3af !important;
+  --border-color: #e5e7eb !important;
+  --shadow: rgba(0, 0, 0, 0.1) !important;
+  --shadow-lg: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Force remove dark mode filters and backgrounds from admin components */
+.dark-mode .admin-layout {
+  filter: none !important;
+  background: #ecf0f1 !important;
+}
+
+.dark-mode .admin-sidebar {
+  background: #2c3e50 !important;
+  color: #ecf0f1 !important;
+}
+
+.dark-mode .admin-content {
+  background: #ecf0f1 !important;
+  color: #2c3e50 !important;
+}
+
+.dark-mode .admin-header {
+  background: #ffffff !important;
+  color: #2c3e50 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark-mode .admin-main {
+  background: #ecf0f1 !important;
+}
+

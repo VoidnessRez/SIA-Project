@@ -79,11 +79,25 @@ router.post('/create', async (req, res) => {
 
     // Insert order items
     if (items && items.length > 0) {
-      const orderItems = items.map(item => {
+      const orderItems = items.map((item, index) => {
         // Support both 'price' and 'unit_price' field names from frontend
-        const price = parseFloat(item.price || item.unit_price);
-        const quantity = parseInt(item.quantity);
-        const discount = parseFloat(item.discount || 0);
+        const price = parseFloat(item.price || item.unit_price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        const discount = parseFloat(item.discount || 0) || 0;
+        
+        // Validate quantity and price
+        if (quantity <= 0) {
+          throw new Error(`Invalid quantity (${quantity}) for item at index ${index}`);
+        }
+        if (price <= 0) {
+          throw new Error(`Invalid price (${price}) for item at index ${index}`);
+        }
+        if (discount < 0) {
+          throw new Error(`Invalid discount (${discount}) for item at index ${index}`);
+        }
+        
+        const subtotal = parseFloat(item.subtotal || (price * quantity)) || 0;
+        const total = parseFloat(item.total || ((price * quantity) - discount)) || 0;
         
         return {
           order_id: orderData.id,
@@ -96,9 +110,9 @@ router.post('/create', async (req, res) => {
           selected_color: item.color || item.selected_color || null,
           quantity: quantity,
           unit_price: price,
-          subtotal: parseFloat(item.subtotal || (price * quantity)),
+          subtotal: subtotal,
           discount: discount,
-          total: parseFloat(item.total || ((price * quantity) - discount))
+          total: total
         };
       });
 

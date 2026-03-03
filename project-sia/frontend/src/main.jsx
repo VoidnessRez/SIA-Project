@@ -20,10 +20,14 @@ import InventoryPage from './admin/admComponents/inventory/InventoryPage.jsx';
 import SpareParts from './admin/admComponents/inventory/spareParts/SpareParts.jsx';
 import Accessories from './admin/admComponents/inventory/accessories/Accessories.jsx';
 import LowStockAlerts from './admin/admComponents/inventory/stockAlerts/LowStockAlerts.jsx';
+import OverstockAlerts from './admin/admComponents/inventory/stockAlerts/OverstockAlerts.jsx';
 import BrandsManagement from './admin/admComponents/inventory/brandsManagement/BrandsManagement.jsx';
 import ItemPickup from './admin/admComponents/inventory/itemPickup/ItemPickup.jsx';
 import ReturnedItems from './admin/admComponents/inventory/returnedItems/ReturnedItems.jsx';
 import RestockManagement from './admin/admComponents/inventory/restockManagement/RestockManagement.jsx';
+import PriceHistory from './admin/admComponents/priceHistory/PriceHistory.jsx';
+import StockRelease from './admin/admComponents/inventory/stockRelease/StockRelease.jsx';
+import InventoryTransactions from './admin/admComponents/inventory/inventoryTransactions/InventoryTransactions.jsx';
 import CustomerOrders from './admin/admComponents/ordersAndSales/customerOrders/CustomerOrders.jsx';
 import SalesRecords from './admin/admComponents/ordersAndSales/salesRecords/SalesRecords.jsx';
 import Transactions from './admin/admComponents/ordersAndSales/transactions/Transactions.jsx';
@@ -138,10 +142,14 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             <Route path="/admin/spare-parts" element={<SpareParts />} />
             <Route path="/admin/accessories" element={<Accessories />} />
             <Route path="/admin/low-stock" element={<LowStockAlerts />} />
+            <Route path="/admin/overstock" element={<OverstockAlerts />} />
             <Route path="/admin/brands" element={<BrandsManagement />} />
             <Route path="/admin/pickup" element={<ItemPickup />} />
             <Route path="/admin/returnModule" element={<ReturnedItems />} />
             <Route path="/admin/delivers" element={<RestockManagement />} />
+            <Route path="/admin/priceHistory" element={<PriceHistory />} />
+            <Route path="/admin/stock-release" element={<StockRelease />} />
+            <Route path="/admin/inventory-transactions" element={<InventoryTransactions />} />
             
             {/* Admin Orders & Sales */}
             <Route path="/admin/orders" element={<CustomerOrders />} />

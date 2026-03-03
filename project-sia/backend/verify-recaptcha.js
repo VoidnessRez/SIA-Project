@@ -1,9 +1,11 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const bodyParser = require('body-parser');
+import express from 'express';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
@@ -30,8 +32,11 @@ app.post('/api/verify-recaptcha', async (req, res) => {
   }
 });
 
-if (require.main === module) {
+// Start server only when this file is the main module
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+if (import.meta.url === `file:///${process.argv[1]}` || import.meta.url === `file://${process.argv[1]}`) {
   app.listen(PORT, () => console.log('reCAPTCHA verifier listening on', PORT));
 }
 
-module.exports = app;
+export default app;

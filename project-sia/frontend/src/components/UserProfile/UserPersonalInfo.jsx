@@ -181,7 +181,8 @@ const UserPersonalInfo = () => {
       // ✅ Use backend API to update profile
       console.log('[UserPersonalInfo] 📤 Updating profile via backend API...');
 
-      const response = await fetch(`http://localhost:5174/api/auth/profile/${user.id}`, {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const response = await fetch(`${API_URL}/api/auth/profile/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

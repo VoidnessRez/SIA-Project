@@ -24,13 +24,25 @@ export const DarkModeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode);
 
   useEffect(() => {
-    // Apply dark mode class and data-theme attribute to document
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-      document.body.classList.add('dark-mode');
-      document.body.setAttribute('data-theme', 'dark');
+    // Check if current route is an admin route
+    const isAdminRoute = window.location.pathname.startsWith('/admin');
+    
+    // Only apply dark mode if NOT on admin routes
+    if (!isAdminRoute) {
+      // Apply dark mode class and data-theme attribute to document
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark-mode');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.classList.add('dark-mode');
+        document.body.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.remove('dark-mode');
+        document.body.setAttribute('data-theme', 'light');
+      }
     } else {
+      // Force light mode on admin routes
       document.documentElement.classList.remove('dark-mode');
       document.documentElement.setAttribute('data-theme', 'light');
       document.body.classList.remove('dark-mode');
@@ -39,6 +51,52 @@ export const DarkModeProvider = ({ children }) => {
 
     // Save to localStorage
     localStorage.setItem('darkMode', isDarkMode.toString());
+  }, [isDarkMode]);
+
+  // Listen for route changes to update dark mode based on current route
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      
+      if (isAdminRoute) {
+        // Force remove dark mode on admin routes
+        document.documentElement.classList.remove('dark-mode');
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.remove('dark-mode');
+        document.body.setAttribute('data-theme', 'light');
+      } else {
+        // Reapply dark mode setting on non-admin routes
+        if (isDarkMode) {
+          document.documentElement.classList.add('dark-mode');
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.classList.add('dark-mode');
+          document.body.setAttribute('data-theme', 'dark');
+        }
+      }
+    };
+
+    // Listen to popstate (browser back/forward)
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // Listen to pushstate/replacestate (programmatic navigation)
+    const originalPushState = window.history.pushState;
+    const originalReplaceState = window.history.replaceState;
+    
+    window.history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleRouteChange();
+    };
+    
+    window.history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      handleRouteChange();
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
+    };
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {

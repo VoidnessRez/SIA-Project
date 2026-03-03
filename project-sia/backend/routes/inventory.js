@@ -22,6 +22,11 @@ import {
   createInventoryTransaction,
   getInventoryTransactions
 } from '../controllers/inventoryController.js';
+import {
+  getOverstockedItems,
+  getOverstockStats,
+  updateMaxStockLevel
+} from '../controllers/overstockController.js';
 
 const router = express.Router();
 
@@ -57,6 +62,9 @@ router.get('/part-types', getPartTypes);
 
 
 router.get('/low-stock', getLowStockItems);
+router.get('/overstocked', getOverstockedItems);
+router.get('/overstocked/stats', getOverstockStats);
+router.put('/update-max-stock/:type/:id', updateMaxStockLevel);
 
 // --inventory transactions--
 router.get('/transactions', getInventoryTransactions);

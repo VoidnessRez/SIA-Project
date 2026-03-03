@@ -363,12 +363,7 @@ class EmailService {
                     <td style="padding: 8px 0; text-align: right;">₱${safeShippingFee.toLocaleString()}</td>
                   </tr>
                   ` : ''}
-                  ${safeTax > 0 ? `
-                  <tr>
-                    <td style="padding: 8px 0;">📋 Tax (12%):</td>
-                    <td style="padding: 8px 0; text-align: right;">₱${safeTax.toLocaleString()}</td>
-                  </tr>
-                  ` : ''}
+                  
                   ${safeDiscount && safeDiscount.amount > 0 ? `
                   <tr style="color: #28a745; font-weight: 600;">
                     <td style="padding: 8px 0;">🎉 ${safeDiscount.type} (20%):</td>

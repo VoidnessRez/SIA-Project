@@ -25,7 +25,7 @@ router.post('/verify', async (req, res) => {
       console.error('⚠️ RECAPTCHA_SECRET not set in environment');
       return res.status(500).json({ 
         success: false, 
-        error: 'server not configured (RECAPTCHA_SECRET missing)' 
+        error: 'Server configuration error: RECAPTCHA_SECRET not set. Check backend/.env file.' 
       });
     }
     console.log('✅ Secret key found in environment');

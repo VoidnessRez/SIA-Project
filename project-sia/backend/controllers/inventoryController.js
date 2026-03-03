@@ -60,6 +60,7 @@ export async function createSparePart(req, res) {
       .select();
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('No data returned from insert');
     res.status(201).json({ success: true, data: data[0] });
   } catch (error) {
     console.error('[InventoryController] Create spare part error:', error);
@@ -85,6 +86,7 @@ export async function updateSparePart(req, res) {
       .select();
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('Spare part not found or update failed');
     res.json({ success: true, data: data[0] });
   } catch (error) {
     console.error('[InventoryController] Update spare part error:', error);
@@ -169,6 +171,7 @@ export async function createAccessory(req, res) {
       .select();
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('No data returned from insert');
     res.status(201).json({ success: true, data: data[0] });
   } catch (error) {
     console.error('[InventoryController] Create accessory error:', error);
@@ -194,6 +197,7 @@ export async function updateAccessory(req, res) {
       .select();
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('Accessory not found or update failed');
     res.json({ success: true, data: data[0] });
   } catch (error) {
     console.error('[InventoryController] Update accessory error:', error);
@@ -351,6 +355,7 @@ export async function createInventoryTransaction(req, res) {
       .select();
 
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error('No data returned from insert');
     res.status(201).json({ success: true, data: data[0] });
   } catch (error) {
     console.error('[InventoryController] Create inventory transaction error:', error);

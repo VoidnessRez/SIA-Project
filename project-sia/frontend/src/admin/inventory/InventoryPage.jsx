@@ -117,14 +117,14 @@ const InventoryPage = () => {
       
       const payload = {
         ...formData,
-        [brandKey]: parseInt(formData.brand_id),
-        part_type_id: parseInt(formData.part_type_id),
-        cost_price: parseFloat(formData.cost_price),
-        selling_price: parseFloat(formData.selling_price),
-        stock_quantity: parseInt(formData.stock_quantity),
-        reorder_level: parseInt(formData.reorder_level),
-        reorder_quantity: parseInt(formData.reorder_quantity),
-        warranty_months: parseInt(formData.warranty_months)
+        [brandKey]: parseInt(formData.brand_id) || 0,
+        part_type_id: parseInt(formData.part_type_id) || 0,
+        cost_price: parseFloat(formData.cost_price) || 0,
+        selling_price: parseFloat(formData.selling_price) || 0,
+        stock_quantity: parseInt(formData.stock_quantity) || 0,
+        reorder_level: parseInt(formData.reorder_level) || 0,
+        reorder_quantity: parseInt(formData.reorder_quantity) || 0,
+        warranty_months: parseInt(formData.warranty_months) || 0
       };
 
       // Remove brand_id from payload as we renamed it

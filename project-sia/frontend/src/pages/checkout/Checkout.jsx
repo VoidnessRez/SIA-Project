@@ -112,12 +112,40 @@ const Checkout = () => {
     return 250; // Default fee for areas requiring review
   };
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.12; // 12% VAT
+  // Calculate wholesale discount based on total quantity
+  const calculateWholesaleDiscount = () => {
+    const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const subtotal = calculateSubtotal();
+    
+    let discountRate = 0;
+    let discountTier = '';
+    
+    // Tiered discount structure
+    if (totalQuantity >= 100) {
+      discountRate = 0.20; // 20% discount
+      discountTier = 'Platinum (100+ items)';
+    } else if (totalQuantity >= 50) {
+      discountRate = 0.15; // 15% discount
+      discountTier = 'Gold (50+ items)';
+    } else if (totalQuantity >= 25) {
+      discountRate = 0.10; // 10% discount
+      discountTier = 'Silver (25+ items)';
+    } else if (totalQuantity >= 10) {
+      discountRate = 0.05; // 5% discount
+      discountTier = 'Bronze (10+ items)';
+    }
+    
+    return {
+      amount: subtotal * discountRate,
+      rate: discountRate * 100,
+      tier: discountTier,
+      qualified: totalQuantity >= 10
+    };
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateShipping() + calculateTax();
+    const discount = calculateWholesaleDiscount();
+    return calculateSubtotal() - discount.amount + calculateShipping();
   };
 
   // Handle input changes
@@ -222,15 +250,17 @@ const Checkout = () => {
         })),
         subtotal: calculateSubtotal(),
         shipping_fee: calculateShipping(),
-        tax_amount: calculateTax(),
-        discount_amount: 0,
+        tax_amount: 0,
+        discount_amount: calculateWholesaleDiscount().amount,
+        discount_type: calculateWholesaleDiscount().qualified ? calculateWholesaleDiscount().tier : null,
         total_amount: calculateTotal()
       };
 
       console.log('[Checkout] 📤 Sending order to backend:', orderData);
 
       // Send to backend
-      const response = await fetch('http://localhost:5174/api/orders/create', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+      const response = await fetch(`${API_URL}/api/orders/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -867,10 +897,18 @@ const Checkout = () => {
                       )}
                     </span>
                   </div>
-                  <div className="calc-row">
-                    <span>Tax (12%):</span>
-                    <span>₱{calculateTax().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                  </div>
+                  {calculateWholesaleDiscount().qualified && (
+                    <div className="calc-row discount-row">
+                      <span>
+                        🎉 Wholesale Discount<br />
+                        <small>{calculateWholesaleDiscount().tier}</small>
+                      </span>
+                      <span className="discount-amount">
+                        -{calculateWholesaleDiscount().rate}%<br />
+                        <small>-₱{calculateWholesaleDiscount().amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</small>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="summary-divider" />

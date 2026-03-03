@@ -350,7 +350,14 @@ router.put('/profile/:userId', async (req, res) => {
   console.log('[Backend] 📝 PUT /api/auth/profile/:userId - Request received');
   const { userId } = req.params;
   console.log('[Backend] 👤 User ID:', userId);
-  console.log('[Backend] 📦 Request body:', req.body);
+  console.log('[Backend] 📦 Update fields:', {
+    username: req.body?.username,
+    email: req.body?.email,
+    first_name: req.body?.first_name,
+    last_name: req.body?.last_name,
+    hasPhone: !!req.body?.phone,
+    hasBio: !!req.body?.bio
+  });
 
   const {
     username,
@@ -513,7 +520,11 @@ router.post('/send-otp', async (req, res) => {
 // body: { email, alertType, details }
 router.post('/security-alert', async (req, res) => {
   console.log('[Backend] 🚨 POST /api/auth/security-alert - Request received');
-  console.log('[Backend] 📦 Request body:', req.body);
+  console.log('[Backend] 📦 Alert info:', { 
+    email: req.body?.email, 
+    alertType: req.body?.alertType,
+    hasDetails: !!req.body?.details 
+  });
   
   const { email, alertType, details } = req.body;
   

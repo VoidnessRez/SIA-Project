@@ -7,6 +7,8 @@ import uploadRouter from './routes/upload.js';
 import recaptchaRouter from './routes/recaptcha.js';
 import inventoryRouter from './routes/inventory.js';
 import ordersRouter from './routes/orders.js';
+import priceHistoryRouter from './routes/priceHistory.js';
+import stockReleaseRouter from './routes/stockRelease.js';
 
 dotenv.config();
 
@@ -27,6 +29,10 @@ app.use('/api/inventory', inventoryRouter);
 console.log('   ✓ Inventory routes loaded');
 app.use('/api/orders', ordersRouter);
 console.log('   ✓ Orders routes loaded');
+app.use('/api/price-history', priceHistoryRouter);
+console.log('   ✓ Price History routes loaded');
+app.use('/api/stock-releases', stockReleaseRouter);
+console.log('   ✓ Stock Release routes loaded');
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
