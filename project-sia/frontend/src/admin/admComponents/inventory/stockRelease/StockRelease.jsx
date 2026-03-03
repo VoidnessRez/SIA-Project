@@ -32,7 +32,7 @@ const StockRelease = () => {
     setError(null);
     
     try {
-      let url = `${BACKEND_URL}/api/stock-release?limit=50`;
+      let url = `${BACKEND_URL}/api/stock-releases?limit=50`;
       if (filterStatus !== 'all') url += `&status=${filterStatus}`;
       if (filterType !== 'all') url += `&release_type=${filterType}`;
 
@@ -54,7 +54,7 @@ const StockRelease = () => {
 
   const fetchStatistics = useCallback(async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stock-release/stats`);
+      const response = await fetch(`${BACKEND_URL}/api/stock-releases/stats`);
       const data = await response.json();
 
       if (data.success) {
@@ -99,7 +99,7 @@ const StockRelease = () => {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stock-release/create`, {
+      const response = await fetch(`${BACKEND_URL}/api/stock-releases/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,7 +135,7 @@ const StockRelease = () => {
     if (!confirm('Approve this stock release?')) return;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stock-release/${id}/approve`, {
+      const response = await fetch(`${BACKEND_URL}/api/stock-releases/${id}/approve`, {
         method: 'PUT'
       });
 
@@ -158,7 +158,7 @@ const StockRelease = () => {
     if (!confirm('Process this stock release? This will deduct inventory.')) return;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stock-release/${id}/release`, {
+      const response = await fetch(`${BACKEND_URL}/api/stock-releases/${id}/release`, {
         method: 'PUT'
       });
 
@@ -181,7 +181,7 @@ const StockRelease = () => {
     if (!confirm('Cancel this stock release?')) return;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/stock-release/${id}/cancel`, {
+      const response = await fetch(`${BACKEND_URL}/api/stock-releases/${id}/cancel`, {
         method: 'PUT'
       });
 

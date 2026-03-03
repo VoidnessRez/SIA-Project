@@ -11,7 +11,7 @@ export async function getStockReleases(req, res) {
     let query = supabase
       .from('stock_releases')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('requested_at', { ascending: false });
 
     if (status) query = query.eq('status', status);
     if (release_type) query = query.eq('release_type', release_type);
