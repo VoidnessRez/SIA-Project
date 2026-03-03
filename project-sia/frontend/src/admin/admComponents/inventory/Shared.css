@@ -1455,3 +1455,246 @@
     justify-content: center;
   }
 }
+
+/* ================================================
+   DARK MODE STYLES
+   ================================================ */
+
+.dark-mode .inventory-container {
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f172a 100%);
+}
+
+.dark-mode .inventory-header {
+  border-bottom: 2px solid #334155;
+}
+
+.dark-mode .inventory-header h2 {
+  color: #e2e8f0;
+}
+
+.dark-mode .inventory-header .subtitle {
+  color: #94a3b8;
+}
+
+/* Cards */
+.dark-mode .stat-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid #334155;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .stat-card h3 {
+  color: #cbd5e1;
+}
+
+.dark-mode .stat-card .stat-value {
+  color: #e2e8f0;
+}
+
+.dark-mode .stat-card .stat-change {
+  color: #94a3b8;
+}
+
+/* Tables */
+.dark-mode .inventory-table {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.dark-mode .inventory-table thead {
+  background: #0f172a;
+  border-bottom: 2px solid #334155;
+}
+
+.dark-mode .inventory-table th {
+  color: #cbd5e1;
+}
+
+.dark-mode .inventory-table tbody tr {
+  border-bottom: 1px solid #334155;
+}
+
+.dark-mode .inventory-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.dark-mode .inventory-table td {
+  color: #e2e8f0;
+}
+
+/* Buttons */
+.dark-mode .add-btn,
+.dark-mode .btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.dark-mode .add-btn:hover,
+.dark-mode .btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.dark-mode .btn-secondary {
+  background: #334155;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+}
+
+.dark-mode .btn-secondary:hover {
+  background: #475569;
+}
+
+/* Filters */
+.dark-mode .stock-filters {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.dark-mode .filter-btn {
+  background: #0f172a;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+.dark-mode .filter-btn:hover,
+.dark-mode .filter-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* Modals */
+.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.dark-mode .modal-content {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.dark-mode .modal-header {
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.dark-mode .modal-header h3 {
+  color: #e2e8f0;
+}
+
+.dark-mode .modal-body {
+  color: #cbd5e1;
+}
+
+.dark-mode .modal-close {
+  color: #94a3b8;
+}
+
+.dark-mode .modal-close:hover {
+  color: #e2e8f0;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Forms */
+.dark-mode .form-group label {
+  color: #cbd5e1;
+}
+
+.dark-mode .form-group input,
+.dark-mode .form-group select,
+.dark-mode .form-group textarea {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.dark-mode .form-group input:focus,
+.dark-mode .form-group select:focus,
+.dark-mode .form-group textarea:focus {
+  border-color: #3b82f6;
+  background: #1e293b;
+}
+
+.dark-mode .form-group small {
+  color: #94a3b8;
+}
+
+/* Badges */
+.dark-mode .badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid #10b981;
+}
+
+.dark-mode .badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+}
+
+.dark-mode .badge-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.dark-mode .badge-info {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+/* Loading States */
+.dark-mode .loading {
+  color: #cbd5e1;
+}
+
+.dark-mode .error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+}
+
+/* Action Buttons */
+.dark-mode .actions button {
+  background: #334155;
+  color: #cbd5e1;
+  border: 1px solid #475569;
+}
+
+.dark-mode .actions button:hover {
+  background: #475569;
+}
+
+.dark-mode .actions .edit-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.dark-mode .actions .delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Search & Input Fields */
+.dark-mode .search-bar input,
+.dark-mode .search-input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.dark-mode .search-bar input::placeholder,
+.dark-mode .search-input::placeholder {
+  color: #64748b;
+}
+
+/* Dashboard Stats */
+.dark-mode .stock-dashboard {
+  gap: 1.5rem;
+}
+
+.dark-mode .stat-icon {
+  filter: brightness(1.2);
+}

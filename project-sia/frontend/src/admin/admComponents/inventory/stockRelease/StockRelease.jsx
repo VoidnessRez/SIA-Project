@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
+import SkeletonLoader from '../SkeletonLoader';
 import './StockRelease.css';
 
 const BACKEND_URL = 'http://localhost:5174';
@@ -235,11 +236,8 @@ const StockRelease = () => {
 
   if (loading && releases.length === 0) {
     return (
-      <AdminLayout title="Stock Release" description="Loading...">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading stock releases...</p>
-        </div>
+      <AdminLayout title="Stock Release Management" description="Loading stock releases...">
+        <SkeletonLoader type="full" rows={8} />
       </AdminLayout>
     );
   }

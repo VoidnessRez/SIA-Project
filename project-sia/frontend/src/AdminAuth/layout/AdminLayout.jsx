@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDarkMode } from '../../context/DarkModeContext';
 import './AdminLayout.css';
 
 const AdminLayout = ({ children, title, description }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stickmanMode, setStickmanMode] = useState('walking'); 
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarNavRef = useRef(null);
@@ -115,8 +117,8 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/returnModule', icon: '', label: 'Returned Items', badge: null },
         { path: '/admin/delivers', icon: '', label: 'Restock management', badge: null },
         { path: '/admin/priceHistory', icon: '', label: 'Price History Overview', badge: null },
-        { path: '/admin/stock-release', icon: '📤', label: 'Stock Release', badge: null },
-        { path: '/admin/inventory-transactions', icon: '📊', label: 'Transaction History', badge: null },
+        { path: '/admin/stock-release', icon: '', label: 'Stock Release', badge: null },
+        { path: '/admin/inventory-transactions', icon: '', label: 'Transaction History', badge: null },
       ]
     },
     {
@@ -344,6 +346,13 @@ const AdminLayout = ({ children, title, description }) => {
                 </div>
               </div>
             </div>
+            <button 
+              className="admin-dark-mode-toggle" 
+              onClick={toggleDarkMode}
+              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDarkMode ? '☀️' : '🌙'}
+            </button>
             <button className="admin-notifications">
               🔔
               <span className="badge">5</span>

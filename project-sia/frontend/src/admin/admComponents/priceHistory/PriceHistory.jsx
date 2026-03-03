@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../../AdminAuth/layout/AdminLayout';
+import SkeletonLoader from '../inventory/SkeletonLoader';
 import './PriceHistory.css';
 
 const BACKEND_URL = 'http://localhost:5174';
@@ -16,12 +17,7 @@ const PriceHistory = () => {
   const [dateRange, setDateRange] = useState('30'); // days
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchPriceHistory();
-    fetchStatistics();
-  }, [filterType, filterChange, dateRange]);
-
-  const fetchPriceHistory = async () => {
+  const fetchPriceHistory = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -45,9 +41,9 @@ const PriceHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterType, filterChange]);
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = useCallback(async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/price-history/stats?days=${dateRange}`);
       const data = await response.json();
@@ -58,7 +54,12 @@ const PriceHistory = () => {
     } catch (err) {
       console.error('Error fetching statistics:', err);
     }
-  };
+  }, [dateRange]);
+
+  useEffect(() => {
+    fetchPriceHistory();
+    fetchStatistics();
+  }, [fetchPriceHistory, fetchStatistics]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -198,10 +199,7 @@ const PriceHistory = () => {
         {/* Price History Table */}
         <div className="table-container">
           {loading ? (
-            <div className="loading-state">
-              <div className="spinner"></div>
-              <p>Loading price history...</p>
-            </div>
+            <SkeletonLoader type="content" rows={10} />
           ) : error ? (
             <div className="error-state">
               <div className="error-icon">⚠️</div>

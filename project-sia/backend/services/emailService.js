@@ -289,7 +289,7 @@ class EmailService {
         address: process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
       },
       to: customerEmail,
-      subject: `Order Confirmation - ${orderNumber}`,
+      subject: `Order Acknowledgement - ${orderNumber} (Pending Approval)`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -304,14 +304,15 @@ class EmailService {
 
             <!-- Success Badge -->
             <div style="background: #f8f9fa; padding: 20px; text-align: center;">
-              <div style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 10px 25px; border-radius: 25px; font-weight: 600;">
-                ✅ Order Placed Successfully
+              <div style="display: inline-block; background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; padding: 10px 25px; border-radius: 25px; font-weight: 600;">
+                ⏳ Order Received - Pending Approval
               </div>
             </div>
 
             <!-- Order Info -->
             <div style="padding: 30px;">
-              <h2 style="color: #333; margin-bottom: 20px;">Order Details</h2>
+              <h2 style="color: #333; margin-bottom: 20px;">Order Acknowledgement</h2>
+              <p style="color: #666; margin-bottom: 20px;">Thank you for your order! This is an acknowledgement that we have received your order. Once your order is approved by our admin team, you will receive an official receipt via email.</p>
               
               <div style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
                 <table style="width: 100%; border-collapse: collapse;">

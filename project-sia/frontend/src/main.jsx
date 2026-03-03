@@ -16,6 +16,7 @@ import Header from './components/header/Header.jsx';
 import FloatingCart from './components/cart/FloatingCart.jsx';
 import AdminAuthModal from './AdminAuth/AdminAuthModal.jsx';
 import UserPersonalInfo from './components/UserProfile/UserPersonalInfo.jsx';
+import Receipt from './components/receipt/Receipt.jsx';
 import InventoryPage from './admin/admComponents/inventory/InventoryPage.jsx';
 import SpareParts from './admin/admComponents/inventory/spareParts/SpareParts.jsx';
 import Accessories from './admin/admComponents/inventory/accessories/Accessories.jsx';
@@ -114,13 +115,11 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
                 </ProtectedRoute>
               } 
             />
-            
-            {/* Checkout Page - Protected */}
             <Route 
-              path="/checkout" 
+              path="/receipt" 
               element={
                 <ProtectedRoute>
-                  <Checkout />
+                  <Receipt />
                 </ProtectedRoute>
               } 
             />

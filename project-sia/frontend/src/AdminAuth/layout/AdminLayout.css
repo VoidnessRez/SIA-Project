@@ -599,6 +599,25 @@
   font-family: 'Poppins', sans-serif;
 }
 
+.admin-dark-mode-toggle {
+  background: #ecf0f1;
+  border: 1px solid #bdc3c7;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.admin-dark-mode-toggle:hover {
+  background: #bdc3c7;
+  transform: scale(1.05);
+}
+
 .admin-notifications {
   position: relative;
   background: #ecf0f1;
@@ -695,6 +714,167 @@
   .admin-sidebar-overlay.open {
     display: block;
   }
+}
+
+/* ==================== DARK MODE STYLES ==================== */
+.dark-mode .admin-layout {
+  background: #1a1a1a;
+}
+
+.dark-mode .admin-sidebar {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-sidebar-header {
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .admin-sidebar-title h2 {
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-sidebar-title p {
+  color: #94a3b8;
+}
+
+.dark-mode .admin-nav-section-title {
+  color: #64748b;
+}
+
+.dark-mode .admin-nav-item {
+  color: #cbd5e1;
+}
+
+.dark-mode .admin-nav-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.dark-mode .admin-nav-item.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.dark-mode .admin-sidebar-footer {
+  background: #0f172a;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .admin-user-avatar {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.dark-mode .admin-user-details h4 {
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-user-details p {
+  color: #94a3b8;
+}
+
+.dark-mode .admin-logout-btn {
+  background: #ef4444;
+  border: 1px solid #dc2626;
+}
+
+.dark-mode .admin-logout-btn:hover {
+  background: #dc2626;
+}
+
+.dark-mode .admin-topbar {
+  background: #1e293b;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .admin-menu-toggle {
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+}
+
+.dark-mode .admin-menu-toggle:hover {
+  background: #334155;
+}
+
+.dark-mode .admin-topbar-title h1 {
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-topbar-title p {
+  color: #94a3b8;
+}
+
+.dark-mode .admin-datetime {
+  background: #0f172a;
+  border: 1px solid #334155;
+}
+
+.dark-mode .admin-time,
+.dark-mode .admin-date {
+  color: #cbd5e1;
+}
+
+.dark-mode .time-icon,
+.dark-mode .date-icon {
+  color: #3b82f6;
+}
+
+.dark-mode .admin-dark-mode-toggle {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-dark-mode-toggle:hover {
+  background: #334155;
+}
+
+.dark-mode .admin-notifications {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+}
+
+.dark-mode .admin-notifications:hover {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.dark-mode .admin-content {
+  background: #1a1a1a;
+}
+
+/* Dark mode for stickman animations */
+.dark-mode .stickman-head,
+.dark-mode .stickman-body,
+.dark-mode .stickman-arm-left,
+.dark-mode .stickman-arm-right,
+.dark-mode .stickman-leg-left,
+.dark-mode .stickman-leg-right,
+.dark-mode .stickman-head-run,
+.dark-mode .stickman-body-run,
+.dark-mode .stickman-arm-left-run,
+.dark-mode .stickman-arm-right-run,
+.dark-mode .stickman-leg-left-run,
+.dark-mode .stickman-leg-right-run {
+  stroke: #3b82f6;
+  fill: #3b82f6;
+}
+
+.dark-mode .bike-frame,
+.dark-mode .bike-seat,
+.dark-mode .bike-handlebar {
+  stroke: #94a3b8;
+}
+
+.dark-mode .bike-wheel {
+  stroke: #cbd5e1;
+}
+
+.dark-mode .bike-wheel-spokes {
+  stroke: #64748b;
 }
 
 /* Scrollbar Styling for Sidebar */

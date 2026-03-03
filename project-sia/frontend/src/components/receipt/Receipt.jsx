@@ -1,16 +1,47 @@
-import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
 import './Receipt.css';
 
-const Receipt = ({ orderDetails }) => {
+const Receipt = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const receiptRef = useRef();
+  const [orderDetails, setOrderDetails] = useState(null);
 
   const handlePrint = useReactToPrint({
     content: () => receiptRef.current,
-    documentTitle: `Receipt-${orderDetails.orderNumber}`,
+    documentTitle: orderDetails ? `Receipt-${orderDetails.orderNumber}` : 'Receipt',
   });
+
+  useEffect(() => {
+    // Try to get order details from navigation state
+    if (location.state?.orderDetails) {
+      setOrderDetails(location.state.orderDetails);
+      // Save to localStorage as backup
+      localStorage.setItem('lastReceipt', JSON.stringify(location.state.orderDetails));
+    } else {
+      // Try to get from localStorage
+      const savedReceipt = localStorage.getItem('lastReceipt');
+      if (savedReceipt) {
+        setOrderDetails(JSON.parse(savedReceipt));
+      } else {
+        // No order details found, redirect to orders page
+        navigate('/orders');
+      }
+    }
+  }, [location, navigate]);
+
+  if (!orderDetails) {
+    return (
+      <div className="receipt-page">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading receipt...</p>
+        </div>
+      </div>
+    );
+  }
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -28,6 +59,9 @@ const Receipt = ({ orderDetails }) => {
       <div className="receipt-actions">
         <button className="btn-print" onClick={handlePrint}>
           🖨️ Print Receipt
+        </button>
+        <button className="btn-home" onClick={() => navigate('/')}>
+          🏠 Back to Home
         </button>
         <button className="btn-continue" onClick={() => navigate('/products')}>
           🛍️ Continue Shopping

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
+import SkeletonLoader from '../SkeletonLoader';
 import './InventoryTransactions.css';
 
 const BACKEND_URL = 'http://localhost:5174';
@@ -191,11 +192,8 @@ const InventoryTransactions = () => {
 
   if (loading && transactions.length === 0) {
     return (
-      <AdminLayout title="Inventory Transactions" description="Loading...">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Loading transactions...</p>
-        </div>
+      <AdminLayout title="Inventory Transactions" description="Loading transactions...">
+        <SkeletonLoader type="full" rows={8} />
       </AdminLayout>
     );
   }

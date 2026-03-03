@@ -65,12 +65,8 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
     return localItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const calculateTax = () => {
-    return calculateSubtotal() * 0.12; // 12% tax
-  };
-
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    return calculateSubtotal(); // No tax/VAT applied
   };
 
   const handleCheckout = () => {
@@ -191,10 +187,6 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
               <div className="cart-summary-row">
                 <span>Subtotal:</span>
                 <span>₱{calculateSubtotal().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div className="cart-summary-row">
-                <span>Tax (12%):</span>
-                <span>₱{calculateTax().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="cart-summary-row cart-total">
                 <span>Total:</span>

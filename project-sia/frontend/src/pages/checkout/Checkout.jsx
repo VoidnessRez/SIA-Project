@@ -11,8 +11,6 @@ const Checkout = () => {
   // Get cart items from location state or localStorage
   const [cartItems, setCartItems] = useState(location.state?.cartItems || []);
   const [loading, setLoading] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderId, setOrderId] = useState(null);
 
   // Form states
   const [shippingInfo, setShippingInfo] = useState({
@@ -296,14 +294,43 @@ const Checkout = () => {
 
       console.log('[Checkout] ✅ Order created successfully:', result.data);
 
+      // Prepare receipt data
+      const receiptData = {
+        orderNumber: result.data.order_number,
+        timestamp: new Date().toISOString(),
+        customer: {
+          name: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+          email: shippingInfo.email,
+          phone: shippingInfo.phone
+        },
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          sku: item.sku,
+          image: item.image || '🏍️',
+          price: item.price,
+          quantity: item.quantity
+        })),
+        subtotal: calculateSubtotal(),
+        shippingFee: calculateShipping(),
+        discount: calculateWholesaleDiscount().amount > 0 ? {
+          type: calculateWholesaleDiscount().tier,
+          amount: calculateWholesaleDiscount().amount
+        } : null,
+        total: calculateTotal(),
+        paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 
+                      paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer',
+        fulfillmentMethod: fulfillmentMethod
+      };
+
       // Clear cart
       localStorage.removeItem('cart');
 
-      setOrderId(result.data.order_number);
-      setOrderPlaced(true);
-
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Navigate to receipt page with order details
+      navigate('/receipt', { 
+        state: { orderDetails: receiptData },
+        replace: true 
+      });
 
     } catch (error) {
       console.error('Error placing order:', error);
@@ -315,101 +342,8 @@ const Checkout = () => {
     }
   };
 
-  // Order success screen
-  if (orderPlaced) {
-    return (
-      <div className="checkout-page">
-        <div className="checkout-container">
-          <div className="order-success">
-            <div className="success-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h1>Order Placed Successfully! 🎉</h1>
-            <p className="order-id">Order ID: <strong>{orderId}</strong></p>
-            
-            {fulfillmentMethod === 'pickup' ? (
-              <p className="success-message">
-                Thank you for your order! Your items are ready for pickup at our store.
-              </p>
-            ) : (
-              <div className="delivery-pending-notice">
-                <p className="success-message">
-                  Thank you for your order! Your delivery request has been received.
-                </p>
-                <div className="approval-notice">
-                  <span className="notice-icon">⏳</span>
-                  <div className="notice-content">
-                    <strong>Pending Admin Approval</strong>
-                    <p>Our team will review your delivery location and order details. We'll contact you within 24 hours to confirm delivery.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="order-summary-box">
-              <h3>📦 Order Summary</h3>
-              <div className="summary-row">
-                <span>Fulfillment:</span>
-                <span>{fulfillmentMethod === 'pickup' ? '🏪 Store Pickup' : '🚚 Home Delivery'}</span>
-              </div>
-              <div className="summary-row">
-                <span>Items:</span>
-                <span>{cartItems.reduce((sum, item) => sum + item.quantity, 0)} items</span>
-              </div>
-              <div className="summary-row">
-                <span>Total Amount:</span>
-                <span className="total-amount">₱{calculateTotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
-              <div className="summary-row">
-                <span>Payment Method:</span>
-                <span>{paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer'}</span>
-              </div>
-              <div className="summary-row">
-                <span>Status:</span>
-                {fulfillmentMethod === 'pickup' ? (
-                  <span className="status-badge confirmed">✓ Confirmed</span>
-                ) : (
-                  <span className="status-badge pending">⏳ Pending Approval</span>
-                )}
-              </div>
-            </div>
-
-            <div className="success-actions">
-              <button className="btn-primary" onClick={() => navigate('/orders')}>
-                📋 View My Orders
-              </button>
-              <button className="btn-secondary" onClick={() => navigate('/products')}>
-                🛍️ Continue Shopping
-              </button>
-            </div>
-
-            <div className="next-steps">
-              <h4>What's Next?</h4>
-              {fulfillmentMethod === 'pickup' ? (
-                <ul>
-                  <li>✅ Your order is confirmed and ready for pickup</li>
-                  <li>📧 Check your email for pickup instructions</li>
-                  <li>🏪 Visit our store during business hours (Mon-Sat, 8AM-6PM)</li>
-                  <li>📱 Bring your Order ID: <strong>{orderId}</strong></li>
-                  <li>💬 Call us if you have any questions: 09123456789</li>
-                </ul>
-              ) : (
-                <ul>
-                  <li>⏳ Admin will review your delivery location (Bulacan/Calabarzon areas)</li>
-                  <li>📞 We'll call/text you within 24 hours for confirmation</li>
-                  <li>✅ Once approved, we'll process your order immediately</li>
-                  <li>🚚 Delivery within 2-3 business days after approval</li>
-                  <li>💬 Contact us anytime: 09123456789</li>
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Order success screen - DISABLED: Now redirecting to receipt page instead
+  // if (orderPlaced) { ... }
 
   return (
     <div className="checkout-page">

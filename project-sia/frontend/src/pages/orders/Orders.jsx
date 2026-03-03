@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Orders.css';
 
 const Orders = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -93,6 +95,38 @@ const Orders = () => {
 
   const closeOrderDetails = () => {
     setSelectedOrder(null);
+  };
+
+  const handleViewReceipt = (order) => {
+    // Transform order data to receipt format
+    const receiptData = {
+      orderNumber: order.id,
+      timestamp: new Date(order.date).toISOString(),
+      customer: {
+        name: 'Customer Name', // Would come from user profile in real scenario
+        email: 'customer@email.com',
+        phone: '09123456789'
+      },
+      items: order.items.map(item => ({
+        id: item.name,
+        name: item.name,
+        sku: `SKU-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        image: item.image,
+        price: item.price,
+        quantity: item.quantity
+      })),
+      subtotal: order.total,
+      shippingFee: 0,
+      discount: null,
+      total: order.total,
+      paymentMethod: order.paymentMethod,
+      fulfillmentMethod: 'delivery'
+    };
+
+    // Navigate to receipt with order data
+    navigate('/receipt', { 
+      state: { orderDetails: receiptData } 
+    });
   };
 
   const calculateOrderStats = () => {
@@ -305,7 +339,12 @@ const Orders = () => {
                 {selectedOrder.status === 'shipped' && (
                   <button className="action-btn track-btn">📦 Track Package</button>
                 )}
-                <button className="action-btn download-btn">📄 Download Receipt</button>
+                <button 
+                  className="action-btn download-btn"
+                  onClick={() => handleViewReceipt(selectedOrder)}
+                >
+                  📄 View Receipt
+                </button>
               </div>
             </div>
           </div>
