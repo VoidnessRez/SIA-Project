@@ -204,7 +204,8 @@
 }
 
 /* Cell Styles */
-.date-cell {
+.date-cell,
+.ph-date-cell {
   color: #666;
   font-size: 0.85rem;
   font-weight: 500;
@@ -212,16 +213,25 @@
   line-height: 1.35;
 }
 
-.product-cell {
+.product-cell,
+.ph-product-cell {
   font-weight: 600;
   color: #1a1a1a;
   line-height: 1.4;
   word-break: break-word;
 }
 
-.sku-cell {
+.ph-product-name {
+  display: block;
+  font-weight: 600;
+  color: #111827;
+}
+
+.sku-cell,
+.ph-sku-cell {
   color: #666;
   font-family: 'Courier New', monospace;
+  letter-spacing: 0.2px;
 }
 
 .type-badge {

@@ -301,11 +301,11 @@ const PriceHistory = () => {
               <tbody>
                 {filteredHistory.map((item) => (
                   <tr key={item.id} className={getChangeClass(item.change_type)}>
-                    <td className="date-cell">{formatDate(item.change_date)}</td>
-                    <td className="product-cell">
-                      <div className="product-name">{item.product_name}</div>
+                    <td className="ph-date-cell">{formatDate(item.change_date)}</td>
+                    <td className="ph-product-cell">
+                      <div className="ph-product-name">{item.product_name}</div>
                     </td>
-                    <td className="sku-cell">{item.product_sku}</td>
+                    <td className="ph-sku-cell">{item.product_sku}</td>
                     <td className="type-cell">
                       <span className={`type-badge ${item.product_type}`}>
                         {item.product_type === 'spare_part' ? '⚙️ Part' : '🛡️ Accessory'}
