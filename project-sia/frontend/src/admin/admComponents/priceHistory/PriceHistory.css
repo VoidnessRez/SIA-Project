@@ -156,6 +156,7 @@
 .price-history-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .price-history-table thead {
@@ -175,6 +176,7 @@
   padding: 1rem;
   border-bottom: 1px solid #f0f0f0;
   font-size: 0.9rem;
+  vertical-align: middle;
 }
 
 .price-history-table tbody tr {
@@ -261,10 +263,17 @@
   color: #666;
   font-style: italic;
   max-width: 200px;
+  overflow-wrap: anywhere;
 }
 
 .actions-cell {
   min-width: 150px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.actions-header {
+  text-align: center;
 }
 
 .inline-edit-input {

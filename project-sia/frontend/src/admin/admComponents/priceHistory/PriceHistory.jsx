@@ -272,6 +272,18 @@ const PriceHistory = () => {
             </div>
           ) : (
             <table className="price-history-table">
+              <colgroup>
+                <col style={{ width: '13%' }} />
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '9%' }} />
+                <col style={{ width: '10%' }} />
+                <col style={{ width: '5%' }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Date & Time</th>
@@ -283,7 +295,7 @@ const PriceHistory = () => {
                   <th>Change</th>
                   <th>Percentage</th>
                   <th>Reason</th>
-                  <th>Actions</th>
+                  <th className="actions-header">Actions</th>
                 </tr>
               </thead>
               <tbody>
