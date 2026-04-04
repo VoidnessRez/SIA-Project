@@ -284,6 +284,65 @@ export async function createPriceHistoryEntry(req, res) {
 }
 
 /**
+ * PUT /api/price-history/:id
+ * Update an existing price history entry
+ */
+export async function updatePriceHistoryEntry(req, res) {
+  try {
+    const { id } = req.params;
+    const {
+      old_selling_price,
+      new_selling_price,
+      change_reason,
+      change_date,
+      notes
+    } = req.body;
+
+    const oldPrice = parseFloat(old_selling_price);
+    const newPrice = parseFloat(new_selling_price);
+
+    if (!id || Number.isNaN(oldPrice) || Number.isNaN(newPrice) || oldPrice <= 0 || newPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid payload. Old/new selling price is required and must be valid numbers.'
+      });
+    }
+
+    const price_difference = newPrice - oldPrice;
+    const percentage_change = oldPrice === 0 ? 0 : (price_difference / oldPrice) * 100;
+    const change_type = price_difference >= 0 ? 'increase' : 'decrease';
+
+    const payload = {
+      old_selling_price: oldPrice,
+      new_selling_price: newPrice,
+      price_difference,
+      percentage_change,
+      change_type,
+      change_reason: change_reason || null,
+      notes: notes || null,
+    };
+
+    if (change_date) {
+      payload.change_date = change_date;
+    }
+
+    const { data, error } = await supabase
+      .from('price_history')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ success: true, data, message: 'Price history entry updated' });
+  } catch (error) {
+    console.error('[PriceHistory] Update price history entry error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+/**
  * DELETE /api/price-history/:id
  * Delete a price history entry (admin only, for corrections)
  */

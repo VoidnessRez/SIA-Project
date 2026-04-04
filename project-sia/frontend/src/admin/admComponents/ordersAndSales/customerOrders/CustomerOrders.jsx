@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../../lib/supabaseClient';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader';
+import StorageUtils from '../../../../utils/storageUtils';
 import './CustomerOrders.css';
 
 const CustomerOrders = () => {
@@ -125,15 +126,19 @@ const CustomerOrders = () => {
 
     try {
       setActionLoading(true);
-      console.log('[CustomerOrders] ✅ Approving order:', selectedOrder.order_number);
 
-      const adminUser = JSON.parse(sessionStorage.getItem('adminToken'));
+      const adminUser = StorageUtils.getFromSessionStorage('adminToken', null);
+
+      if (!adminUser?.id) {
+        alert('❌ Admin session not found. Please log in again.');
+        return;
+      }
 
       const { error } = await supabase
         .from('orders')
         .update({
           order_status: 'confirmed',
-          confirmed_by: adminUser?.id,
+          confirmed_by: adminUser.id,
           confirmed_at: new Date().toISOString(),
           admin_notes: adminNotes,
           updated_at: new Date().toISOString()
@@ -142,12 +147,10 @@ const CustomerOrders = () => {
 
       if (error) throw error;
 
-      console.log('[CustomerOrders] ✅ Order approved');
       alert('✅ Order approved successfully!');
       setShowModal(false);
       fetchOrders();
     } catch (error) {
-      console.error('[CustomerOrders] ❌ Error approving order:', error);
       alert('Failed to approve order');
     } finally {
       setActionLoading(false);

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { APP_CONFIG } from '../../config/appConfig';
+import StorageUtils from '../../utils/storageUtils';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -9,7 +11,11 @@ const Checkout = () => {
   const { user, isAuthenticated } = useAuth();
   
   // Get cart items from location state or localStorage
-  const [cartItems, setCartItems] = useState(location.state?.cartItems || []);
+  const [cartItems, setCartItems] = useState(
+    Array.isArray(location.state?.cartItems)
+      ? location.state.cartItems
+      : StorageUtils.getFromLocalStorage('cart', [])
+  );
   const [loading, setLoading] = useState(false);
 
   // Form states
@@ -34,15 +40,6 @@ const Checkout = () => {
 
   // Load user's profile address when component mounts or when switching to saved address
   useEffect(() => {
-    console.log('[Checkout] 🔍 User object:', user);
-    console.log('[Checkout] 📍 Address fields:', {
-      address: user?.address,
-      barangay: user?.barangay,
-      city: user?.city,
-      province: user?.province,
-      zip_code: user?.zip_code
-    });
-    
     if (useProfileAddress && user) {
       setShippingInfo(prev => ({
         ...prev,
@@ -64,10 +61,10 @@ const Checkout = () => {
 
     // Redirect if no cart items
     if (!cartItems || cartItems.length === 0) {
-      // Try to get from localStorage
-      const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        setCartItems(JSON.parse(savedCart));
+      // Try to get from localStorage safely
+      const savedCart = StorageUtils.getFromLocalStorage('cart', []);
+      if (savedCart.length > 0) {
+        setCartItems(savedCart);
       } else {
         navigate('/products');
       }
@@ -76,21 +73,11 @@ const Checkout = () => {
 
   // Calculate totals
   const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return (cartItems || []).reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  // Delivery Fee Table (Draft - Subject to admin approval)
-  const deliveryFees = {
-    'bulacan': 150,
-    'cavite': 200,
-    'laguna': 200,
-    'rizal': 180,
-    'batangas': 250,
-    'quezon': 300,
-    'ncr': 150,
-    'metro manila': 150,
-    'manila': 150
-  };
+  // Delivery Fee Table from centralized config
+  const deliveryFees = APP_CONFIG.DELIVERY_AREA_FEES || {};
 
   const calculateShipping = () => {
     if (fulfillmentMethod === 'pickup') return 0; // Free for pickup
@@ -107,7 +94,7 @@ const Checkout = () => {
     }
     
     // Default delivery fee if area not in list (subject to admin approval)
-    return 250; // Default fee for areas requiring review
+    return APP_CONFIG.DEFAULT_DELIVERY_FEE || 250;
   };
 
   // Calculate wholesale discount based on total quantity
@@ -218,6 +205,10 @@ const Checkout = () => {
     try {
       console.log('[Checkout] 📦 Creating order...');
 
+      if (!user?.id) {
+        throw new Error('User session missing. Please login again.');
+      }
+
       // Prepare order data
       const orderData = {
         user_id: user?.id,
@@ -327,7 +318,7 @@ const Checkout = () => {
       };
 
       // Clear cart
-      localStorage.removeItem('cart');
+      StorageUtils.removeFromLocalStorage('cart');
 
       // Navigate to receipt page with order details
       navigate('/receipt', { 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../context/DarkModeContext';
+import StorageUtils from '../../utils/storageUtils';
 import './AdminLayout.css';
 
 const AdminLayout = ({ children, title, description }) => {
@@ -14,7 +15,7 @@ const AdminLayout = ({ children, title, description }) => {
 
   // Restore sidebar scroll position on mount
   useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('adminSidebarScroll');
+    const savedScrollPosition = StorageUtils.getFromSessionStorage('adminSidebarScroll', null);
     if (savedScrollPosition && sidebarNavRef.current) {
       sidebarNavRef.current.scrollTop = parseInt(savedScrollPosition, 10);
     }
@@ -24,7 +25,7 @@ const AdminLayout = ({ children, title, description }) => {
   useEffect(() => {
     const handleScroll = () => {
       if (sidebarNavRef.current) {
-        sessionStorage.setItem('adminSidebarScroll', sidebarNavRef.current.scrollTop.toString());
+        StorageUtils.setToSessionStorage('adminSidebarScroll', sidebarNavRef.current.scrollTop.toString());
       }
     };
 

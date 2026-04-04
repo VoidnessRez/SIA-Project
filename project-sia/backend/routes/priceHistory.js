@@ -7,6 +7,7 @@ import {
   getPriceDecreases,
   getPriceHistoryStats,
   createPriceHistoryEntry,
+  updatePriceHistoryEntry,
   deletePriceHistoryEntry
 } from '../controllers/priceHistoryController.js';
 
@@ -32,6 +33,9 @@ router.get('/product/:type/:id', getProductPriceHistory);
 
 // Create manual price history entry
 router.post('/manual', createPriceHistoryEntry);
+
+// Update price history entry
+router.put('/:id', updatePriceHistoryEntry);
 
 // Delete price history entry
 router.delete('/:id', deletePriceHistoryEntry);

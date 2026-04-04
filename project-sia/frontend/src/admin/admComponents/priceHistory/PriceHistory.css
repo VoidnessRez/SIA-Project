@@ -263,6 +263,43 @@
   max-width: 200px;
 }
 
+.actions-cell {
+  min-width: 150px;
+}
+
+.inline-edit-input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #d3d8e6;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.inline-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  margin-right: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inline-btn.edit {
+  background: #eef2ff;
+  color: #364fc7;
+}
+
+.inline-btn.save {
+  background: #e6f7ee;
+  color: #0f8b4c;
+}
+
+.inline-btn.cancel {
+  background: #f5f5f7;
+  color: #555;
+}
+
 /* Loading, Error, and Empty States */
 .loading-state,
 .error-state,

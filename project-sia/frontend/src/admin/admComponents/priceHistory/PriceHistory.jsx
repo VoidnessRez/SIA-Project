@@ -10,6 +10,13 @@ const PriceHistory = () => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    old_selling_price: '',
+    new_selling_price: '',
+    change_reason: ''
+  });
   
   // Filters
   const [filterType, setFilterType] = useState('all'); // all, spare_part, accessory
@@ -88,6 +95,57 @@ const PriceHistory = () => {
 
   const getChangeClass = (changeType) => {
     return changeType === 'increase' ? 'price-increase' : 'price-decrease';
+  };
+
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setEditForm({
+      old_selling_price: String(item.old_selling_price ?? ''),
+      new_selling_price: String(item.new_selling_price ?? ''),
+      change_reason: item.change_reason || ''
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({ old_selling_price: '', new_selling_price: '', change_reason: '' });
+  };
+
+  const saveEdit = async (id) => {
+    const oldPrice = parseFloat(editForm.old_selling_price);
+    const newPrice = parseFloat(editForm.new_selling_price);
+    if (Number.isNaN(oldPrice) || Number.isNaN(newPrice) || oldPrice <= 0 || newPrice < 0) {
+      alert('Please enter valid old and new prices.');
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      const response = await fetch(`${BACKEND_URL}/api/price-history/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          old_selling_price: oldPrice,
+          new_selling_price: newPrice,
+          change_reason: editForm.change_reason
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update price history entry');
+      }
+
+      setPriceHistory((prev) => prev.map((entry) => (entry.id === id ? data.data : entry)));
+      cancelEdit();
+      fetchStatistics();
+      alert('Price history entry updated successfully.');
+    } catch (err) {
+      console.error('Error updating price history entry:', err);
+      alert(`Update failed: ${err.message}`);
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const filteredHistory = priceHistory.filter(item => {
@@ -225,6 +283,7 @@ const PriceHistory = () => {
                   <th>Change</th>
                   <th>Percentage</th>
                   <th>Reason</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -240,8 +299,28 @@ const PriceHistory = () => {
                         {item.product_type === 'spare_part' ? '⚙️ Part' : '🛡️ Accessory'}
                       </span>
                     </td>
-                    <td className="price-cell old-price">{formatCurrency(item.old_selling_price)}</td>
-                    <td className="price-cell new-price">{formatCurrency(item.new_selling_price)}</td>
+                    <td className="price-cell old-price">
+                      {editingId === item.id ? (
+                        <input
+                          type="number"
+                          step="0.01"
+                          className="inline-edit-input"
+                          value={editForm.old_selling_price}
+                          onChange={(e) => setEditForm((prev) => ({ ...prev, old_selling_price: e.target.value }))}
+                        />
+                      ) : formatCurrency(item.old_selling_price)}
+                    </td>
+                    <td className="price-cell new-price">
+                      {editingId === item.id ? (
+                        <input
+                          type="number"
+                          step="0.01"
+                          className="inline-edit-input"
+                          value={editForm.new_selling_price}
+                          onChange={(e) => setEditForm((prev) => ({ ...prev, new_selling_price: e.target.value }))}
+                        />
+                      ) : formatCurrency(item.new_selling_price)}
+                    </td>
                     <td className={`change-cell ${item.change_type}`}>
                       {getChangeIcon(item.change_type)} {formatCurrency(Math.abs(item.price_difference))}
                     </td>
@@ -249,7 +328,31 @@ const PriceHistory = () => {
                       {formatPercentage(item.percentage_change)}
                     </td>
                     <td className="reason-cell">
-                      {item.change_reason || 'No reason specified'}
+                      {editingId === item.id ? (
+                        <input
+                          type="text"
+                          className="inline-edit-input"
+                          value={editForm.change_reason}
+                          onChange={(e) => setEditForm((prev) => ({ ...prev, change_reason: e.target.value }))}
+                          placeholder="Reason"
+                        />
+                      ) : (item.change_reason || 'No reason specified')}
+                    </td>
+                    <td className="actions-cell">
+                      {editingId === item.id ? (
+                        <>
+                          <button
+                            className="inline-btn save"
+                            disabled={savingEdit}
+                            onClick={() => saveEdit(item.id)}
+                          >
+                            {savingEdit ? 'Saving...' : 'Save'}
+                          </button>
+                          <button className="inline-btn cancel" onClick={cancelEdit} disabled={savingEdit}>Cancel</button>
+                        </>
+                      ) : (
+                        <button className="inline-btn edit" onClick={() => startEdit(item)}>Edit</button>
+                      )}
                     </td>
                   </tr>
                 ))}

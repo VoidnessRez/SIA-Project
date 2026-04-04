@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import ProtectedRoute from '../router/pRoutes/ProtectedRoute.jsx';
 import Dashboard from './dashboard/Dashboard.jsx';
 import Products from './pages/products/Products.jsx';
@@ -55,12 +56,14 @@ const App = () => {
   return (
     <AuthProvider>
       <DarkModeProvider>
-        <BrowserRouter>
-          <AppContent 
-            showAdminModal={showAdminModal}
-            setShowAdminModal={setShowAdminModal}
-          />
-        </BrowserRouter>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <AppContent 
+              showAdminModal={showAdminModal}
+              setShowAdminModal={setShowAdminModal}
+            />
+          </BrowserRouter>
+        </ErrorBoundary>
       </DarkModeProvider>
     </AuthProvider>
   );

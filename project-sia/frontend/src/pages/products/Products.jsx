@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import Toast from '../../components/toast/Toast';
+import StorageUtils from '../../utils/storageUtils';
 import './Products.css';
 
   const BACKEND_URL = 'http://localhost:5174';
@@ -114,8 +115,7 @@ import './Products.css';
   const [sortBy, setSortBy] = useState('featured');
   const [cart, setCart] = useState(() => {
     // Load cart from localStorage on mount
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    return StorageUtils.getFromLocalStorage('cart', []);
   });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -136,8 +136,7 @@ import './Products.css';
   // Listen for cart updates from other components (like CartModal deletions)
   useEffect(() => {
     const handleCartUpdate = () => {
-      const savedCart = localStorage.getItem('cart');
-      const updatedCart = savedCart ? JSON.parse(savedCart) : [];
+      const updatedCart = StorageUtils.getFromLocalStorage('cart', []);
       console.log('🔄 Cart updated from localStorage:', updatedCart);
       isExternalUpdate.current = true; // Mark as external update
       setCart(updatedCart);
@@ -159,7 +158,7 @@ import './Products.css';
     }
     
     console.log('💾 Saving cart to localStorage:', cart);
-    localStorage.setItem('cart', JSON.stringify(cart));
+    StorageUtils.setToLocalStorage('cart', cart);
     // Dispatch custom event to notify FloatingCart
     window.dispatchEvent(new Event('cartUpdated'));
   }, [cart]);
@@ -170,20 +169,13 @@ import './Products.css';
   }, []);
 
   useEffect(() => {
-    const rawProfile = localStorage.getItem('customerBikeProfile');
-    if (!rawProfile) return;
-
-    try {
-      const parsed = JSON.parse(rawProfile);
-      if (parsed?.bikeBrand && parsed?.bikeModel) {
-        setActiveBikeBrand(parsed.bikeBrand);
-        setActiveBikeModel(parsed.bikeModel);
-        setActiveBikeCcRange(parsed.bikeCcRange || 'all');
-        setActiveBrandPreference(parsed.brandPreference || 'all');
-        setBikeProfileReady(true);
-      }
-    } catch (profileErr) {
-      console.warn('Failed to load saved bike profile:', profileErr);
+    const parsed = StorageUtils.getFromLocalStorage('customerBikeProfile', null);
+    if (parsed?.bikeBrand && parsed?.bikeModel) {
+      setActiveBikeBrand(parsed.bikeBrand);
+      setActiveBikeModel(parsed.bikeModel);
+      setActiveBikeCcRange(parsed.bikeCcRange || 'all');
+      setActiveBrandPreference(parsed.brandPreference || 'all');
+      setBikeProfileReady(true);
     }
   }, []);
 
@@ -576,20 +568,6 @@ import './Products.css';
     return 0; // featured (default order)
   });
 
-  const _addToCart = (product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-    alert(`${product.name} added to cart!`);
-  };
-
   const handleQuickView = (product) => {
     if (!isAuthenticated()) {
       setShowAuthModal(true);
@@ -609,25 +587,26 @@ import './Products.css';
       return;
     }
     
-    console.log('📦 Current cart before adding:', cart);
-    
     const productKey = `${product.productType || product.category || 'product'}-${product.id}`;
-    const existingItem = cart.find(item => (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey);
-    if (existingItem) {
-      const updatedCart = cart.map(item => 
-        (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-      console.log('➕ Increasing quantity, new cart:', updatedCart);
-      setCart(updatedCart);
-      showToast(`Increased ${product.name} quantity in cart!`, 'success');
-    } else {
-      const newCart = [...cart, { ...product, cart_key: productKey, quantity: 1 }];
+    setCart((prevCart) => {
+      console.log('📦 Current cart before adding:', prevCart);
+      const existingItem = prevCart.find(item => (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey);
+      if (existingItem) {
+        const updatedCart = prevCart.map(item =>
+          (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+        console.log('➕ Increasing quantity, new cart:', updatedCart);
+        showToast(`Increased ${product.name} quantity in cart!`, 'success');
+        return updatedCart;
+      }
+
+      const newCart = [...prevCart, { ...product, cart_key: productKey, quantity: 1 }];
       console.log('✨ Adding new item, new cart:', newCart);
-      setCart(newCart);
       showToast(`Added ${product.name} to cart!`, 'success');
-    }
+      return newCart;
+    });
   };
 
   const closeQuickView = () => {
