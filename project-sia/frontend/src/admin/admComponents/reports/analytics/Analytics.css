@@ -1,0 +1,29 @@
+.analytics-page {
+  padding: 1.5rem;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.analytics-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #4f46e5;
+}
+
+.analytics-card .label {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.analytics-card .value {
+  color: #111827;
+  font-size: 1.5rem;
+  font-weight: 700;
+}

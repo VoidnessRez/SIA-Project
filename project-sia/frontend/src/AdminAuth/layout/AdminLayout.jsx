@@ -2,12 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDarkMode } from '../../context/DarkModeContext';
 import StorageUtils from '../../utils/storageUtils';
+import supabase from '../../lib/supabaseClient';
 import './AdminLayout.css';
+
+const BACKEND_URL = 'http://localhost:5174';
 
 const AdminLayout = ({ children, title, description }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [stickmanMode, setStickmanMode] = useState('walking'); 
+  const [badgeCounts, setBadgeCounts] = useState({
+    lowStock: null,
+    orders: null,
+    reviews: null
+  });
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,6 +51,36 @@ const AdminLayout = ({ children, title, description }) => {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  // Load live sidebar counts (no hardcoded mock badges)
+  useEffect(() => {
+    const fetchBadgeCounts = async () => {
+      try {
+        const [lowStockRes, ordersRes, reviewsRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/inventory/low-stock`).then((r) => r.json()).catch(() => null),
+          fetch(`${BACKEND_URL}/api/orders`).then((r) => r.json()).catch(() => null),
+          supabase.from('reviews').select('id', { count: 'exact', head: true })
+        ]);
+
+        const lowStockCount = lowStockRes?.success ? (lowStockRes.data || []).length : null;
+        const ordersCount = Array.isArray(ordersRes)
+          ? ordersRes.length
+          : (ordersRes?.success ? (ordersRes.data || []).length : null);
+        const reviewsCount = reviewsRes?.count ?? null;
+
+        setBadgeCounts({
+          lowStock: lowStockCount,
+          orders: ordersCount,
+          reviews: reviewsCount,
+        });
+      } catch {
+        // Keep badges hidden when counts are unavailable
+        setBadgeCounts({ lowStock: null, orders: null, reviews: null });
+      }
+    };
+
+    fetchBadgeCounts();
   }, []);
 
   // Change stickman mode with realistic timing
@@ -111,7 +149,7 @@ const AdminLayout = ({ children, title, description }) => {
         { path: '/admin/inventory', icon: '', label: 'Inventory Management', badge: null },
         { path: '/admin/spare-parts', icon: '', label: 'Spare Parts', badge: null },
         { path: '/admin/accessories', icon: '', label: 'Accessories', badge: null },
-        { path: '/admin/low-stock', icon: '', label: 'Low Stock Alerts', badge: '5' },
+        { path: '/admin/low-stock', icon: '', label: 'Low Stock Alerts', badge: badgeCounts.lowStock },
         { path: '/admin/overstock', icon: '', label: 'Overstock Alerts', badge: null },
         { path: '/admin/brands', icon: '', label: 'Brands Management', badge: null },
         { path: '/admin/pickup', icon: '', label: 'Item Pickup', badge: null },
@@ -125,7 +163,7 @@ const AdminLayout = ({ children, title, description }) => {
     {
       section: 'ORDERS & SALES',
       items: [
-        { path: '/admin/orders', icon: '', label: 'Customer Orders', badge: '12' },
+        { path: '/admin/orders', icon: '', label: 'Customer Orders', badge: badgeCounts.orders },
         { path: '/admin/sales', icon: '', label: 'Sales Records', badge: null },
         { path: '/admin/transactions', icon: '', label: 'Transactions', badge: null },
       ]
@@ -135,7 +173,7 @@ const AdminLayout = ({ children, title, description }) => {
       items: [
         { path: '/admin/unv_users', icon: '', label: 'Unverified Users', badge: null },
         { path: '/admin/ver_users', icon: '', label: 'Verified Users', badge: null },
-        { path: '/admin/reviews', icon: '', label: 'Reviews & Ratings', badge: '3' },
+        { path: '/admin/reviews', icon: '', label: 'Reviews & Ratings', badge: badgeCounts.reviews },
       ]
     },
     {

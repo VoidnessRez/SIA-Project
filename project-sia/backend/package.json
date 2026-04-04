@@ -10,6 +10,7 @@
     "seed:bulk": "node scripts/seed_bulk_mock_products.js",
     "seed:features": "node scripts/seed_new_features.js",
     "seed:ph": "node scripts/seed_ph_motorcycles.js",
+    "seed:admin": "node scripts/seed_admin_pages.js",
     "scan:brands": "node scripts/db_brand_scan.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

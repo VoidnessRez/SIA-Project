@@ -38,6 +38,7 @@ import VerifiedUsers from './admin/admComponents/customers/customerList/Verified
 import Reviews from './admin/admComponents/customers/reviews/Reviews.jsx';
 import SalesReports from './admin/admComponents/reports/salesReports/SalesReports.jsx';
 import InventoryReports from './admin/admComponents/reports/inventoryReports/InventoryReports.jsx';
+import Analytics from './admin/admComponents/reports/analytics/Analytics.jsx';
 import ReturnManagement from './admin/admComponents/reports/returnManagement/ReturnManagement.jsx';
 import Feedback from './admin/admComponents/reports/feedback/Feedback.jsx';
 import Messages from './admin/admComponents/reports/messages/Messages.jsx';
@@ -166,6 +167,7 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             {/* Admin Reports */}
             <Route path="/admin/reports/sales" element={<SalesReports />} />
             <Route path="/admin/reports/inventory" element={<InventoryReports />} />
+            <Route path="/admin/reports/analytics" element={<Analytics />} />
             <Route path="/admin/modules" element={<ReturnManagement />} />
             <Route path="/admin/feedbacks" element={<Feedback />} />
             <Route path="/admin/messages" element={<Messages />} />
