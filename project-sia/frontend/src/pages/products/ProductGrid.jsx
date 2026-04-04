@@ -1,165 +1,169 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import './ProductGrid.css';
 
+const BACKEND_URL = 'http://localhost:5174';
+
+const slugify = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+const knownBikeBrands = ['yamaha', 'honda', 'suzuki', 'kawasaki', 'ktm', 'ducati', 'bmw'];
+
+const parseCompatibilityList = (rawValue) => {
+  if (!rawValue) return [];
+
+  let list = [];
+  if (Array.isArray(rawValue)) {
+    list = rawValue;
+  } else if (typeof rawValue === 'string') {
+    const trimmed = rawValue.trim();
+    if (!trimmed || trimmed === '[]' || trimmed.toLowerCase() === 'null') return [];
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      list = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      list = trimmed.split(',').map((v) => v.trim()).filter(Boolean);
+    }
+  }
+
+  return list
+    .map((entry) => String(entry || '').trim())
+    .filter(Boolean)
+    .map((label) => {
+      const lower = label.toLowerCase();
+      const brandSlug = knownBikeBrands.find((b) => lower.includes(b)) || slugify(lower.split(' ')[0] || 'unknown');
+      const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
+      const ccMatch = label.match(/(\d{2,4})\s*cc?/i) || label.match(/\b(\d{2,4})\b/);
+      const cc = ccMatch ? parseInt(ccMatch[1], 10) : null;
+      const modelWithoutBrand = label
+        .replace(new RegExp(`^${brandName}\\s+`, 'i'), '')
+        .replace(/\b\d{2,4}\s*cc?\b/gi, '')
+        .trim();
+
+      return {
+        label,
+        brandSlug,
+        brandName,
+        modelSlug: slugify(modelWithoutBrand || label),
+        modelName: modelWithoutBrand || label,
+        cc,
+      };
+    });
+};
+
+const ccMatchesRange = (ccValue, range) => {
+  if (range === 'all') return true;
+  if (!ccValue || Number.isNaN(ccValue)) return false;
+  if (range === 'under125') return ccValue < 125;
+  if (range === '125-155') return ccValue >= 125 && ccValue <= 155;
+  if (range === '156-200') return ccValue >= 156 && ccValue <= 200;
+  if (range === 'over200') return ccValue > 200;
+  return true;
+};
+
+const getProductEmoji = (name, partTypeName, productType) => {
+  const nameLower = (name || '').toLowerCase();
+  const partTypeLower = (partTypeName || '').toLowerCase();
+
+  if (nameLower.includes('brake') || partTypeLower.includes('brake')) return '🛑';
+  if (nameLower.includes('filter') || partTypeLower.includes('filter')) return '🌬️';
+  if (nameLower.includes('spark') || nameLower.includes('plug') || partTypeLower.includes('plug')) return '⚡';
+  if (nameLower.includes('battery') || partTypeLower.includes('battery')) return '🔋';
+  if (nameLower.includes('oil') || partTypeLower.includes('oil')) return '🛢️';
+  if (nameLower.includes('wheel') || nameLower.includes('tire')) return '⭕';
+  if (productType === 'accessory') return '🛡️';
+  return '⚙️';
+};
+
 const ProductGrid = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeBrand, setActiveBrand] = useState('all');
+  const [activeBikeBrand, setActiveBikeBrand] = useState('all');
+  const [activeBikeModel, setActiveBikeModel] = useState('all');
+  const [activeBikeCcRange, setActiveBikeCcRange] = useState('all');
+  const [activeBrandPreference, setActiveBrandPreference] = useState('all');
+  const [bikeProfileReady, setBikeProfileReady] = useState(false);
+  const [activeSizeSpec, setActiveSizeSpec] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const products = [
-    { 
-      id: 1, 
-      name: 'Brake Pads', 
-      price: '₱850', 
-      category: 'parts', 
-      brand: 'honda', 
-      image: '🛑', 
-      images: ['🛑', '🔴', '⚫'],
-      rating: 4.8, 
-      stock: 45,
-      description: 'High-quality brake pads for Honda motorcycles. Provides excellent stopping power and durability.'
-    },
-    { 
-      id: 2, 
-      name: 'Engine Oil Filter', 
-      price: '₱320', 
-      category: 'parts', 
-      brand: 'suzuki', 
-      image: '🛢️', 
-      images: ['🛢️', '⚙️', '🔵'],
-      rating: 4.6, 
-      stock: 60,
-      description: 'Premium oil filter for Suzuki engines. Ensures clean oil circulation and engine protection.'
-    },
-    { 
-      id: 3, 
-      name: 'Spark Plug', 
-      price: '₱180', 
-      category: 'parts', 
-      brand: 'yamaha', 
-      image: '⚡', 
-      images: ['⚡', '🔌', '⚫'],
-      rating: 4.7, 
-      stock: 80,
-      description: 'High-performance spark plug for Yamaha motorcycles. Improves ignition and fuel efficiency.'
-    },
-    { 
-      id: 4, 
-      name: 'Chain Sprocket Set', 
-      price: '₱1,850', 
-      category: 'parts', 
-      brand: 'kawasaki', 
-      image: '⛓️', 
-      images: ['⛓️', '⚙️', '🟢'],
-      rating: 4.9, 
-      stock: 25,
-      description: 'Complete chain and sprocket set for Kawasaki bikes. Durable and long-lasting performance.'
-    },
-    { 
-      id: 5, 
-      name: 'Air Filter', 
-      price: '₱450', 
-      category: 'parts', 
-      brand: 'honda', 
-      image: '🌬️', 
-      images: ['🌬️', '💨', '🔴'],
-      rating: 4.5, 
-      stock: 50,
-      description: 'Quality air filter for optimal engine performance. Keeps your engine breathing clean air.'
-    },
-    { 
-      id: 6, 
-      name: 'Handlebar Grips', 
-      price: '₱280', 
-      category: 'accessories', 
-      brand: 'all', 
-      image: '🎯', 
-      images: ['🎯', '🖐️', '⚫'],
-      rating: 4.3, 
-      stock: 70,
-      description: 'Comfortable handlebar grips with anti-slip design. Universal fit for all motorcycle brands.'
-    },
-    { 
-      id: 7, 
-      name: 'Side Mirror', 
-      price: '₱650', 
-      category: 'accessories', 
-      brand: 'suzuki', 
-      image: '🪞', 
-      images: ['🪞', '👁️', '🔵'],
-      rating: 4.4, 
-      stock: 35,
-      description: 'High-quality side mirror with wide viewing angle. Perfect replacement for Suzuki motorcycles.'
-    },
-    { 
-      id: 8, 
-      name: 'Helmet', 
-      price: '₱2,500', 
-      category: 'accessories', 
-      brand: 'all', 
-      image: '🪖', 
-      images: ['🪖', '🛡️', '⚫', '🔴'],
-      rating: 4.9, 
-      stock: 20,
-      description: 'Safety-certified full-face helmet. Available in multiple colors with superior impact protection.'
-    },
-    { 
-      id: 9, 
-      name: 'Clutch Cable', 
-      price: '₱380', 
-      category: 'parts', 
-      brand: 'yamaha', 
-      image: '🔗', 
-      images: ['🔗', '⚙️', '⚫'],
-      rating: 4.6, 
-      stock: 40,
-      description: 'Durable clutch cable for smooth gear shifting. Designed specifically for Yamaha models.'
-    },
-    { 
-      id: 10, 
-      name: 'Battery 12V', 
-      price: '₱1,200', 
-      category: 'parts', 
-      brand: 'kawasaki', 
-      image: '🔋', 
-      images: ['🔋', '⚡', '🟢'],
-      rating: 4.8, 
-      stock: 30,
-      description: '12V maintenance-free battery. Reliable starting power for Kawasaki motorcycles.'
-    },
-    { 
-      id: 11, 
-      name: 'LED Headlight', 
-      price: '₱1,800', 
-      category: 'accessories', 
-      brand: 'all', 
-      image: '💡', 
-      images: ['💡', '✨', '🌟'],
-      rating: 4.7, 
-      stock: 25,
-      description: 'Bright LED headlight with low power consumption. Universal fit with easy installation.'
-    },
-    { 
-      id: 12, 
-      name: 'Tire Set', 
-      price: '₱3,200', 
-      category: 'parts', 
-      brand: 'honda', 
-      image: '⭕', 
-      images: ['⭕', '🔴', '⚫'],
-      rating: 4.9, 
-      stock: 15,
-      description: 'Premium tire set with excellent grip and durability. Front and rear tires for Honda bikes.'
-    },
-  ];
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  useEffect(() => {
+    const rawProfile = localStorage.getItem('customerBikeProfile');
+    if (!rawProfile) return;
+
+    try {
+      const parsed = JSON.parse(rawProfile);
+      if (parsed?.bikeBrand && parsed?.bikeModel) {
+        setActiveBikeBrand(parsed.bikeBrand);
+        setActiveBikeModel(parsed.bikeModel);
+        setActiveBikeCcRange(parsed.bikeCcRange || 'all');
+        setActiveBrandPreference(parsed.brandPreference || 'all');
+        setBikeProfileReady(true);
+      }
+    } catch (profileErr) {
+      console.warn('Failed to load saved bike profile:', profileErr);
+    }
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/inventory/products`);
+      const result = await response.json();
+
+      if (!result.success || !Array.isArray(result.data)) {
+        setProducts([]);
+        return;
+      }
+
+      const transformed = result.data.slice(0, 12).map((product) => {
+        const imageCandidates = [product.image_url, product.image_2, product.image_3]
+          .map((url) => String(url || '').trim())
+          .filter((url) => /^https?:\/\//i.test(url));
+        const image = imageCandidates[0] || getProductEmoji(product.name, product.part_type_name, product.product_type);
+        const brandName = product.brand_name || product.brand_code || 'Unknown';
+        return {
+          id: product.id,
+          name: product.name,
+          price: Number(product.selling_price || 0),
+          category: product.product_type === 'accessory' ? 'accessories' : 'parts',
+          brand: slugify(brandName) || 'unknown',
+          brandName,
+          image,
+          images: imageCandidates.length ? imageCandidates : [image],
+          rating: Number(product.rating || 4.5),
+          stock: Number(product.stock_quantity || 0),
+          description: product.description || 'No description available',
+          dimensions: product.dimensions || '',
+          qualityType: String(product.quality_type || 'unknown').toLowerCase(),
+          isUniversal: Boolean(product.is_universal),
+          compatibilityModels: parseCompatibilityList(product.compatible_bike_models)
+        };
+      });
+
+      setProducts(transformed);
+    } catch (error) {
+      console.error('Error fetching featured products:', error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
     { id: 'all', name: 'All Products' },
@@ -169,16 +173,83 @@ const ProductGrid = () => {
 
   const brands = [
     { id: 'all', name: 'All Brands', icon: '🏍️' },
-    { id: 'honda', name: 'Honda', icon: '🔴' },
-    { id: 'suzuki', name: 'Suzuki', icon: '🔵' },
-    { id: 'yamaha', name: 'Yamaha', icon: '⚫' },
-    { id: 'kawasaki', name: 'Kawasaki', icon: '🟢' },
+    ...Array.from(new Set(products.map((p) => p.brandName).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name, icon: '🏷️' })),
   ];
 
+  const motorcycleBrands = [
+    { id: 'all', name: 'All Motorcycle Brands' },
+    ...Array.from(new Set(
+      products.flatMap((p) => (p.compatibilityModels || []).map((m) => m.brandName))
+    ))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
+  ];
+
+  const motorcycleModels = [
+    { id: 'all', name: 'All Motorcycle Models' },
+    ...Array.from(new Set(
+      products.flatMap((p) => (p.compatibilityModels || [])
+        .filter((m) => activeBikeBrand === 'all' || m.brandSlug === activeBikeBrand)
+        .map((m) => m.modelName))
+    ))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
+  ];
+
+  const sizeSpecs = [
+    { id: 'all', name: 'All Sizes / Specs' },
+    ...Array.from(new Set(products.map((p) => String(p.dimensions || '').trim()).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
+  ];
+
+  const handleApplyBikeProfile = () => {
+    if (activeBikeBrand === 'all' || activeBikeModel === 'all') {
+      alert('Please select your motorcycle brand and model first.');
+      return;
+    }
+
+    setBikeProfileReady(true);
+    localStorage.setItem('customerBikeProfile', JSON.stringify({
+      bikeBrand: activeBikeBrand,
+      bikeModel: activeBikeModel,
+      bikeCcRange: activeBikeCcRange,
+      brandPreference: activeBrandPreference,
+    }));
+
+    if (activeBrandPreference === 'genuine') {
+      setActiveBrand(activeBikeBrand);
+    }
+  };
+
   const filteredProducts = products.filter(product => {
+    if (!bikeProfileReady) return false;
+
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
-    const matchesBrand = activeBrand === 'all' || product.brand === activeBrand || product.brand === 'all';
-    return matchesCategory && matchesBrand;
+    const matchesBrand = activeBrand === 'all' || product.brand === activeBrand;
+    const matchesSizeSpec = activeSizeSpec === 'all' || slugify(product.dimensions) === activeSizeSpec;
+
+    const hasMotorcycleFilter = activeBikeBrand !== 'all' || activeBikeModel !== 'all' || activeBikeCcRange !== 'all';
+    const compatibilityModels = product.compatibilityModels || [];
+
+    const matchesBikeBrand = activeBikeBrand === 'all' || compatibilityModels.some((m) => m.brandSlug === activeBikeBrand);
+    const matchesBikeModel = activeBikeModel === 'all' || compatibilityModels.some((m) => m.modelSlug === activeBikeModel);
+    const matchesBikeCc = activeBikeCcRange === 'all' || compatibilityModels.some((m) => ccMatchesRange(m.cc, activeBikeCcRange));
+    const matchesMotorcycle = !hasMotorcycleFilter || product.isUniversal || (matchesBikeBrand && matchesBikeModel && matchesBikeCc);
+
+    const sameAsBikeBrand = activeBikeBrand !== 'all' && product.brand === activeBikeBrand;
+    const qualityType = product.qualityType || 'unknown';
+    const aftermarket = qualityType === 'aftermarket' || (qualityType === 'unknown' && product.brand !== 'unknown' && !sameAsBikeBrand);
+    const matchesBrandPreference =
+      activeBrandPreference === 'all' ||
+      (activeBrandPreference === 'genuine' && (qualityType === 'genuine' || sameAsBikeBrand || product.isUniversal)) ||
+      (activeBrandPreference === 'aftermarket' && aftermarket);
+
+    return matchesCategory && matchesBrand && matchesSizeSpec && matchesMotorcycle && matchesBrandPreference;
   });
 
   const handleQuickView = (product) => {
@@ -201,13 +272,14 @@ const ProductGrid = () => {
     const cart = savedCart ? JSON.parse(savedCart) : [];
     
     // Check if product already exists in cart
-    const existingItem = cart.find(item => item.id === product.id);
+    const productKey = `${product.productType || product.category || 'product'}-${product.id}`;
+    const existingItem = cart.find(item => (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey);
     
     let updatedCart;
     if (existingItem) {
       // Increase quantity
       updatedCart = cart.map(item => 
-        item.id === product.id 
+        (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
@@ -215,12 +287,11 @@ const ProductGrid = () => {
     } else {
       // Add new item with quantity 1
       // Parse price if it's a string
-      const price = typeof product.price === 'string' 
-        ? parseFloat(product.price.replace(/[₱,]/g, ''))
-        : product.price;
+      const price = Number(product.price || 0);
       
       updatedCart = [...cart, { 
         ...product, 
+        cart_key: productKey,
         price: price,
         quantity: 1 
       }];
@@ -260,7 +331,7 @@ const ProductGrid = () => {
       <div className="container">
         <div className="section-header">
           <h2>Featured Products</h2>
-          <button className="view-all-btn">View All Products →</button>
+          <button className="view-all-btn" onClick={() => navigate('/products')}>View All Products →</button>
         </div>
 
         <div className="category-filters">
@@ -276,6 +347,66 @@ const ProductGrid = () => {
         </div>
 
         <div className="brand-filters">
+          <label className="filter-label" style={{ marginBottom: '0.75rem' }}>1) Set your motorcycle profile first</label>
+          <div className="bike-filters" style={{ marginTop: 0, marginBottom: '0.75rem' }}>
+            <select
+              className="bike-filter-select"
+              value={activeBikeBrand}
+              onChange={(e) => {
+                setActiveBikeBrand(e.target.value);
+                setActiveBikeModel('all');
+                setBikeProfileReady(false);
+              }}
+            >
+              {motorcycleBrands.map((brand) => (
+                <option key={brand.id} value={brand.id}>{brand.name}</option>
+              ))}
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeBikeModel}
+              onChange={(e) => {
+                setActiveBikeModel(e.target.value);
+                setBikeProfileReady(false);
+              }}
+            >
+              {motorcycleModels.map((model) => (
+                <option key={model.id} value={model.id}>{model.name}</option>
+              ))}
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeBikeCcRange}
+              onChange={(e) => {
+                setActiveBikeCcRange(e.target.value);
+                setBikeProfileReady(false);
+              }}
+            >
+              <option value="all">All Engine CC</option>
+              <option value="under125">Under 125cc</option>
+              <option value="125-155">125cc to 155cc</option>
+              <option value="156-200">156cc to 200cc</option>
+              <option value="over200">Over 200cc</option>
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeBrandPreference}
+              onChange={(e) => {
+                setActiveBrandPreference(e.target.value);
+                setBikeProfileReady(false);
+              }}
+            >
+              <option value="all">Any Brand Preference</option>
+              <option value="genuine">Genuine / Same bike brand</option>
+              <option value="aftermarket">Aftermarket (RCB/CNC/etc.)</option>
+            </select>
+          </div>
+
+          <button className="filter-btn" onClick={handleApplyBikeProfile}>Apply Motorcycle Profile</button>
+
           <label className="filter-label"></label>
           <div className="brand-buttons">
             {brands.map(brand => (
@@ -289,15 +420,77 @@ const ProductGrid = () => {
               </button>
             ))}
           </div>
+
+          <div className="bike-filters">
+            <select
+              className="bike-filter-select"
+              value={activeBikeBrand}
+              onChange={(e) => {
+                setActiveBikeBrand(e.target.value);
+                setActiveBikeModel('all');
+                setBikeProfileReady(false);
+              }}
+            >
+              {motorcycleBrands.map((brand) => (
+                <option key={brand.id} value={brand.id}>{brand.name}</option>
+              ))}
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeBikeModel}
+              onChange={(e) => {
+                setActiveBikeModel(e.target.value);
+                setBikeProfileReady(false);
+              }}
+            >
+              {motorcycleModels.map((model) => (
+                <option key={model.id} value={model.id}>{model.name}</option>
+              ))}
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeBikeCcRange}
+              onChange={(e) => {
+                setActiveBikeCcRange(e.target.value);
+                setBikeProfileReady(false);
+              }}
+            >
+              <option value="all">All Engine CC</option>
+              <option value="under125">Under 125cc</option>
+              <option value="125-155">125cc to 155cc</option>
+              <option value="156-200">156cc to 200cc</option>
+              <option value="over200">Over 200cc</option>
+            </select>
+
+            <select
+              className="bike-filter-select"
+              value={activeSizeSpec}
+              onChange={(e) => setActiveSizeSpec(e.target.value)}
+            >
+              {sizeSpecs.map((size) => (
+                <option key={size.id} value={size.id}>{size.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="products-grid">
-          {filteredProducts.map(product => (
+          {loading ? (
+            <p>Loading products...</p>
+          ) : !bikeProfileReady ? (
+            <p>Please set your motorcycle profile first (brand/model/cc + preference).</p>
+          ) : filteredProducts.length === 0 ? (
+            <p>No products available right now.</p>
+          ) : filteredProducts.map(product => (
             <div key={product.id} className="product-card">
               <div className="product-image">
-                <div className="product-emoji">
-                  {product.image || '⚙️'}
-                </div>
+                {String(product.image || '').startsWith('http') ? (
+                  <img className="product-photo" src={product.image} alt={product.name} />
+                ) : (
+                  <div className="product-emoji">{product.image || '⚙️'}</div>
+                )}
                 <div className="product-overlay">
                   <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                     Quick View
@@ -312,7 +505,7 @@ const ProductGrid = () => {
                   <span className="rating-value">({product.rating})</span>
                 </div>
                 <div className="product-footer">
-                  <span className="product-price">{product.price}</span>
+                  <span className="product-price">₱{Number(product.price || 0).toLocaleString()}</span>
                   <span className="product-stock">Stock: {product.stock}</span>
                 </div>
                 <button className="add-to-cart-btn" onClick={() => handleAddToCart(product)}>Add to Cart</button>
@@ -331,9 +524,11 @@ const ProductGrid = () => {
                 {/* Image Gallery Section */}
                 <div className="modal-gallery">
                   <div className="main-image">
-                    <span className="main-image-emoji">
-                      {selectedProduct.images[currentImageIndex]}
-                    </span>
+                    {String(selectedProduct.images[currentImageIndex] || '').startsWith('http') ? (
+                      <img className="main-image-photo" src={selectedProduct.images[currentImageIndex]} alt={selectedProduct.name} />
+                    ) : (
+                      <span className="main-image-emoji">{selectedProduct.images[currentImageIndex]}</span>
+                    )}
                     
                     {selectedProduct.images.length > 1 && (
                       <>
@@ -356,7 +551,11 @@ const ProductGrid = () => {
                           className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
                           onClick={() => setCurrentImageIndex(index)}
                         >
-                          <span className="thumbnail-emoji">{img}</span>
+                          {String(img || '').startsWith('http') ? (
+                            <img className="thumbnail-photo" src={img} alt={`${selectedProduct.name} ${index + 1}`} />
+                          ) : (
+                            <span className="thumbnail-emoji">{img}</span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -379,7 +578,7 @@ const ProductGrid = () => {
                     <span className="rating-value">({selectedProduct.rating})</span>
                   </div>
 
-                  <div className="modal-price">{selectedProduct.price}</div>
+                  <div className="modal-price">₱{Number(selectedProduct.price || 0).toLocaleString()}</div>
 
                   <div className="modal-stock">
                     <span className={selectedProduct.stock > 20 ? 'in-stock' : 'low-stock'}>
@@ -400,7 +599,11 @@ const ProductGrid = () => {
                     </div>
                     <div className="info-item">
                       <span className="info-label">Brand:</span>
-                      <span className="info-value">{selectedProduct.brand.charAt(0).toUpperCase() + selectedProduct.brand.slice(1)}</span>
+                      <span className="info-value">{selectedProduct.brandName || 'N/A'}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Size / Spec:</span>
+                      <span className="info-value">{selectedProduct.dimensions || 'N/A'}</span>
                     </div>
                   </div>
 

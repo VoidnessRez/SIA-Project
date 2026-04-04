@@ -1,84 +1,71 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './Orders.css';
+
+const BACKEND_URL = 'http://localhost:5174';
 
 const Orders = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock order data
-  const orders = [
-    {
-      id: 'ORD-2024-001',
-      date: '2024-10-15',
-      status: 'delivered',
-      total: 4350,
-      items: [
-        { name: 'Brake Pads Set', quantity: 1, price: 850, image: '🛑' },
-        { name: 'IRC Tire Set', quantity: 1, price: 3200, image: '⭕' },
-        { name: 'Engine Oil Filter', quantity: 1, price: 320, image: '🛢️' },
-      ],
-      shippingAddress: 'Manila City, Philippines',
-      paymentMethod: 'Cash on Delivery',
-      trackingNumber: 'TRK123456789'
-    },
-    {
-      id: 'ORD-2024-002',
-      date: '2024-10-12',
-      status: 'shipped',
-      total: 2500,
-      items: [
-        { name: 'Shoei Full Face Helmet', quantity: 1, price: 2500, image: '🪖' },
-      ],
-      shippingAddress: 'Quezon City, Philippines',
-      paymentMethod: 'GCash',
-      trackingNumber: 'TRK987654321'
-    },
-    {
-      id: 'ORD-2024-003',
-      date: '2024-10-08',
-      status: 'processing',
-      total: 2030,
-      items: [
-        { name: 'Chain & Sprocket Set', quantity: 1, price: 1850, image: '⛓️' },
-        { name: 'NGK Spark Plug', quantity: 1, price: 180, image: '⚡' },
-      ],
-      shippingAddress: 'Caloocan City, Philippines',
-      paymentMethod: 'Bank Transfer',
-      trackingNumber: 'Pending'
-    },
-    {
-      id: 'ORD-2024-004',
-      date: '2024-09-28',
-      status: 'delivered',
-      total: 1800,
-      items: [
-        { name: 'LED Headlight Bulb', quantity: 1, price: 1800, image: '💡' },
-      ],
-      shippingAddress: 'Makati City, Philippines',
-      paymentMethod: 'Cash on Delivery',
-      trackingNumber: 'TRK111222333'
-    },
-    {
-      id: 'ORD-2024-005',
-      date: '2024-09-20',
-      status: 'cancelled',
-      total: 650,
-      items: [
-        { name: 'OEM Side Mirror', quantity: 1, price: 650, image: '🪞' },
-      ],
-      shippingAddress: 'Pasig City, Philippines',
-      paymentMethod: 'GCash',
-      trackingNumber: 'N/A'
-    },
-  ];
+  useEffect(() => {
+    fetchOrders();
+  }, [user?.id]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BACKEND_URL}/api/orders`);
+      const result = await response.json();
+
+      if (!result.success || !Array.isArray(result.data)) {
+        setOrders([]);
+        return;
+      }
+
+      const filteredByUser = user?.id
+        ? result.data.filter((order) => order.user_id === user.id)
+        : result.data;
+
+      const transformed = filteredByUser.map((order) => ({
+        id: order.order_number || `ORD-${order.id}`,
+        date: order.order_date || order.created_at,
+        status: order.order_status || 'pending_approval',
+        total: Number(order.total_amount || 0),
+        items: (order.order_items || []).map((item) => ({
+          name: item.product_name,
+          quantity: Number(item.quantity || 0),
+          price: Number(item.unit_price || 0),
+          image: item.product_image || '📦',
+          sku: item.product_sku
+        })),
+        shippingAddress: [order.delivery_barangay, order.delivery_city, order.delivery_province].filter(Boolean).join(', ') || 'N/A',
+        paymentMethod: order.payment_method || 'N/A',
+        trackingNumber: order.tracking_number || 'Pending',
+        fulfillmentMethod: order.fulfillment_method || 'delivery'
+      }));
+
+      setOrders(transformed);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusInfo = (status) => {
     const statusMap = {
       delivered: { icon: '✅', label: 'Delivered', color: '#28a745' },
       shipped: { icon: '🚚', label: 'Shipped', color: '#17a2b8' },
       processing: { icon: '⏳', label: 'Processing', color: '#ffc107' },
+      pending_approval: { icon: '⏳', label: 'Pending Approval', color: '#ffc107' },
+      confirmed: { icon: '✅', label: 'Confirmed', color: '#17a2b8' },
       cancelled: { icon: '❌', label: 'Cancelled', color: '#dc3545' },
     };
     return statusMap[status] || { icon: '❓', label: 'Unknown', color: '#6c757d' };
@@ -86,6 +73,7 @@ const Orders = () => {
 
   const filteredOrders = orders.filter(order => {
     if (activeTab === 'all') return true;
+    if (activeTab === 'processing') return ['processing', 'pending_approval', 'confirmed'].includes(order.status);
     return order.status === activeTab;
   });
 
@@ -108,9 +96,9 @@ const Orders = () => {
         phone: '09123456789'
       },
       items: order.items.map(item => ({
-        id: item.name,
+        id: item.sku || item.name,
         name: item.name,
-        sku: `SKU-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        sku: item.sku || 'N/A',
         image: item.image,
         price: item.price,
         quantity: item.quantity
@@ -151,6 +139,7 @@ const Orders = () => {
       </div>
 
       <div className="orders-container">
+        {loading && <p>Loading your orders...</p>}
         {/* Order Statistics */}
         <div className="orders-stats">
           <div className="stat-card">
@@ -195,7 +184,7 @@ const Orders = () => {
             className={`order-tab ${activeTab === 'processing' ? 'active' : ''}`}
             onClick={() => setActiveTab('processing')}
           >
-            Processing ({orders.filter(o => o.status === 'processing').length})
+            Processing ({orders.filter(o => ['processing', 'pending_approval', 'confirmed'].includes(o.status)).length})
           </button>
           <button
             className={`order-tab ${activeTab === 'shipped' ? 'active' : ''}`}
@@ -213,11 +202,11 @@ const Orders = () => {
 
         {/* Orders List */}
         <div className="orders-list">
-          {filteredOrders.length === 0 ? (
+          {!loading && filteredOrders.length === 0 ? (
             <div className="no-orders">
               <h3>😔 No orders found</h3>
               <p>You haven't placed any orders yet or no orders match the filter</p>
-              <button className="shop-now-btn">Start Shopping →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/products')}>Start Shopping →</button>
             </div>
           ) : (
             filteredOrders.map(order => {
@@ -242,7 +231,11 @@ const Orders = () => {
                   <div className="order-items-preview">
                     {order.items.map((item, index) => (
                       <div key={index} className="item-preview">
-                        <span className="item-image">{item.image}</span>
+                        {String(item.image || '').startsWith('http') ? (
+                          <img className="item-image" src={item.image} alt={item.name} />
+                        ) : (
+                          <span className="item-image">{item.image}</span>
+                        )}
                         <div className="item-details">
                           <span className="item-name">{item.name}</span>
                           <span className="item-quantity">Qty: {item.quantity}</span>
@@ -296,7 +289,11 @@ const Orders = () => {
                 <div className="modal-items-list">
                   {selectedOrder.items.map((item, index) => (
                     <div key={index} className="modal-item">
-                      <span className="modal-item-image">{item.image}</span>
+                      {String(item.image || '').startsWith('http') ? (
+                        <img className="modal-item-image" src={item.image} alt={item.name} />
+                      ) : (
+                        <span className="modal-item-image">{item.image}</span>
+                      )}
                       <div className="modal-item-info">
                         <h4>{item.name}</h4>
                         <p>Quantity: {item.quantity}</p>

@@ -1,11 +1,89 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../../Auth/modal/AuthModal';
 import Toast from '../../components/toast/Toast';
 import './Products.css';
 
   const BACKEND_URL = 'http://localhost:5174';
+
+  const slugify = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  const knownBikeBrands = ['yamaha', 'honda', 'suzuki', 'kawasaki', 'ktm', 'ducati', 'bmw'];
+
+  const toFriendlyPartTypeLabel = (name) => {
+    const value = String(name || '').trim().toLowerCase();
+    if (!value) return 'Other';
+    if (value.includes('wheel') || value.includes('tire')) return 'Gulong at Tires';
+    if (value.includes('brake')) return 'Preno';
+    if (value.includes('engine')) return 'Makina';
+    if (value.includes('electrical')) return 'Electrical';
+    if (value.includes('drivetrain') || value.includes('transmission')) return 'Drivetrain';
+    if (value.includes('fuel')) return 'Fuel System';
+    if (value.includes('lighting')) return 'Ilaw';
+    if (value.includes('safety')) return 'Safety Gear';
+    if (value.includes('body')) return 'Body Parts';
+    if (value.includes('control')) return 'Controls';
+    if (value.includes('intake') || value.includes('air')) return 'Air Intake';
+    if (value.includes('ignition')) return 'Ignition';
+    return String(name || 'Other');
+  };
+
+  const parseCompatibilityList = (rawValue) => {
+    if (!rawValue) return [];
+
+    let list = [];
+    if (Array.isArray(rawValue)) {
+      list = rawValue;
+    } else if (typeof rawValue === 'string') {
+      const trimmed = rawValue.trim();
+      if (!trimmed || trimmed === '[]' || trimmed.toLowerCase() === 'null') return [];
+
+      try {
+        const parsed = JSON.parse(trimmed);
+        list = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        list = trimmed.split(',').map((v) => v.trim()).filter(Boolean);
+      }
+    }
+
+    return list
+      .map((entry) => String(entry || '').trim())
+      .filter(Boolean)
+      .map((label) => {
+        const lower = label.toLowerCase();
+        const brandSlug = knownBikeBrands.find((b) => lower.includes(b)) || slugify(lower.split(' ')[0] || 'unknown');
+        const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
+        const ccMatch = label.match(/(\d{2,4})\s*cc?/i) || label.match(/\b(\d{2,4})\b/);
+        const cc = ccMatch ? parseInt(ccMatch[1], 10) : null;
+        const modelWithoutBrand = label
+          .replace(new RegExp(`^${brandName}\\s+`, 'i'), '')
+          .replace(/\b\d{2,4}\s*cc?\b/gi, '')
+          .trim();
+
+        return {
+          label,
+          brandSlug,
+          brandName,
+          modelSlug: slugify(modelWithoutBrand || label),
+          modelName: modelWithoutBrand || label,
+          cc,
+        };
+      });
+  };
+
+  const ccMatchesRange = (ccValue, range) => {
+    if (range === 'all') return true;
+    if (!ccValue || Number.isNaN(ccValue)) return false;
+    if (range === 'under125') return ccValue < 125;
+    if (range === '125-155') return ccValue >= 125 && ccValue <= 155;
+    if (range === '156-200') return ccValue >= 156 && ccValue <= 200;
+    if (range === 'over200') return ccValue > 200;
+    return true;
+  };
 
   // Product emoji mapping based on name/type
   const getProductEmoji = (name, partTypeName, productType) => {
@@ -26,6 +104,12 @@ import './Products.css';
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeBrand, setActiveBrand] = useState('all');
+  const [activeBikeBrand, setActiveBikeBrand] = useState('all');
+  const [activeBikeModel, setActiveBikeModel] = useState('all');
+  const [activeBikeCcRange, setActiveBikeCcRange] = useState('all');
+  const [activeBrandPreference, setActiveBrandPreference] = useState('all');
+  const [bikeProfileReady, setBikeProfileReady] = useState(false);
+  const [activeSizeSpec, setActiveSizeSpec] = useState('all');
   const [priceRange, setPriceRange] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
   const [cart, setCart] = useState(() => {
@@ -38,14 +122,12 @@ import './Products.css';
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [productsFromAPI, setProductsFromAPI] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [useAPIData, setUseAPIData] = useState(false);
   const [toast, setToast] = useState(null);
   
   // Ref to track if we're updating from external source (to prevent loop)
   const isExternalUpdate = useRef(false);
   
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -87,6 +169,24 @@ import './Products.css';
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    const rawProfile = localStorage.getItem('customerBikeProfile');
+    if (!rawProfile) return;
+
+    try {
+      const parsed = JSON.parse(rawProfile);
+      if (parsed?.bikeBrand && parsed?.bikeModel) {
+        setActiveBikeBrand(parsed.bikeBrand);
+        setActiveBikeModel(parsed.bikeModel);
+        setActiveBikeCcRange(parsed.bikeCcRange || 'all');
+        setActiveBrandPreference(parsed.brandPreference || 'all');
+        setBikeProfileReady(true);
+      }
+    } catch (profileErr) {
+      console.warn('Failed to load saved bike profile:', profileErr);
+    }
+  }, []);
+
   const fetchProducts = async () => {
     try {
       console.log('🛍️ Fetching products from API...');
@@ -99,42 +199,53 @@ import './Products.css';
         const transformedProducts = data.data.map(product => {
           const emoji = getProductEmoji(product.name, product.part_type_name, product.product_type);
           console.log('🔍 Product:', product.name, '| Emoji:', emoji, '| Type:', product.product_type);
+          const imageCandidates = [product.image_url, product.image_2, product.image_3]
+            .map((url) => String(url || '').trim())
+            .filter((url) => /^https?:\/\//i.test(url));
+          const imageUrl = imageCandidates[0] || '';
+          const brandName = product.brand_name || product.brand_code || 'Unknown';
+          const brandKey = slugify(brandName) || 'unknown';
+          const partTypeName = product.part_type_name || product.part_type?.name || 'Other';
+          const partTypeKey = slugify(partTypeName) || 'other';
           return {
             id: product.id,
             name: product.name,
             price: parseFloat(product.selling_price || 0),
             category: product.category === 'accessory' ? 'accessories' : 'parts',
-            brand: product.brand_code?.toLowerCase() || 'universal',
-            partType: product.part_type?.code || 'other',
-            image: emoji,
-            images: [emoji, emoji, emoji],
+            brand: brandKey,
+            brandName,
+            partType: partTypeKey,
+            partTypeName,
+            partTypeLabel: toFriendlyPartTypeLabel(partTypeName),
+            image: imageUrl || emoji,
+            images: imageCandidates.length ? imageCandidates : [emoji],
             rating: parseFloat(product.rating || 0),
             stock: product.stock_quantity || 0,
             description: product.description || 'No description available',
             sku: product.sku,
-            brandName: product.brand_name,
-            partTypeName: product.part_type_name,
+            isUniversal: Boolean(product.is_universal),
+            compatibilityModels: parseCompatibilityList(product.compatible_bike_models),
+            dimensions: product.dimensions || '',
+            qualityType: String(product.quality_type || 'unknown').toLowerCase(),
             productType: product.product_type
           };
         });
         
         setProductsFromAPI(transformedProducts);
-        setUseAPIData(true);
       } else {
-        console.log('⚠️ No products from API, using mock data');
-        setUseAPIData(false);
+        console.log('⚠️ No products returned from API');
+        setProductsFromAPI([]);
       }
     } catch (error) {
       console.error('❌ Error fetching products:', error);
-      console.log('⚠️ Using mock data as fallback');
-      setUseAPIData(false);
+      setProductsFromAPI([]);
     } finally {
       setLoading(false);
     }
   };
 
   // Mock product data (fallback if API fails)
-  const mockProducts = [
+  const _MOCK_PRODUCTS = [
     { 
       id: 1, 
       name: 'Brake Pads Set', 
@@ -347,8 +458,8 @@ import './Products.css';
     },
   ];
 
-  // Use API data if available, otherwise use mock data
-  const products = useAPIData ? productsFromAPI : mockProducts;
+  // Always use backend products for system-wide consistency.
+  const products = productsFromAPI;
 
   const categories = [
     { id: 'all', name: 'All Products', icon: '🏍️' },
@@ -358,39 +469,94 @@ import './Products.css';
 
   const brands = [
     { id: 'all', name: 'All Brands', icon: '🏍️' },
-    { id: 'honda', name: 'Honda', icon: '🔴' },
-    { id: 'suzuki', name: 'Suzuki', icon: '🔵' },
-    { id: 'yamaha', name: 'Yamaha', icon: '⚫' },
-    { id: 'kawasaki', name: 'Kawasaki', icon: '🟢' },
-    { id: 'universal', name: 'Universal', icon: '⭐' },
+    ...Array.from(new Set(products.map((p) => p.brandName).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name, icon: '🏷️' })),
   ];
 
   const partTypes = [
     { id: 'all', name: 'All Types' },
-    { id: 'brake-system', name: 'Brake System' },
-    { id: 'engine', name: 'Engine Parts' },
-    { id: 'electrical', name: 'Electrical' },
-    { id: 'drivetrain', name: 'Drivetrain' },
-    { id: 'fuel-system', name: 'Fuel System' },
-    { id: 'wheels', name: 'Wheels & Tires' },
-    { id: 'lighting', name: 'Lighting' },
-    { id: 'safety', name: 'Safety Gear' },
-    { id: 'body', name: 'Body Parts' },
-    { id: 'controls', name: 'Controls' },
-    { id: 'intake', name: 'Air Intake' },
-    { id: 'ignition', name: 'Ignition' },
+    ...Array.from(new Set(products.map((p) => p.partTypeName).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name: toFriendlyPartTypeLabel(name) })),
+  ];
+
+  const motorcycleBrands = [
+    { id: 'all', name: 'All Motorcycle Brands' },
+    ...Array.from(new Set(
+      products.flatMap((p) => (p.compatibilityModels || []).map((m) => m.brandName))
+    ))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
+  ];
+
+  const motorcycleModels = [
+    { id: 'all', name: 'All Motorcycle Models' },
+    ...Array.from(new Set(
+      products.flatMap((p) => (p.compatibilityModels || []).filter((m) => activeBikeBrand === 'all' || m.brandSlug === activeBikeBrand).map((m) => m.modelName))
+    ))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
+  ];
+
+  const sizeSpecs = [
+    { id: 'all', name: 'All Sizes / Specs' },
+    ...Array.from(new Set(products.map((p) => String(p.dimensions || '').trim()).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ id: slugify(name), name })),
   ];
 
   const [activePartType, setActivePartType] = useState('all');
 
+  const handleApplyBikeProfile = () => {
+    if (activeBikeBrand === 'all' || activeBikeModel === 'all') {
+      showToast('Please select your motorcycle brand and model first.', 'warning');
+      return;
+    }
+
+    setBikeProfileReady(true);
+    localStorage.setItem('customerBikeProfile', JSON.stringify({
+      bikeBrand: activeBikeBrand,
+      bikeModel: activeBikeModel,
+      bikeCcRange: activeBikeCcRange,
+      brandPreference: activeBrandPreference,
+    }));
+
+    if (activeBrandPreference === 'genuine') {
+      setActiveBrand(activeBikeBrand);
+    }
+
+    showToast('Motorcycle profile applied. Showing recommended parts and accessories.', 'success');
+  };
+
   // Filter and search logic
   const filteredProducts = products.filter(product => {
+    if (!bikeProfileReady) return false;
+
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.sku.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
     const matchesBrand = activeBrand === 'all' || product.brand === activeBrand;
     const matchesPartType = activePartType === 'all' || product.partType === activePartType;
+    const matchesSizeSpec = activeSizeSpec === 'all' || slugify(product.dimensions) === activeSizeSpec;
+    const hasMotorcycleFilter = activeBikeBrand !== 'all' || activeBikeModel !== 'all' || activeBikeCcRange !== 'all';
+    const compatibilityModels = product.compatibilityModels || [];
+
+    const matchesBikeBrand = activeBikeBrand === 'all' || compatibilityModels.some((m) => m.brandSlug === activeBikeBrand);
+    const matchesBikeModel = activeBikeModel === 'all' || compatibilityModels.some((m) => m.modelSlug === activeBikeModel);
+    const matchesBikeCc = activeBikeCcRange === 'all' || compatibilityModels.some((m) => ccMatchesRange(m.cc, activeBikeCcRange));
+    const matchesMotorcycle = !hasMotorcycleFilter || product.isUniversal || (matchesBikeBrand && matchesBikeModel && matchesBikeCc);
+
+    const sameAsBikeBrand = activeBikeBrand !== 'all' && product.brand === activeBikeBrand;
+    const qualityType = product.qualityType || 'unknown';
+    const aftermarket = qualityType === 'aftermarket' || (qualityType === 'unknown' && product.brand !== 'unknown' && !sameAsBikeBrand);
+    const matchesBrandPreference =
+      activeBrandPreference === 'all' ||
+      (activeBrandPreference === 'genuine' && (qualityType === 'genuine' || sameAsBikeBrand || product.isUniversal)) ||
+      (activeBrandPreference === 'aftermarket' && aftermarket);
     
     let matchesPrice = true;
     if (priceRange === 'under500') matchesPrice = product.price < 500;
@@ -398,7 +564,7 @@ import './Products.css';
     if (priceRange === '1000-2000') matchesPrice = product.price >= 1000 && product.price <= 2000;
     if (priceRange === 'over2000') matchesPrice = product.price > 2000;
 
-    return matchesSearch && matchesCategory && matchesBrand && matchesPartType && matchesPrice;
+    return matchesSearch && matchesCategory && matchesBrand && matchesPartType && matchesSizeSpec && matchesPrice && matchesMotorcycle && matchesBrandPreference;
   });
 
   // Sort logic
@@ -410,7 +576,7 @@ import './Products.css';
     return 0; // featured (default order)
   });
 
-  const addToCart = (product) => {
+  const _addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
       setCart(cart.map(item => 
@@ -445,10 +611,11 @@ import './Products.css';
     
     console.log('📦 Current cart before adding:', cart);
     
-    const existingItem = cart.find(item => item.id === product.id);
+    const productKey = `${product.productType || product.category || 'product'}-${product.id}`;
+    const existingItem = cart.find(item => (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey);
     if (existingItem) {
       const updatedCart = cart.map(item => 
-        item.id === product.id 
+        (item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`) === productKey
           ? { ...item, quantity: item.quantity + 1 }
           : item
       );
@@ -456,7 +623,7 @@ import './Products.css';
       setCart(updatedCart);
       showToast(`Increased ${product.name} quantity in cart!`, 'success');
     } else {
-      const newCart = [...cart, { ...product, quantity: 1 }];
+      const newCart = [...cart, { ...product, cart_key: productKey, quantity: 1 }];
       console.log('✨ Adding new item, new cart:', newCart);
       setCart(newCart);
       showToast(`Added ${product.name} to cart!`, 'success');
@@ -499,6 +666,76 @@ import './Products.css';
       <div className="products-container">
         {/* Search and Filter Section */}
         <aside className="filters-sidebar">
+          <div className="filter-section">
+            <h3>1) Your Motorcycle (Required)</h3>
+            <small style={{ display: 'block', marginBottom: '8px' }}>
+              Set this first so the system can auto-filter compatible spare parts and accessories.
+            </small>
+            <select
+              value={activeBikeBrand}
+              onChange={(e) => {
+                setActiveBikeBrand(e.target.value);
+                setActiveBikeModel('all');
+                setBikeProfileReady(false);
+              }}
+              className="filter-select"
+            >
+              {motorcycleBrands.map((brand) => (
+                <option key={brand.id} value={brand.id}>{brand.name}</option>
+              ))}
+            </select>
+            <select
+              value={activeBikeModel}
+              onChange={(e) => {
+                setActiveBikeModel(e.target.value);
+                setBikeProfileReady(false);
+              }}
+              className="filter-select"
+              style={{ marginTop: '0.5rem' }}
+            >
+              {motorcycleModels.map((model) => (
+                <option key={model.id} value={model.id}>{model.name}</option>
+              ))}
+            </select>
+            <select
+              value={activeBikeCcRange}
+              onChange={(e) => {
+                setActiveBikeCcRange(e.target.value);
+                setBikeProfileReady(false);
+              }}
+              className="filter-select"
+              style={{ marginTop: '0.5rem' }}
+            >
+              <option value="all">All Engine CC</option>
+              <option value="under125">Under 125cc</option>
+              <option value="125-155">125cc to 155cc</option>
+              <option value="156-200">156cc to 200cc</option>
+              <option value="over200">Over 200cc</option>
+            </select>
+
+            <select
+              value={activeBrandPreference}
+              onChange={(e) => {
+                setActiveBrandPreference(e.target.value);
+                setBikeProfileReady(false);
+              }}
+              className="filter-select"
+              style={{ marginTop: '0.5rem' }}
+            >
+              <option value="all">Any Brand Preference</option>
+              <option value="genuine">Genuine / Same bike brand</option>
+              <option value="aftermarket">Aftermarket (RCB/CNC/etc.)</option>
+            </select>
+
+            <button
+              className="clear-filters-btn"
+              style={{ marginTop: '0.75rem', background: '#198754' }}
+              onClick={handleApplyBikeProfile}
+            >
+              Apply Motorcycle Profile
+            </button>
+          </div>
+
           <div className="filter-section">
             <h3>🔍 Search</h3>
             <input
@@ -550,6 +787,19 @@ import './Products.css';
           </div>
 
           <div className="filter-section">
+            <h3>📏 Size / Spec</h3>
+            <select
+              value={activeSizeSpec}
+              onChange={(e) => setActiveSizeSpec(e.target.value)}
+              className="filter-select"
+            >
+              {sizeSpecs.map((size) => (
+                <option key={size.id} value={size.id}>{size.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-section">
             <h3>💰 Price Range</h3>
             <select 
               value={priceRange} 
@@ -571,8 +821,15 @@ import './Products.css';
               setActiveCategory('all');
               setActiveBrand('all');
               setActivePartType('all');
+              setActiveSizeSpec('all');
+              setActiveBikeBrand('all');
+              setActiveBikeModel('all');
+              setActiveBikeCcRange('all');
+              setActiveBrandPreference('all');
+              setBikeProfileReady(false);
               setPriceRange('all');
               setSortBy('featured');
+              localStorage.removeItem('customerBikeProfile');
             }}
           >
             Clear All Filters
@@ -581,6 +838,17 @@ import './Products.css';
 
         {/* Products Grid Section */}
         <main className="products-main">
+          {!bikeProfileReady && (
+            <div className="products-header" style={{ marginBottom: '16px', background: '#fff8e1', border: '1px solid #ffd54f' }}>
+              <div className="results-info">
+                <h2 style={{ marginBottom: '6px' }}>Set Your Motorcycle First</h2>
+                <p style={{ margin: 0, color: '#8a6d3b' }}>
+                  Piliin muna ang brand/model/cc at brand preference para tama ang compatible parts na lalabas.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="products-header">
             <div className="results-info">
               <h2>Products ({sortedProducts.length})</h2>
@@ -608,12 +876,14 @@ import './Products.css';
             </div>
           ) : (
             <div className="products-grid">
-              {sortedProducts.map((product, index) => (
+              {sortedProducts.map((product) => (
                 <div key={`${product.productType}-${product.id}`} className="product-card">
                   <div className="product-image">
-                    <div className="product-emoji">
-                      {product.image || '⚙️'}
-                    </div>
+                    {String(product.image || '').startsWith('http') ? (
+                      <img className="product-photo" src={product.image} alt={product.name} />
+                    ) : (
+                      <div className="product-emoji">{product.image || '⚙️'}</div>
+                    )}
                     <div className="product-overlay">
                       <button className="quick-view-btn" onClick={() => handleQuickView(product)}>
                         Quick View
@@ -657,9 +927,15 @@ import './Products.css';
             <div className="modal-body">
               <div className="modal-gallery">
                 <div className="main-image">
-                  <span className="main-image-emoji">
-                    {selectedProduct.images[currentImageIndex]}
-                  </span>
+                  {String(selectedProduct.images[currentImageIndex] || '').startsWith('http') ? (
+                    <img
+                      className="main-image-photo"
+                      src={selectedProduct.images[currentImageIndex]}
+                      alt={selectedProduct.name}
+                    />
+                  ) : (
+                    <span className="main-image-emoji">{selectedProduct.images[currentImageIndex]}</span>
+                  )}
                   
                   {selectedProduct.images.length > 1 && (
                     <>
@@ -677,7 +953,11 @@ import './Products.css';
                         className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
                         onClick={() => setCurrentImageIndex(index)}
                       >
-                        <span className="thumbnail-emoji">{img}</span>
+                        {String(img || '').startsWith('http') ? (
+                          <img className="thumbnail-photo" src={img} alt={`${selectedProduct.name} thumbnail ${index + 1}`} />
+                        ) : (
+                          <span className="thumbnail-emoji">{img}</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -716,15 +996,15 @@ import './Products.css';
                   </div>
                   <div className="info-item">
                     <span className="info-label">Brand:</span>
-                    <span className="info-value">
-                      {selectedProduct.brand.charAt(0).toUpperCase() + selectedProduct.brand.slice(1)}
-                    </span>
+                    <span className="info-value">{selectedProduct.brandName || 'N/A'}</span>
                   </div>
                   <div className="info-item">
                     <span className="info-label">Part Type:</span>
-                    <span className="info-value">
-                      {partTypes.find(t => t.id === selectedProduct.partType)?.name || 'N/A'}
-                    </span>
+                    <span className="info-value">{selectedProduct.partTypeLabel || selectedProduct.partTypeName || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Size / Spec:</span>
+                    <span className="info-value">{selectedProduct.dimensions || 'N/A'}</span>
                   </div>
                 </div>
 

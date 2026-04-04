@@ -45,9 +45,11 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
     return null;
   }
 
-  const handleUpdateQuantity = (itemId, newQuantity) => {
+  const getItemKey = (item) => item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`;
+
+  const handleUpdateQuantity = (itemKey, newQuantity) => {
     const updatedCart = localCart.map(item =>
-      item.id === itemId ? { ...item, quantity: newQuantity } : item
+      getItemKey(item) === itemKey ? { ...item, quantity: newQuantity } : item
     );
     setLocalCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -55,8 +57,8 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
-  const handleRemoveItem = (itemId) => {
-    const updatedCart = localCart.filter(item => item.id !== itemId);
+  const handleRemoveItem = (itemKey) => {
+    const updatedCart = localCart.filter(item => getItemKey(item) !== itemKey);
     setLocalCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     // Notify other components about cart update

@@ -233,11 +233,14 @@ const Checkout = () => {
         delivery_zipcode: fulfillmentMethod === 'delivery' ? shippingInfo.zipCode : null,
         delivery_notes: fulfillmentMethod === 'delivery' ? shippingInfo.notes : null,
         items: cartItems.map(item => ({
-          product_type: item.type || 'motorcycle',
+          product_type:
+            item.productType === 'accessory' || item.category === 'accessories'
+              ? 'accessory'
+              : 'sparepart',
           product_id: item.id,
           product_sku: item.sku,
           product_name: item.name,
-          product_image: item.image || '🏍️',
+          product_image: item.image || item.image_url || '🏍️',
           selected_size: item.size || null,
           selected_color: item.color || null,
           quantity: item.quantity,

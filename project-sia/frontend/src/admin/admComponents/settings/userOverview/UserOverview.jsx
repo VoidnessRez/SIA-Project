@@ -3,6 +3,8 @@ import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader.jsx';
 import './UserOverview.css';
 
+const BACKEND_URL = 'http://localhost:5174';
+
 const UserOverview = () => {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -17,71 +19,22 @@ const UserOverview = () => {
   const fetchUserOverview = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
-        const dummyData = [
-          {
-            id: 1,
-            name: 'Juan Dela Cruz',
-            email: 'juan@example.com',
-            phone: '09123456789',
-            status: 'verified',
-            totalOrders: 15,
-            totalSpent: 25680.50,
-            lastOrder: '2025-11-20',
-            registered: '2024-06-15'
-          },
-          {
-            id: 2,
-            name: 'Maria Garcia',
-            email: 'maria@example.com',
-            phone: '09234567890',
-            status: 'verified',
-            totalOrders: 8,
-            totalSpent: 12340.00,
-            lastOrder: '2025-11-18',
-            registered: '2024-08-20'
-          },
-          {
-            id: 3,
-            name: 'Pedro Santos',
-            email: 'pedro@example.com',
-            phone: '09345678901',
-            status: 'unverified',
-            totalOrders: 0,
-            totalSpent: 0,
-            lastOrder: null,
-            registered: '2025-11-21'
-          },
-          {
-            id: 4,
-            name: 'Ana Lopez',
-            email: 'ana@example.com',
-            phone: '09456789012',
-            status: 'verified',
-            totalOrders: 23,
-            totalSpent: 48920.75,
-            lastOrder: '2025-11-22',
-            registered: '2024-03-10'
-          },
-          {
-            id: 5,
-            name: 'Carlos Reyes',
-            email: 'carlos@example.com',
-            phone: '09567890123',
-            status: 'blocked',
-            totalOrders: 3,
-            totalSpent: 5450.00,
-            lastOrder: '2025-10-15',
-            registered: '2025-09-05'
-          }
-        ];
-        setUsers(dummyData);
-        setFilteredUsers(dummyData);
-        setLoading(false);
-      }, 800);
+      const response = await fetch(`${BACKEND_URL}/api/auth/users/overview`);
+      const result = await response.json();
+
+      if (!result.success || !Array.isArray(result.data)) {
+        setUsers([]);
+        setFilteredUsers([]);
+        return;
+      }
+
+      setUsers(result.data);
+      setFilteredUsers(result.data);
     } catch (error) {
       console.error('Error fetching user overview:', error);
+      setUsers([]);
+      setFilteredUsers([]);
+    } finally {
       setLoading(false);
     }
   };

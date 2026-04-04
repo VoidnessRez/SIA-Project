@@ -4,6 +4,7 @@ import SkeletonLoader from '../SkeletonLoader';
 import './Accessories.css';
 
 const BACKEND_URL = 'http://localhost:5174';
+const IMAGE_FIELDS = ['image_url', 'image_2', 'image_3'];
 
 const Accessories = () => {
   const [accessories, setAccessories] = useState([]);
@@ -12,6 +13,9 @@ const Accessories = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [brands, setBrands] = useState({});
+  const [partTypes, setPartTypes] = useState([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadedImagePaths, setUploadedImagePaths] = useState({ image_url: '', image_2: '', image_3: '' });
   const [stockFilter, setStockFilter] = useState('all');
 
   const [formData, setFormData] = useState({
@@ -23,9 +27,13 @@ const Accessories = () => {
     stock_quantity: 0,
     reorder_level: 10,
     reorder_quantity: 20,
-    overstock_level: 100,
+    max_stock_level: 100,
+    quality_type: 'unknown',
     brand_id: '',
-    image_url: '🎁',
+    part_type_id: '',
+    image_url: '',
+    image_2: '',
+    image_3: '',
     unit: 'piece'
   });
 
@@ -38,14 +46,16 @@ const Accessories = () => {
     setError(null);
     
     try {
-      const [accRes, brandsRes] = await Promise.all([
+      const [accRes, brandsRes, typesRes] = await Promise.all([
         fetch(`${BACKEND_URL}/api/inventory/accessories`).then(r => r.json()),
         fetch(`${BACKEND_URL}/api/inventory/brands`).then(r => r.json()),
+        fetch(`${BACKEND_URL}/api/inventory/part-types`).then(r => r.json()),
         new Promise(resolve => setTimeout(resolve, 2000))
       ]);
 
       if (accRes.success) setAccessories(accRes.data || []);
       if (brandsRes.success) setBrands(brandsRes.data || {});
+      if (typesRes.success) setPartTypes(typesRes.data || []);
     } catch (err) {
       console.error('Error fetching accessories:', err);
       setError('Failed to load accessories data. Please check if backend is running.');
@@ -56,6 +66,7 @@ const Accessories = () => {
 
   const handleAddItem = () => {
     setEditingItem(null);
+    setUploadedImagePaths({ image_url: '', image_2: '', image_3: '' });
     setFormData({
       sku: `ACC-${Date.now()}`,
       name: '',
@@ -65,9 +76,13 @@ const Accessories = () => {
       stock_quantity: 0,
       reorder_level: 10,
       reorder_quantity: 20,
-      overstock_level: 100,
+      max_stock_level: 100,
+      quality_type: 'unknown',
       brand_id: '',
-      image_url: '🎁',
+      part_type_id: '',
+      image_url: '',
+      image_2: '',
+      image_3: '',
       unit: 'piece'
     });
     setShowAddModal(true);
@@ -75,6 +90,11 @@ const Accessories = () => {
 
   const handleEditItem = (item) => {
     setEditingItem(item);
+    setUploadedImagePaths({
+      image_url: extractStoragePathFromUrl(item.image_url),
+      image_2: extractStoragePathFromUrl(item.image_2),
+      image_3: extractStoragePathFromUrl(item.image_3)
+    });
     setFormData({
       sku: item.sku || '',
       name: item.name || '',
@@ -84,12 +104,91 @@ const Accessories = () => {
       stock_quantity: item.stock_quantity || 0,
       reorder_level: item.reorder_level || 10,
       reorder_quantity: item.reorder_quantity || 20,
-      overstock_level: item.overstock_level || 100,
+      max_stock_level: item.max_stock_level || 100,
+      quality_type: item.quality_type || 'unknown',
       brand_id: item.accessory_brand_id,
-      image_url: item.image_url || '🎁',
+      part_type_id: item.part_type_id || '',
+      image_url: item.image_url || '',
+      image_2: item.image_2 || '',
+      image_3: item.image_3 || '',
       unit: item.unit || 'piece'
     });
     setShowAddModal(true);
+  };
+
+  const isImageUrl = (value) => {
+    if (!value) return false;
+    return /^https?:\/\//i.test(value) || /^data:image\//i.test(value);
+  };
+
+  const extractStoragePathFromUrl = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    const marker = '/storage/v1/object/public/profiles/';
+    const idx = url.indexOf(marker);
+    if (idx === -1) return '';
+    return url.slice(idx + marker.length);
+  };
+
+  const handleImageUpload = async (event, fieldName) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!IMAGE_FIELDS.includes(fieldName)) {
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const payload = new FormData();
+      payload.append('image', file);
+      payload.append('sku', formData.sku || `ACC-${Date.now()}`);
+      payload.append('productType', 'accessory');
+
+      const response = await fetch(`${BACKEND_URL}/api/upload/product-image`, {
+        method: 'POST',
+        body: payload,
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload image');
+      }
+
+      setFormData((prev) => ({ ...prev, [fieldName]: data.url }));
+      setUploadedImagePaths((prev) => ({
+        ...prev,
+        [fieldName]: data.path || extractStoragePathFromUrl(data.url)
+      }));
+    } catch (uploadErr) {
+      console.error('Error uploading accessory image:', uploadErr);
+      alert(`Upload failed: ${uploadErr.message}`);
+    } finally {
+      setUploadingImage(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = async (fieldName) => {
+    if (!IMAGE_FIELDS.includes(fieldName)) return;
+
+    const pathFromUrl = extractStoragePathFromUrl(formData[fieldName]);
+    const targetPath = uploadedImagePaths[fieldName] || pathFromUrl;
+
+    try {
+      if (targetPath) {
+        await fetch(`${BACKEND_URL}/api/upload/product-image`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: targetPath })
+        });
+      }
+    } catch (deleteErr) {
+      console.error('Error deleting accessory image:', deleteErr);
+    } finally {
+      setFormData((prev) => ({ ...prev, [fieldName]: '' }));
+      setUploadedImagePaths((prev) => ({ ...prev, [fieldName]: '' }));
+    }
   };
 
   const handleSaveItem = async () => {
@@ -104,10 +203,19 @@ const Accessories = () => {
         ? `${BACKEND_URL}/api/inventory/accessories/${editingItem.id}`
         : `${BACKEND_URL}/api/inventory/accessories`;
 
+      const payload = {
+        ...formData,
+        accessory_brand_id: parseInt(formData.brand_id) || null,
+        part_type_id: parseInt(formData.part_type_id) || null,
+        quality_type: formData.quality_type || 'unknown',
+      };
+
+      delete payload.brand_id;
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
@@ -145,16 +253,25 @@ const Accessories = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const numericFields = new Set([
+      'cost_price',
+      'selling_price',
+      'stock_quantity',
+      'reorder_level',
+      'reorder_quantity',
+      'max_stock_level'
+    ]);
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (name.includes('price') || name.includes('quantity') || name.includes('level') ? parseFloat(value) || 0 : value)
+      [name]: type === 'checkbox' ? checked : (numericFields.has(name) ? parseFloat(value) || 0 : value)
     }));
   };
 
   // Helper function to determine stock status
   const getStockStatus = (item) => {
     if (item.stock_quantity <= item.reorder_level) return 'low';
-    if (item.stock_quantity >= (item.overstock_level || 100)) return 'overstocked';
+    if (item.stock_quantity >= (item.max_stock_level || 100)) return 'overstocked';
     return 'normal';
   };
 
@@ -276,14 +393,14 @@ const Accessories = () => {
                     <tr key={item.id}>
                       <td>{item.sku}</td>
                       <td>{item.name}</td>
-                      <td>{item.brand_name || 'N/A'}</td>
+                      <td>{item.brand_name || item.accessory_brand?.name || 'N/A'}</td>
                       <td>₱{item.cost_price?.toFixed(2)}</td>
                       <td>₱{item.selling_price?.toFixed(2)}</td>
                       <td className={`stock-cell ${status}`}>
                         <span className="stock-value">{item.stock_quantity}</span>
                       </td>
                       <td>{item.reorder_level}</td>
-                      <td>{item.overstock_level || 100}</td>
+                      <td>{item.max_stock_level || 100}</td>
                       <td>
                         <span className={`status-badge ${status}`}>
                           {status === 'low' && '🔴 Low'}
@@ -360,7 +477,7 @@ const Accessories = () => {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Overstock Level (Max)</label>
-                    <input type="number" name="overstock_level" value={formData.overstock_level} onChange={handleInputChange} />
+                    <input type="number" name="max_stock_level" value={formData.max_stock_level} onChange={handleInputChange} />
                     <small>Alert when stock exceeds this</small>
                   </div>
                 </div>
@@ -369,10 +486,58 @@ const Accessories = () => {
                   <label>Brand</label>
                   <select name="brand_id" value={formData.brand_id} onChange={handleInputChange}>
                     <option value="">Select Brand</option>
-                    {Object.entries(brands.accessory || {}).map(([key, brand]) => (
-                      <option key={key} value={key}>{typeof brand === 'object' ? brand.name : brand}</option>
+                    {(brands.accessory || []).map((brand) => (
+                      <option key={brand.id} value={brand.id}>{brand.name}</option>
                     ))}
                   </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Part Type</label>
+                  <select name="part_type_id" value={formData.part_type_id} onChange={handleInputChange}>
+                    <option value="">Select Type</option>
+                    {partTypes.filter((type) => type.category === 'accessory').map(type => (
+                      <option key={type.id} value={type.id}>{type.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Brand Quality</label>
+                  <select name="quality_type" value={formData.quality_type} onChange={handleInputChange}>
+                    <option value="unknown">Unspecified</option>
+                    <option value="genuine">Genuine / OEM</option>
+                    <option value="aftermarket">Aftermarket</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Product Photos (max 3)</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                    {IMAGE_FIELDS.map((fieldName, index) => (
+                      <div key={fieldName}>
+                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px' }}>Photo {index + 1}</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, fieldName)}
+                          disabled={uploadingImage}
+                        />
+                        {isImageUrl(formData[fieldName]) ? (
+                          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <img
+                              src={formData[fieldName]}
+                              alt={`Photo ${index + 1}`}
+                              style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #d9d9d9' }}
+                            />
+                            <button type="button" className="delete-btn" onClick={() => handleRemoveImage(fieldName)}>Remove</button>
+                          </div>
+                        ) : (
+                          <small>No photo uploaded</small>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="form-group">

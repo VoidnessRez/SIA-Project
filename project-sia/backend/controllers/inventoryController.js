@@ -1,5 +1,11 @@
 import { supabase } from '../supabaseClient.js';
 
+const normalizeQualityType = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'genuine' || normalized === 'aftermarket') return normalized;
+  return 'unknown';
+};
+
 // =====================================================
 // SPARE PARTS CONTROLLERS
 // =====================================================
@@ -53,6 +59,7 @@ export async function createSparePart(req, res) {
       payload.sparepart_brand_id = payload.brand_id;
       delete payload.brand_id;
     }
+    payload.quality_type = normalizeQualityType(payload.quality_type);
 
     const { data, error } = await supabase
       .from('spare_parts')
@@ -77,6 +84,9 @@ export async function updateSparePart(req, res) {
     if (payload.brand_id !== undefined) {
       payload.sparepart_brand_id = payload.brand_id;
       delete payload.brand_id;
+    }
+    if (payload.quality_type !== undefined) {
+      payload.quality_type = normalizeQualityType(payload.quality_type);
     }
 
     const { data, error } = await supabase
@@ -164,6 +174,7 @@ export async function createAccessory(req, res) {
       payload.accessory_brand_id = payload.brand_id;
       delete payload.brand_id;
     }
+    payload.quality_type = normalizeQualityType(payload.quality_type);
 
     const { data, error } = await supabase
       .from('accessories')
@@ -188,6 +199,9 @@ export async function updateAccessory(req, res) {
     if (payload.brand_id !== undefined) {
       payload.accessory_brand_id = payload.brand_id;
       delete payload.brand_id;
+    }
+    if (payload.quality_type !== undefined) {
+      payload.quality_type = normalizeQualityType(payload.quality_type);
     }
 
     const { data, error } = await supabase
@@ -255,6 +269,7 @@ export async function getAllProducts(req, res) {
     // Format spare parts
     const formattedSpareParts = spareParts.map(sp => ({
       ...sp,
+      quality_type: normalizeQualityType(sp.quality_type),
       product_type: 'sparepart',
       brand_name: sp.sparepart_brand?.name || 'Unknown',
       brand_code: sp.sparepart_brand?.code || 'UNK',
@@ -265,6 +280,7 @@ export async function getAllProducts(req, res) {
     // Format accessories
     const formattedAccessories = accessories.map(acc => ({
       ...acc,
+      quality_type: normalizeQualityType(acc.quality_type),
       product_type: 'accessory',
       brand_name: acc.accessory_brand?.name || 'Unknown',
       brand_code: acc.accessory_brand?.code || 'UNK',

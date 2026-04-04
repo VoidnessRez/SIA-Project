@@ -3,6 +3,8 @@ import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader.jsx';
 import './AdminUsers.css';
 
+const BACKEND_URL = 'http://localhost:5174';
+
 const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [adminUsers, setAdminUsers] = useState([]);
@@ -17,52 +19,22 @@ const AdminUsers = () => {
   const fetchAdminUsers = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
-        const dummyData = [
-          {
-            id: 1,
-            name: 'John Mejia',
-            email: 'john@mejiamotorparts.com',
-            role: 'Super Admin',
-            status: 'active',
-            lastLogin: '2025-11-22 10:30 AM',
-            created_at: '2025-01-15'
-          },
-          {
-            id: 2,
-            name: 'Maria Santos',
-            email: 'maria@mejiamotorparts.com',
-            role: 'Admin',
-            status: 'active',
-            lastLogin: '2025-11-22 09:15 AM',
-            created_at: '2025-02-20'
-          },
-          {
-            id: 3,
-            name: 'Pedro Cruz',
-            email: 'pedro@mejiamotorparts.com',
-            role: 'Manager',
-            status: 'active',
-            lastLogin: '2025-11-21 04:45 PM',
-            created_at: '2025-03-10'
-          },
-          {
-            id: 4,
-            name: 'Ana Reyes',
-            email: 'ana@mejiamotorparts.com',
-            role: 'Staff',
-            status: 'inactive',
-            lastLogin: '2025-11-15 02:30 PM',
-            created_at: '2025-04-05'
-          }
-        ];
-        setAdminUsers(dummyData);
-        setFilteredUsers(dummyData);
-        setLoading(false);
-      }, 800);
+      const response = await fetch(`${BACKEND_URL}/api/auth/admin-users`);
+      const result = await response.json();
+
+      if (!result.success || !Array.isArray(result.data)) {
+        setAdminUsers([]);
+        setFilteredUsers([]);
+        return;
+      }
+
+      setAdminUsers(result.data);
+      setFilteredUsers(result.data);
     } catch (error) {
       console.error('Error fetching admin users:', error);
+      setAdminUsers([]);
+      setFilteredUsers([]);
+    } finally {
       setLoading(false);
     }
   };

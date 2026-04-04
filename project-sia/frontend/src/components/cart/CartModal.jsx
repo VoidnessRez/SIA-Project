@@ -39,25 +39,27 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
     }
   };
 
-  const handleQuantityChange = (itemId, newQuantity) => {
+  const getItemKey = (item) => item.cart_key || `${item.productType || item.category || 'product'}-${item.id}`;
+
+  const handleQuantityChange = (itemKey, newQuantity) => {
     if (newQuantity < 1) return;
     
     const updatedItems = localItems.map(item =>
-      item.id === itemId ? { ...item, quantity: newQuantity } : item
+      getItemKey(item) === itemKey ? { ...item, quantity: newQuantity } : item
     );
     setLocalItems(updatedItems);
     
     if (onUpdateQuantity) {
-      onUpdateQuantity(itemId, newQuantity);
+      onUpdateQuantity(itemKey, newQuantity);
     }
   };
 
-  const handleRemove = (itemId) => {
-    const updatedItems = localItems.filter(item => item.id !== itemId);
+  const handleRemove = (itemKey) => {
+    const updatedItems = localItems.filter(item => getItemKey(item) !== itemKey);
     setLocalItems(updatedItems);
     
     if (onRemoveItem) {
-      onRemoveItem(itemId);
+      onRemoveItem(itemKey);
     }
   };
 
@@ -114,7 +116,7 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
           ) : (
             <div className="cart-items-list">
               {localItems.map((item) => (
-                <div key={item.id} className="cart-item">
+                <div key={getItemKey(item)} className="cart-item">
                   <div className="cart-item-image">
                     {item.image ? (
                       <img src={item.image} alt={item.name} />
@@ -137,7 +139,7 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
                     <div className="quantity-controls">
                       <button
                         className="qty-btn"
-                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        onClick={() => handleQuantityChange(getItemKey(item), item.quantity - 1)}
                         disabled={item.quantity <= 1}
                         aria-label="Decrease quantity"
                       >
@@ -147,13 +149,13 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
                         type="number"
                         className="qty-input"
                         value={item.quantity}
-                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 1)}
+                        onChange={(e) => handleQuantityChange(getItemKey(item), parseInt(e.target.value) || 1)}
                         min="1"
                         max="99"
                       />
                       <button
                         className="qty-btn"
-                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        onClick={() => handleQuantityChange(getItemKey(item), item.quantity + 1)}
                         disabled={item.quantity >= 99}
                         aria-label="Increase quantity"
                       >
@@ -167,7 +169,7 @@ const CartModal = ({ isOpen, onClose, cartItems = [], onUpdateQuantity, onRemove
 
                     <button
                       className="remove-item-btn"
-                      onClick={() => handleRemove(item.id)}
+                      onClick={() => handleRemove(getItemKey(item))}
                       aria-label="Remove item"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">

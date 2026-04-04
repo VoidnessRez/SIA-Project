@@ -7,7 +7,10 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node scripts/seed_products.js",
+    "seed:bulk": "node scripts/seed_bulk_mock_products.js",
     "seed:features": "node scripts/seed_new_features.js",
+    "seed:ph": "node scripts/seed_ph_motorcycles.js",
+    "scan:brands": "node scripts/db_brand_scan.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

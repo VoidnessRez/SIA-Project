@@ -469,7 +469,123 @@ router.put('/profile/:userId', async (req, res) => {
   }
 });
 
-export default router;
+// GET /api/auth/users/overview
+// Returns customer overview data derived from real auth/profiles/orders tables
+router.get('/users/overview', async (_req, res) => {
+  try {
+    const [authUsersRes, profilesRes, ordersRes] = await Promise.all([
+      supabase.from('auth_users').select('id, username, email, created_at'),
+      supabase.from('profiles').select('id, first_name, last_name, phone, status, created_at'),
+      supabase.from('orders').select('user_id, total_amount, order_date').order('order_date', { ascending: false })
+    ]);
+
+    if (authUsersRes.error) throw authUsersRes.error;
+    if (profilesRes.error) throw profilesRes.error;
+    if (ordersRes.error) throw ordersRes.error;
+
+    const profilesById = new Map((profilesRes.data || []).map((profile) => [profile.id, profile]));
+    const ordersByUser = new Map();
+
+    for (const order of ordersRes.data || []) {
+      const current = ordersByUser.get(order.user_id) || {
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrder: null
+      };
+
+      current.totalOrders += 1;
+      current.totalSpent += Number(order.total_amount || 0);
+
+      if (!current.lastOrder || new Date(order.order_date) > new Date(current.lastOrder)) {
+        current.lastOrder = order.order_date;
+      }
+
+      ordersByUser.set(order.user_id, current);
+    }
+
+    const users = (authUsersRes.data || []).map((authUser) => {
+      const profile = profilesById.get(authUser.id);
+      const orderStats = ordersByUser.get(authUser.id) || {
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrder: null
+      };
+
+      const fullName = [profile?.first_name, profile?.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      const statusRaw = String(profile?.status || '').toLowerCase();
+      const normalizedStatus = statusRaw === 'blocked'
+        ? 'blocked'
+        : statusRaw === 'verified' || statusRaw === 'active'
+          ? 'verified'
+          : 'unverified';
+
+      return {
+        id: authUser.id,
+        name: fullName || authUser.username || 'Unnamed User',
+        email: authUser.email,
+        phone: profile?.phone || 'N/A',
+        status: normalizedStatus,
+        totalOrders: orderStats.totalOrders,
+        totalSpent: Number(orderStats.totalSpent || 0),
+        lastOrder: orderStats.lastOrder,
+        registered: profile?.created_at || authUser.created_at
+      };
+    });
+
+    res.json({ success: true, data: users });
+  } catch (error) {
+    console.error('[Backend] Get users overview error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/auth/admin-users
+// Returns admin-side user list derived from real DB records
+router.get('/admin-users', async (_req, res) => {
+  try {
+    const [authUsersRes, profilesRes] = await Promise.all([
+      supabase.from('auth_users').select('id, username, email, created_at').order('created_at', { ascending: true }),
+      supabase.from('profiles').select('id, status, last_seen, created_at')
+    ]);
+
+    if (authUsersRes.error) throw authUsersRes.error;
+    if (profilesRes.error) throw profilesRes.error;
+
+    const profilesById = new Map((profilesRes.data || []).map((profile) => [profile.id, profile]));
+
+    const adminUsers = (authUsersRes.data || []).map((user, index) => {
+      const profile = profilesById.get(user.id);
+      const email = String(user.email || '').toLowerCase();
+      const username = String(user.username || '').toLowerCase();
+
+      let role = 'Staff';
+      if (index === 0) role = 'Super Admin';
+      else if (email.includes('admin') || username.includes('admin')) role = 'Admin';
+      else if (email.includes('manager') || username.includes('manager')) role = 'Manager';
+
+      const status = String(profile?.status || '').toLowerCase() === 'inactive' ? 'inactive' : 'active';
+
+      return {
+        id: user.id,
+        name: user.username || user.email || 'Unknown',
+        email: user.email,
+        role,
+        status,
+        lastLogin: profile?.last_seen || null,
+        created_at: profile?.created_at || user.created_at
+      };
+    });
+
+    res.json({ success: true, data: adminUsers });
+  } catch (error) {
+    console.error('[Backend] Get admin users error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // POST /api/auth/send-otp
 // body: { email }
@@ -559,3 +675,5 @@ router.post('/security-alert', async (req, res) => {
     });
   }
 });
+
+export default router;
