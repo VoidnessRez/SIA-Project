@@ -54,6 +54,19 @@ const Receipt = () => {
     });
   };
 
+  const isUrl = (value) => /^https?:\/\//i.test(String(value || '').trim());
+
+  const getDisplayItem = (item) => {
+    const rawName = String(item?.name || '').trim();
+    const rawImage = String(item?.image || '').trim();
+    const imageUrl = isUrl(rawImage) ? rawImage : (isUrl(rawName) ? rawName : '');
+    const fallbackLabel = item?.sku ? `Product (${item.sku})` : 'Product Item';
+    const name = rawName && !isUrl(rawName) ? rawName : fallbackLabel;
+    const emoji = imageUrl ? null : (rawImage || '🏍️');
+
+    return { name, imageUrl, emoji };
+  };
+
   return (
     <div className="receipt-page">
       <div className="receipt-actions">
@@ -132,20 +145,31 @@ const Receipt = () => {
                 </tr>
               </thead>
               <tbody>
-                {orderDetails.items.map((item, index) => (
-                  <tr key={index}>
-                    <td>
-                      <div className="item-name-cell">
-                        <span className="item-emoji">{item.image}</span>
-                        <span>{item.name}</span>
-                      </div>
-                    </td>
-                    <td>{item.sku}</td>
-                    <td className="text-center">{item.quantity}</td>
-                    <td className="text-right">₱{item.price.toLocaleString()}</td>
-                    <td className="text-right">₱{(item.price * item.quantity).toLocaleString()}</td>
-                  </tr>
-                ))}
+                {orderDetails.items.map((item, index) => {
+                  const displayItem = getDisplayItem(item);
+                  return (
+                    <tr key={index}>
+                      <td>
+                        <div className="item-name-cell">
+                          {displayItem.imageUrl ? (
+                            <img
+                              className="item-thumb"
+                              src={displayItem.imageUrl}
+                              alt={displayItem.name}
+                            />
+                          ) : (
+                            <span className="item-emoji">{displayItem.emoji}</span>
+                          )}
+                          <span className="item-name-text">{displayItem.name}</span>
+                        </div>
+                      </td>
+                      <td>{item.sku}</td>
+                      <td className="text-center">{item.quantity}</td>
+                      <td className="text-right">₱{item.price.toLocaleString()}</td>
+                      <td className="text-right">₱{(item.price * item.quantity).toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -5,12 +5,50 @@ class EmailService {
   constructor() {
     this.adminTransporter = null;
     this.ordersTransporter = null;
+    this.emailTransport = process.env.EMAIL_TRANSPORT || 'auto';
+    this.fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com';
+    this.adminFromAddress = process.env.EMAIL_ADMIN_FROM || process.env.EMAIL_FROM || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com';
+    this.ordersFromAddress = process.env.EMAIL_ORDERS_FROM || process.env.EMAIL_FROM || process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com';
+    this.fromName = process.env.EMAIL_FROM_NAME || 'Mejia Spareparts';
+    this.useResend = !!process.env.RESEND_API_KEY;
+    this.useBrevo = !!process.env.BREVO_API_KEY;
     this.initializeTransporters().catch(err => {
       console.error('❌ Failed to initialize email service:', err);
     });
   }
 
+  getActiveProvider() {
+    if (this.useResend) return 'resend';
+    if (this.useBrevo) return 'brevo';
+    return 'smtp';
+  }
+
+  logReadinessChecks() {
+    const provider = this.getActiveProvider();
+    const transport = this.emailTransport;
+    const adminReady = provider === 'smtp' ? !!this.adminTransporter : (this.useResend || this.useBrevo);
+    const ordersReady = provider === 'smtp' ? !!this.ordersTransporter : (this.useResend || this.useBrevo);
+
+    console.log(`[Email Check] Admin flow: ready=${adminReady} transport=${transport} provider=${provider} from=${this.adminFromAddress}`);
+    console.log(`[Email Check] Orders flow: ready=${ordersReady} transport=${transport} provider=${provider} from=${this.ordersFromAddress}`);
+  }
+
   async initializeTransporters() {
+    if (this.emailTransport === 'api' || (this.emailTransport === 'auto' && (this.useResend || this.useBrevo))) {
+      if (this.useResend) {
+        console.log('✅ Email service configured: Resend API');
+      } else if (this.useBrevo) {
+        console.log('✅ Email service configured: Brevo API');
+      } else {
+        console.warn('⚠️ EMAIL_TRANSPORT=api but no RESEND_API_KEY/BREVO_API_KEY found; falling back to SMTP');
+      }
+
+      if (this.useResend || this.useBrevo) {
+        this.logReadinessChecks();
+        return;
+      }
+    }
+
     try {
       const adminEmailUser = process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com';
       const adminEmailPass = process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || process.env.EMAIL_ORDERS_PASS || 'your-app-password';
@@ -20,6 +58,9 @@ class EmailService {
       // Admin Email Transporter (for OTP, security alerts)
       this.adminTransporter = nodemailer.createTransport({
         service: 'gmail',
+        connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 8000),
+        greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 8000),
+        socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 12000),
         auth: {
           user: adminEmailUser,
           pass: adminEmailPass
@@ -29,6 +70,9 @@ class EmailService {
       // Orders Email Transporter (for order receipts)
       this.ordersTransporter = nodemailer.createTransport({
         service: 'gmail',
+        connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 8000),
+        greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 8000),
+        socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 12000),
         auth: {
           user: ordersEmailUser,
           pass: ordersEmailPass
@@ -41,6 +85,7 @@ class EmailService {
       
       await this.ordersTransporter.verify();
       console.log(`✅ Orders email service connected (${ordersEmailUser})`);
+      this.logReadinessChecks();
       
     } catch (error) {
       console.error('❌ Email service connection failed:', error.message);
@@ -52,6 +97,9 @@ class EmailService {
           host: 'smtp.ethereal.email',
           port: 587,
           secure: false,
+          connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT_MS || 8000),
+          greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT_MS || 8000),
+          socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT_MS || 12000),
           auth: {
             user: testAccount.user,
             pass: testAccount.pass,
@@ -68,15 +116,98 @@ class EmailService {
     }
   }
 
+  async sendWithResend({ to, subject, html, text, fromAddress, fromName }) {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: `${fromName || this.fromName} <${fromAddress || this.fromAddress}>`,
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+        text
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload?.message || payload?.error || 'Resend API request failed');
+    }
+
+    return {
+      success: true,
+      provider: 'resend',
+      messageId: payload?.id || payload?.data?.id || null
+    };
+  }
+
+  async sendWithBrevo({ to, subject, html, text, fromAddress, fromName }) {
+    const recipients = Array.isArray(to) ? to : [to];
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: fromName || this.fromName,
+          email: fromAddress || this.fromAddress
+        },
+        to: recipients.map((email) => ({ email })),
+        subject,
+        htmlContent: html,
+        textContent: text
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload?.message || payload?.code || 'Brevo API request failed');
+    }
+
+    return {
+      success: true,
+      provider: 'brevo',
+      messageId: payload?.messageId || null
+    };
+  }
+
+  async sendViaApi({ to, subject, html, text, fromAddress, fromName }) {
+    if (this.useResend) {
+      return this.sendWithResend({ to, subject, html, text, fromAddress, fromName });
+    }
+    if (this.useBrevo) {
+      return this.sendWithBrevo({ to, subject, html, text, fromAddress, fromName });
+    }
+    throw new Error('No API email provider configured');
+  }
+
+  async sendViaSmtp(transporter, mailOptions) {
+    const info = await transporter.sendMail(mailOptions);
+    return {
+      success: true,
+      provider: 'smtp',
+      messageId: info.messageId,
+      previewUrl: nodemailer.getTestMessageUrl(info)
+    };
+  }
+
   async sendOTP(email, otpCode, adminUser = 'Admin') {
-    if (!this.adminTransporter) {
+    const shouldUseApi = this.emailTransport === 'api' || (this.emailTransport === 'auto' && (this.useResend || this.useBrevo));
+    if (!shouldUseApi && !this.adminTransporter) {
       throw new Error('Admin email service not initialized');
     }
+
+    console.log(`[Email Check] Admin OTP send attempt: to=${email} provider=${shouldUseApi ? this.getActiveProvider() : 'smtp'} from=${this.adminFromAddress}`);
 
     const mailOptions = {
       from: {
         name: 'Mejia Spareparts Admin',
-        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
+        address: this.adminFromAddress
       },
       to: email,
       subject: '🔐 Admin Access Verification Code',
@@ -159,19 +290,23 @@ class EmailService {
     };
 
     try {
-      const info = await this.adminTransporter.sendMail(mailOptions);
-      console.log('✅ OTP email sent successfully:', info.messageId);
-      
-      // For Ethereal Email, provide preview URL
-      if (nodemailer.getTestMessageUrl(info)) {
-        console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+      const result = shouldUseApi
+        ? await this.sendViaApi({
+          to: email,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          text: mailOptions.text,
+          fromAddress: this.adminFromAddress,
+          fromName: 'Mejia Spareparts Admin'
+        })
+        : await this.sendViaSmtp(this.adminTransporter, mailOptions);
+
+      console.log(`✅ OTP email sent successfully via ${result.provider}:`, result.messageId || 'no-message-id');
+      if (result.previewUrl) {
+        console.log('📧 Preview URL:', result.previewUrl);
       }
-      
-      return {
-        success: true,
-        messageId: info.messageId,
-        previewUrl: nodemailer.getTestMessageUrl(info)
-      };
+
+      return result;
     } catch (error) {
       console.error('❌ Failed to send OTP email:', error);
       throw error;
@@ -179,7 +314,8 @@ class EmailService {
   }
 
   async sendSecurityAlert(email, alertType, details = {}) {
-    if (!this.adminTransporter) {
+    const shouldUseApi = this.emailTransport === 'api' || (this.emailTransport === 'auto' && (this.useResend || this.useBrevo));
+    if (!shouldUseApi && !this.adminTransporter) {
       throw new Error('Admin email service not initialized');
     }
 
@@ -188,7 +324,7 @@ class EmailService {
     const mailOptions = {
       from: {
         name: 'Mejia Spareparts Admin',
-        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
+        address: this.adminFromAddress
       },
       to: email,
       subject: '🚨 Admin Security Alert',
@@ -223,8 +359,17 @@ class EmailService {
     };
 
     try {
-      const info = await this.adminTransporter.sendMail(mailOptions);
-      return { success: true, messageId: info.messageId };
+      const result = shouldUseApi
+        ? await this.sendViaApi({
+          to: email,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          fromAddress: this.adminFromAddress,
+          fromName: 'Mejia Spareparts Admin'
+        })
+        : await this.sendViaSmtp(this.adminTransporter, mailOptions);
+
+      return { success: true, messageId: result.messageId, provider: result.provider };
     } catch (error) {
       console.error('❌ Failed to send security alert:', error);
       throw error;
@@ -235,9 +380,12 @@ class EmailService {
    * Send order receipt email (uses Orders email)
    */
   async sendOrderReceipt(orderDetails) {
-    if (!this.ordersTransporter) {
+    const shouldUseApi = this.emailTransport === 'api' || (this.emailTransport === 'auto' && (this.useResend || this.useBrevo));
+    if (!shouldUseApi && !this.ordersTransporter) {
       throw new Error('Orders email service not initialized');
     }
+
+    console.log(`[Email Check] Orders receipt send attempt: to=${orderDetails?.customerEmail || 'unknown'} provider=${shouldUseApi ? this.getActiveProvider() : 'smtp'} from=${this.ordersFromAddress}`);
 
     const {
       orderNumber,
@@ -291,7 +439,7 @@ class EmailService {
     const mailOptions = {
       from: {
         name: 'Mejia Spareparts',
-        address: process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
+        address: this.ordersFromAddress
       },
       to: customerEmail,
       subject: `Order Acknowledgement - ${orderNumber} (Pending Approval)`,
@@ -410,9 +558,18 @@ class EmailService {
     };
 
     try {
-      const info = await this.ordersTransporter.sendMail(mailOptions);
-      console.log('✅ Receipt email sent:', info.messageId);
-      return { success: true, messageId: info.messageId };
+      const result = shouldUseApi
+        ? await this.sendViaApi({
+          to: customerEmail,
+          subject: mailOptions.subject,
+          html: mailOptions.html,
+          fromAddress: this.ordersFromAddress,
+          fromName: 'Mejia Spareparts'
+        })
+        : await this.sendViaSmtp(this.ordersTransporter, mailOptions);
+
+      console.log(`✅ Receipt email sent via ${result.provider}:`, result.messageId || 'no-message-id');
+      return { success: true, messageId: result.messageId, provider: result.provider };
     } catch (error) {
       console.error('❌ Failed to send receipt email:', error);
       throw error;

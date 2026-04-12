@@ -97,6 +97,17 @@ Email-related (if used):
 - `EMAIL_ORDERS_USER`
 - `EMAIL_ORDERS_PASS`
 
+Recommended on Render (avoids SMTP timeout issues):
+- `EMAIL_TRANSPORT=api`
+- `EMAIL_FROM=<verified-sender-email>`
+- `EMAIL_FROM_NAME=Mejia Spareparts`
+- Optional separate senders:
+  - `EMAIL_ADMIN_FROM=<verified-admin-sender-email>`
+  - `EMAIL_ORDERS_FROM=<verified-orders-sender-email>`
+- Use one API provider:
+  - `RESEND_API_KEY=<your-resend-api-key>`
+  - or `BREVO_API_KEY=<your-brevo-api-key>`
+
 Fallback aliases found in code:
 - `EMAIL_USER`
 - `EMAIL_PASS`
@@ -219,6 +230,16 @@ Likely causes:
 - Missing Supabase env vars
 - Invalid service key
 - Supabase schema mismatch/missing migrations
+
+### E) OTP/Receipt email timeout on Render (`ETIMEDOUT`, `CONN`)
+Likely cause:
+- SMTP ports are blocked or timing out from runtime environment.
+
+Fix:
+1. Set `EMAIL_TRANSPORT=api` in Render.
+2. Configure `RESEND_API_KEY` or `BREVO_API_KEY`.
+3. Set `EMAIL_FROM` to a verified sender in your provider.
+4. Redeploy backend and test `/api/auth/send-otp` and order checkout.
 
 ## 9) Recommended Production Hardening (After Defense)
 

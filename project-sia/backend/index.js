@@ -70,6 +70,25 @@ if (isMain) {
     console.log(`✅  Listening on http://localhost:${port}`);
     console.log(`🔒  Supabase URL: ${process.env.SUPABASE_URL ? 'set' : 'NOT SET'}`);
     console.log(`🔐  reCAPTCHA Secret: ${process.env.RECAPTCHA_SECRET ? 'set ✓' : 'NOT SET ✗'}`);
+
+    const emailTransport = process.env.EMAIL_TRANSPORT || 'auto';
+    const hasResend = !!process.env.RESEND_API_KEY;
+    const hasBrevo = !!process.env.BREVO_API_KEY;
+    const provider = hasResend ? 'resend' : hasBrevo ? 'brevo' : 'smtp';
+    const adminFrom = process.env.EMAIL_ADMIN_FROM || process.env.EMAIL_FROM || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || '';
+    const ordersFrom = process.env.EMAIL_ORDERS_FROM || process.env.EMAIL_FROM || process.env.EMAIL_ORDERS_USER || '';
+    const smtpAdminReady = !!((process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER) && (process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || process.env.EMAIL_ORDERS_PASS));
+    const smtpOrdersReady = !!((process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER) && (process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS));
+    const apiReady = hasResend || hasBrevo;
+    const adminReady = emailTransport === 'api' ? apiReady && !!adminFrom : smtpAdminReady;
+    const ordersReady = emailTransport === 'api' ? apiReady && !!ordersFrom : smtpOrdersReady;
+
+    console.log(`📧  Email Check:`);
+    console.log(`   - Transport: ${emailTransport}`);
+    console.log(`   - Provider: ${provider}`);
+    console.log(`   - Admin flow ready: ${adminReady ? 'YES' : 'NO'} (from: ${adminFrom || 'NOT SET'})`);
+    console.log(`   - Orders flow ready: ${ordersReady ? 'YES' : 'NO'} (from: ${ordersFrom || 'NOT SET'})`);
+
     console.log(`🧭  Available Routes:`);
     console.log(`   📦 Products:`);
     console.log(`      - GET    /api/products`);
