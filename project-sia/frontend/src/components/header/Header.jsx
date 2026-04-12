@@ -78,13 +78,6 @@ const Header = () => {
         </nav>
 
         <div className="header-actions">
-          {location.pathname !== '/products' && (
-            <div className="search-box">
-              <input type="text" placeholder="Search products..." />
-              <button className="search-btn"></button>
-            </div>
-          )}
-          
           {isAuthenticated() ? (
             <UserProfileDropdown 
               firstName={user?.first_name || ''}
