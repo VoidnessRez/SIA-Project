@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../AdminAuth/layout/AdminLayout';
 import './Shared.css';
 
-const BACKEND_URL = 'http://localhost:5174';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
 const InventoryPage = () => {
   const IMAGE_FIELDS = ['image_url', 'image_2', 'image_3'];

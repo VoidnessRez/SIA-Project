@@ -6,7 +6,7 @@ import Toast from '../../components/toast/Toast';
 import StorageUtils from '../../utils/storageUtils';
 import './Products.css';
 
-  const BACKEND_URL = 'http://localhost:5174';
+  const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
   const slugify = (value) =>
     String(value || '')

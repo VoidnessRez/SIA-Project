@@ -4,7 +4,7 @@ import StorageUtils from '../../utils/storageUtils';
 import supabase from '../../lib/supabaseClient';
 import './AdminLayout.css';
 
-const BACKEND_URL = 'http://localhost:5174';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
 const AdminLayout = ({ children, title, description }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

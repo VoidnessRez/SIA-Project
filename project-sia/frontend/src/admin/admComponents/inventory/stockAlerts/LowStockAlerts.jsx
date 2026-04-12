@@ -3,7 +3,7 @@ import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../SkeletonLoader';
 import './LowStockAlerts.css';
 
-const BACKEND_URL = 'http://localhost:5174';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
 const LowStockAlerts = () => {
   const [lowStockItems, setLowStockItems] = useState([]);

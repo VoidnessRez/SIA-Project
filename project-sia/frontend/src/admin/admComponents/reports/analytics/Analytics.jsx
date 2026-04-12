@@ -4,7 +4,7 @@ import supabase from '../../../../lib/supabaseClient';
 import SkeletonLoader from '../../inventory/SkeletonLoader';
 import './Analytics.css';
 
-const BACKEND_URL = 'http://localhost:5174';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
 function Analytics() {
   const [loading, setLoading] = useState(true);
