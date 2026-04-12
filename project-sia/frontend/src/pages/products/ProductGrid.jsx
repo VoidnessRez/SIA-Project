@@ -362,7 +362,7 @@ const ProductGrid = () => {
       <div className="container">
         <div className="section-header">
           <h2>Featured Products</h2>
-          <button className="view-all-btn" onClick={() => navigate('/products')}>View All Products →</button>
+          <button className="view-all-btn" onClick={() => navigate('/products')}>View All Items →</button>
         </div>
 
         <div className="category-filters">

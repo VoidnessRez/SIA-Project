@@ -23,19 +23,29 @@ export const DarkModeProvider = ({ children }) => {
 
   const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode);
 
-  useEffect(() => {
-    // Apply dark mode class and data-theme attribute to document (including admin routes)
-    if (isDarkMode) {
+  const applyThemeForCurrentRoute = (darkModeEnabled) => {
+    const path = String(window.location.pathname || '').toLowerCase();
+    const isAdminRoute = path.startsWith('/admin');
+
+    // Admin area is always light mode for consistency.
+    const shouldUseDarkMode = !isAdminRoute && darkModeEnabled;
+
+    if (shouldUseDarkMode) {
       document.documentElement.classList.add('dark-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
       document.body.classList.add('dark-mode');
       document.body.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
-      document.body.classList.remove('dark-mode');
-      document.body.setAttribute('data-theme', 'light');
+      return;
     }
+
+    document.documentElement.classList.remove('dark-mode');
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.body.classList.remove('dark-mode');
+    document.body.setAttribute('data-theme', 'light');
+  };
+
+  useEffect(() => {
+    applyThemeForCurrentRoute(isDarkMode);
 
     // Save to localStorage
     localStorage.setItem('darkMode', isDarkMode.toString());
@@ -44,18 +54,7 @@ export const DarkModeProvider = ({ children }) => {
   // Listen for route changes to update dark mode
   useEffect(() => {
     const handleRouteChange = () => {
-      // Reapply dark mode setting on all routes
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark-mode');
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.body.classList.add('dark-mode');
-        document.body.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark-mode');
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.body.classList.remove('dark-mode');
-        document.body.setAttribute('data-theme', 'light');
-      }
+      applyThemeForCurrentRoute(isDarkMode);
     };
 
     // Listen to popstate (browser back/forward)

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useDarkMode } from '../../context/DarkModeContext';
 import StorageUtils from '../../utils/storageUtils';
 import supabase from '../../lib/supabaseClient';
 import './AdminLayout.css';
@@ -16,7 +15,6 @@ const AdminLayout = ({ children, title, description }) => {
     orders: null,
     reviews: null
   });
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarNavRef = useRef(null);
@@ -385,13 +383,6 @@ const AdminLayout = ({ children, title, description }) => {
                 </div>
               </div>
             </div>
-            <button 
-              className="admin-dark-mode-toggle" 
-              onClick={toggleDarkMode}
-              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDarkMode ? '☀️' : '🌙'}
-            </button>
             <button className="admin-notifications">
               🔔
               <span className="badge">5</span>
