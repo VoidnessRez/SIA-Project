@@ -53,10 +53,65 @@
   box-shadow: 0 2px 15px rgba(0,0,0,0.08);
 }
 
+.filters-quick-nav {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px;
+  margin: -10px -10px 14px -10px;
+  background: linear-gradient(180deg, rgba(99, 118, 231, 0.12), rgba(99, 118, 231, 0));
+  border-radius: 12px;
+}
+
+.filters-quick-nav::-webkit-scrollbar {
+  height: 6px;
+}
+
+.filters-quick-nav::-webkit-scrollbar-thumb {
+  background: #a8b4e2;
+  border-radius: 999px;
+}
+
+.filters-nav-btn {
+  border: 1px solid #cfd8ff;
+  background: #ffffff;
+  color: #475569;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filters-nav-btn:hover {
+  border-color: #8195ff;
+  color: #2d3fa9;
+}
+
+.filters-nav-btn.active {
+  background: linear-gradient(135deg, #6579eb 0%, #5366d8 100%);
+  border-color: #4f63d6;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(79, 99, 214, 0.25);
+}
+
 .filter-section {
   margin-bottom: 25px;
   padding-bottom: 20px;
   border-bottom: 1px solid #e9ecef;
+}
+
+.filter-section summary {
+  list-style: none;
+}
+
+.filter-section summary::-webkit-details-marker {
+  display: none;
 }
 
 .filter-section:last-of-type {
@@ -68,6 +123,107 @@
   color: #333;
   margin-bottom: 12px;
   font-weight: 600;
+}
+
+.filter-accordion {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e6ebff;
+}
+
+.filter-accordion summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 8px;
+  padding: 6px 0;
+  gap: 10px;
+}
+
+.filter-accordion > summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.filter-accordion[open] > summary::after {
+  content: '-';
+}
+
+.accordion-hint {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: #eef2ff;
+  border: 1px solid #dbe4ff;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.accordion-body {
+  margin-top: 10px;
+}
+
+.brand-options-wrap {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.brand-options-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+
+.brand-options-wrap::-webkit-scrollbar-track {
+  background: #e9edf8;
+  border-radius: 999px;
+}
+
+.brand-options-wrap::-webkit-scrollbar-thumb {
+  background: #9aa9d9;
+  border-radius: 999px;
+}
+
+.brand-options-wrap::-webkit-scrollbar-thumb:hover {
+  background: #7f91ca;
+}
+
+.filter-more-btn {
+  width: 100%;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #6074e8 0%, #4f63d6 100%);
+  border: 1px solid #4c5fd1;
+  color: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.84rem;
+  letter-spacing: 0.2px;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 14px rgba(79, 99, 214, 0.25);
+}
+
+.filter-more-btn:hover {
+  background: linear-gradient(135deg, #5668d9 0%, #4357ca 100%);
+  transform: translateY(-1px);
+}
+
+.filter-grid-compact {
+  display: grid;
+  gap: 12px;
+}
+
+.filter-grid-compact h3 {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
 }
 
 .search-input {
@@ -89,12 +245,12 @@
   width: 100%;
   background: var(--bg-secondary);
   border: 2px solid #e9ecef;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   text-align: left;
   display: flex;
   align-items: center;
@@ -735,6 +891,45 @@
     margin-bottom: 20px;
   }
 
+  .filters-quick-nav {
+    position: static;
+    margin-bottom: 12px;
+  }
+
+  .brand-options-wrap {
+    max-height: 220px;
+  }
+
+  .filter-accordion summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .accordion-hint {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+
+@media (max-width: 420px) {
+  .filters-sidebar {
+    padding: 16px;
+  }
+
+  .filter-accordion > summary::after {
+    margin-left: 0;
+  }
+
+  .accordion-hint {
+    font-size: 0.7rem;
+    padding: 3px 7px;
+  }
+
+  .filter-more-btn {
+    font-size: 0.8rem;
+  }
+}
   .products-header {
     flex-direction: column;
     gap: 15px;

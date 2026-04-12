@@ -137,17 +137,35 @@ const Products = () => {
   const [productsFromAPI, setProductsFromAPI] = useState([]);
   const [motorcycleBrandNames, setMotorcycleBrandNames] = useState([]);
   const [allBrandNames, setAllBrandNames] = useState([]);
+  const [brandQuickSearch, setBrandQuickSearch] = useState('');
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const [activeFilterNav, setActiveFilterNav] = useState('motorcycle');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   
   // Ref to track if we're updating from external source (to prevent loop)
   const isExternalUpdate = useRef(false);
+  const filterSectionRefs = useRef({});
   
   const { isAuthenticated } = useAuth();
   const location = useLocation();
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
+  };
+
+  const registerFilterSection = (key) => (node) => {
+    if (node) {
+      filterSectionRefs.current[key] = node;
+    }
+  };
+
+  const jumpToFilterSection = (key) => {
+    setActiveFilterNav(key);
+    const sectionNode = filterSectionRefs.current[key];
+    if (sectionNode) {
+      sectionNode.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const getCompatibilitySummary = (product) => {
@@ -215,14 +233,34 @@ const Products = () => {
 
   useEffect(() => {
     const parsed = StorageUtils.getFromLocalStorage('customerBikeProfile', null);
-    if (parsed?.bikeBrand && parsed?.bikeModel) {
+    if (parsed?.bikeBrand) {
       setActiveBikeBrand(parsed.bikeBrand);
-      setActiveBikeModel(parsed.bikeModel);
+      setActiveBikeModel(parsed.bikeModel || 'all');
       setActiveBikeCcRange(parsed.bikeCcRange || 'all');
       setActiveBrandPreference(parsed.brandPreference || 'all');
       setBikeProfileReady(true);
     }
   }, []);
+
+  useEffect(() => {
+    // Auto-apply bike filters like search controls and keep profile synced.
+    const hasBikeSelection =
+      activeBikeBrand !== 'all' ||
+      activeBikeModel !== 'all' ||
+      activeBikeCcRange !== 'all' ||
+      activeBrandPreference !== 'all';
+
+    setBikeProfileReady(hasBikeSelection);
+
+    if (hasBikeSelection) {
+      StorageUtils.setToLocalStorage('customerBikeProfile', {
+        bikeBrand: activeBikeBrand,
+        bikeModel: activeBikeModel,
+        bikeCcRange: activeBikeCcRange,
+        brandPreference: activeBrandPreference,
+      });
+    }
+  }, [activeBikeBrand, activeBikeModel, activeBikeCcRange, activeBrandPreference]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search || '');
@@ -352,6 +390,14 @@ const Products = () => {
       .map((name) => ({ id: slugify(name), name, icon: '🏷️' })),
   ];
 
+  const brandSearchText = brandQuickSearch.trim().toLowerCase();
+  const filteredBrands = brands.filter((brand) => {
+    if (!brandSearchText) return true;
+    return String(brand.name || '').toLowerCase().includes(brandSearchText);
+  });
+  const compactBrandLimit = 8;
+  const visibleBrands = showAllBrands ? filteredBrands : filteredBrands.slice(0, compactBrandLimit);
+
   const partTypes = [
     { id: 'all', name: 'All Types' },
     ...Array.from(new Set(products.map((p) => p.partTypeName).filter(Boolean)))
@@ -391,12 +437,6 @@ const Products = () => {
   const [activePartType, setActivePartType] = useState('all');
 
   const handleApplyBikeProfile = () => {
-    if (activeBikeBrand === 'all') {
-      showToast('Please select your motorcycle brand first.', 'warning');
-      return;
-    }
-
-    setBikeProfileReady(true);
     localStorage.setItem('customerBikeProfile', JSON.stringify({
       bikeBrand: activeBikeBrand,
       bikeModel: activeBikeModel,
@@ -404,11 +444,11 @@ const Products = () => {
       brandPreference: activeBrandPreference,
     }));
 
-    if (activeBrandPreference === 'genuine') {
+    if (activeBrandPreference === 'genuine' && activeBikeBrand !== 'all') {
       setActiveBrand(activeBikeBrand);
     }
 
-    showToast('Motorcycle profile applied. Showing recommended parts and accessories.', 'success');
+    showToast('Profile saved. Filters are already applied automatically.', 'success');
   };
 
   // Filter and search logic
@@ -431,7 +471,7 @@ const Products = () => {
     const matchesBrand = activeBrand === 'all' || product.brand === activeBrand;
     const matchesPartType = activePartType === 'all' || product.partType === activePartType;
     const matchesSizeSpec = activeSizeSpec === 'all' || slugify(product.dimensions) === activeSizeSpec;
-    const hasMotorcycleFilter = bikeProfileReady && (activeBikeBrand !== 'all' || activeBikeModel !== 'all' || activeBikeCcRange !== 'all');
+    const hasMotorcycleFilter = activeBikeBrand !== 'all' || activeBikeModel !== 'all' || activeBikeCcRange !== 'all';
     const compatibilityModels = product.compatibilityModels || [];
     const brandLooksLikeBikeBrand = activeBikeBrand !== 'all' && String(product.brand || '').includes(activeBikeBrand);
 
@@ -552,7 +592,45 @@ const Products = () => {
       <div className="products-container">
         {/* Search and Filter Section */}
         <aside className="filters-sidebar">
-          <div className="filter-section">
+          <nav className="filters-quick-nav" aria-label="Quick filter navigation">
+            <button
+              type="button"
+              className={`filters-nav-btn ${activeFilterNav === 'motorcycle' ? 'active' : ''}`}
+              onClick={() => jumpToFilterSection('motorcycle')}
+            >
+              Motorcycle
+            </button>
+            <button
+              type="button"
+              className={`filters-nav-btn ${activeFilterNav === 'search' ? 'active' : ''}`}
+              onClick={() => jumpToFilterSection('search')}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              className={`filters-nav-btn ${activeFilterNav === 'category' ? 'active' : ''}`}
+              onClick={() => jumpToFilterSection('category')}
+            >
+              Category
+            </button>
+            <button
+              type="button"
+              className={`filters-nav-btn ${activeFilterNav === 'brand' ? 'active' : ''}`}
+              onClick={() => jumpToFilterSection('brand')}
+            >
+              Brand
+            </button>
+            <button
+              type="button"
+              className={`filters-nav-btn ${activeFilterNav === 'more' ? 'active' : ''}`}
+              onClick={() => jumpToFilterSection('more')}
+            >
+              More
+            </button>
+          </nav>
+
+          <div className="filter-section" ref={registerFilterSection('motorcycle')}>
             <h3>Your Motorcycle</h3>
             <small style={{ display: 'block', marginBottom: '8px' }}>
               Set this first so the system can auto-filter compatible spare parts and accessories.
@@ -562,7 +640,6 @@ const Products = () => {
               onChange={(e) => {
                 setActiveBikeBrand(e.target.value);
                 setActiveBikeModel('all');
-                setBikeProfileReady(false);
               }}
               className="filter-select"
             >
@@ -574,7 +651,6 @@ const Products = () => {
               value={activeBikeModel}
               onChange={(e) => {
                 setActiveBikeModel(e.target.value);
-                setBikeProfileReady(false);
               }}
               className="filter-select"
               style={{ marginTop: '0.5rem' }}
@@ -588,7 +664,6 @@ const Products = () => {
               value={activeBikeCcRange}
               onChange={(e) => {
                 setActiveBikeCcRange(e.target.value);
-                setBikeProfileReady(false);
               }}
               className="filter-select"
               style={{ marginTop: '0.5rem' }}
@@ -604,7 +679,6 @@ const Products = () => {
               value={activeBrandPreference}
               onChange={(e) => {
                 setActiveBrandPreference(e.target.value);
-                setBikeProfileReady(false);
               }}
               className="filter-select"
               style={{ marginTop: '0.5rem' }}
@@ -623,7 +697,7 @@ const Products = () => {
             </button>
           </div>
 
-          <div className="filter-section">
+          <div className="filter-section" ref={registerFilterSection('search')}>
             <h3>🔍 Search</h3>
             <input
               type="text"
@@ -642,7 +716,7 @@ const Products = () => {
             </label>
           </div>
 
-          <div className="filter-section">
+          <div className="filter-section" ref={registerFilterSection('category')}>
             <h3>📂 Category</h3>
             {categories.map(cat => (
               <button
@@ -655,59 +729,92 @@ const Products = () => {
             ))}
           </div>
 
-          <div className="filter-section">
-            <h3>🏷️ Brand</h3>
-            {brands.map(brand => (
-              <button
-                key={brand.id}
-                className={`filter-option ${activeBrand === brand.id ? 'active' : ''}`}
-                onClick={() => setActiveBrand(brand.id)}
-              >
-                <span>{brand.icon}</span> {brand.name}
-              </button>
-            ))}
-          </div>
+          <details className="filter-section filter-accordion" open ref={registerFilterSection('brand')}>
+            <summary>
+              <span>🏷️ Brand</span>
+              <span className="accordion-hint">{activeBrand === 'all' ? 'All' : 'Filtered'}</span>
+            </summary>
+            <div className="accordion-body">
+              <input
+                type="text"
+                placeholder="Quick search brand..."
+                value={brandQuickSearch}
+                onChange={(e) => {
+                  setBrandQuickSearch(e.target.value);
+                  setShowAllBrands(false);
+                }}
+                className="search-input"
+              />
+              <div className="brand-options-wrap">
+                {visibleBrands.map((brand) => (
+                  <button
+                    key={brand.id}
+                    className={`filter-option ${activeBrand === brand.id ? 'active' : ''}`}
+                    onClick={() => setActiveBrand(brand.id)}
+                  >
+                    <span>{brand.icon}</span> {brand.name}
+                  </button>
+                ))}
+              </div>
+              {filteredBrands.length > compactBrandLimit && (
+                <button
+                  className="filter-more-btn"
+                  onClick={() => setShowAllBrands((prev) => !prev)}
+                >
+                  {showAllBrands ? 'Show Fewer Brands' : `Show All Brands (${filteredBrands.length})`}
+                </button>
+              )}
+            </div>
+          </details>
 
-          <div className="filter-section">
-            <h3>🔧 Part Type</h3>
-            <select 
-              value={activePartType} 
-              onChange={(e) => setActivePartType(e.target.value)}
-              className="filter-select"
-            >
-              {partTypes.map(type => (
-                <option key={type.id} value={type.id}>{type.name}</option>
-              ))}
-            </select>
-          </div>
+          <details className="filter-section filter-accordion" ref={registerFilterSection('more')}>
+            <summary>
+              <span>🧰 More Filters</span>
+              <span className="accordion-hint">Advanced</span>
+            </summary>
+            <div className="accordion-body filter-grid-compact">
+              <div>
+                <h3>🔧 Part Type</h3>
+                <select
+                  value={activePartType}
+                  onChange={(e) => setActivePartType(e.target.value)}
+                  className="filter-select"
+                >
+                  {partTypes.map(type => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="filter-section">
-            <h3>📏 Size / Spec</h3>
-            <select
-              value={activeSizeSpec}
-              onChange={(e) => setActiveSizeSpec(e.target.value)}
-              className="filter-select"
-            >
-              {sizeSpecs.map((size) => (
-                <option key={size.id} value={size.id}>{size.name}</option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <h3>📏 Size / Spec</h3>
+                <select
+                  value={activeSizeSpec}
+                  onChange={(e) => setActiveSizeSpec(e.target.value)}
+                  className="filter-select"
+                >
+                  {sizeSpecs.map((size) => (
+                    <option key={size.id} value={size.id}>{size.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="filter-section">
-            <h3>💰 Price Range</h3>
-            <select 
-              value={priceRange} 
-              onChange={(e) => setPriceRange(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Prices</option>
-              <option value="under500">Under ₱500</option>
-              <option value="500-1000">₱500 - ₱1,000</option>
-              <option value="1000-2000">₱1,000 - ₱2,000</option>
-              <option value="over2000">Over ₱2,000</option>
-            </select>
-          </div>
+              <div>
+                <h3>💰 Price Range</h3>
+                <select
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="all">All Prices</option>
+                  <option value="under500">Under ₱500</option>
+                  <option value="500-1000">₱500 - ₱1,000</option>
+                  <option value="1000-2000">₱1,000 - ₱2,000</option>
+                  <option value="over2000">Over ₱2,000</option>
+                </select>
+              </div>
+            </div>
+          </details>
 
           <button 
             className="clear-filters-btn"
@@ -725,6 +832,7 @@ const Products = () => {
               setBikeProfileReady(false);
               setPriceRange('all');
               setSortBy('featured');
+              setActiveFilterNav('motorcycle');
               localStorage.removeItem('customerBikeProfile');
             }}
           >
