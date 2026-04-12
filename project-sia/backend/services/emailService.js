@@ -12,12 +12,17 @@ class EmailService {
 
   async initializeTransporters() {
     try {
+      const adminEmailUser = process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com';
+      const adminEmailPass = process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || process.env.EMAIL_ORDERS_PASS || 'your-app-password';
+      const ordersEmailUser = process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com';
+      const ordersEmailPass = process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || 'your-app-password';
+
       // Admin Email Transporter (for OTP, security alerts)
       this.adminTransporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com',
-          pass: process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || 'your-app-password'
+          user: adminEmailUser,
+          pass: adminEmailPass
         }
       });
 
@@ -25,17 +30,17 @@ class EmailService {
       this.ordersTransporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || 'mejia.spareparts.system@gmail.com',
-          pass: process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || 'your-app-password'
+          user: ordersEmailUser,
+          pass: ordersEmailPass
         }
       });
 
       // Verify both connections
       await this.adminTransporter.verify();
-      console.log('✅ Admin email service connected');
+      console.log(`✅ Admin email service connected (${adminEmailUser})`);
       
       await this.ordersTransporter.verify();
-      console.log('✅ Orders email service connected');
+      console.log(`✅ Orders email service connected (${ordersEmailUser})`);
       
     } catch (error) {
       console.error('❌ Email service connection failed:', error.message);
@@ -71,7 +76,7 @@ class EmailService {
     const mailOptions = {
       from: {
         name: 'Mejia Spareparts Admin',
-        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
+        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
       },
       to: email,
       subject: '🔐 Admin Access Verification Code',
@@ -183,7 +188,7 @@ class EmailService {
     const mailOptions = {
       from: {
         name: 'Mejia Spareparts Admin',
-        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com'
+        address: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || process.env.EMAIL_ORDERS_USER || 'mejia.spareparts.system@gmail.com'
       },
       to: email,
       subject: '🚨 Admin Security Alert',
