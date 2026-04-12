@@ -10,6 +10,7 @@ const UnverifiedUsers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, name
 
+   
   useEffect(() => {
     fetchUnverifiedUsers();
   }, [sortBy]);

@@ -225,6 +225,7 @@ const SignUpPage = () => {
   }, [RECAPTCHA_SITE_KEY, isDarkMode]);
 
   // If the recaptcha script loaded before the container mounted, retry a few times
+   
   useEffect(() => {
     if (!RECAPTCHA_SITE_KEY) return;
     if (!window.grecaptcha) return;
@@ -331,7 +332,7 @@ const SignUpPage = () => {
         }
         return true;
       
-      case 3:
+      case 3: {
         if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
           setError('Please fill in all account fields');
           return false;
@@ -350,6 +351,7 @@ const SignUpPage = () => {
           return false;
         }
         return true;
+      }
       
       default:
         return true;

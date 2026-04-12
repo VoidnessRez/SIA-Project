@@ -16,6 +16,7 @@ const CustomerOrders = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
 
+   
   useEffect(() => {
     fetchOrders();
   }, []); // Fetch once on mount, not on filter change
@@ -85,20 +86,6 @@ const CustomerOrders = () => {
     setShowModal(true);
   };
 
-  // Helper to update allOrders after an action
-  const updateOrderInState = (updatedOrder) => {
-    const updatedAllOrders = allOrders.map(o => 
-      o.id === updatedOrder.id ? updatedOrder : o
-    );
-    setAllOrders(updatedAllOrders);
-    
-    // Update displayed orders
-    if (filter === 'all') {
-      setOrders(updatedAllOrders);
-    } else {
-      setOrders(updatedAllOrders.filter(o => o.order_status === filter));
-    }
-  };
   const getCountForStatus = (status) => {
     if (status === 'all') return allOrders.length;
     return allOrders.filter(o => o.order_status === status).length;
@@ -150,7 +137,7 @@ const CustomerOrders = () => {
       alert('✅ Order approved successfully!');
       setShowModal(false);
       fetchOrders();
-    } catch (error) {
+    } catch {
       alert('Failed to approve order');
     } finally {
       setActionLoading(false);

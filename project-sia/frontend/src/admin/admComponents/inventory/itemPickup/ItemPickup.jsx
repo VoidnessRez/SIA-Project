@@ -8,7 +8,7 @@ const BACKEND_URL = 'http://localhost:5174';
 const ItemPickup = () => {
   const [pickupOrders, setPickupOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [filter, setFilter] = useState('pending'); // pending, completed, cancelled
 
   useEffect(() => {

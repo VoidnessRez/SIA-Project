@@ -11,6 +11,7 @@ const Transactions = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, pending, approved, completed, declined
   const [searchTerm, setSearchTerm] = useState('');
 
+   
   useEffect(() => {
     fetchTransactions();
   }, [filterMethod, filterStatus]);

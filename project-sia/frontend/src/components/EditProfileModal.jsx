@@ -15,6 +15,7 @@ const EditProfileModal = ({ isOpen, onClose }) => {
   const [hasChanges, setHasChanges] = useState(false);
 
   // Fetch user avatar on mount
+   
   useEffect(() => {
     if (isOpen && user) {
       fetchAvatar();

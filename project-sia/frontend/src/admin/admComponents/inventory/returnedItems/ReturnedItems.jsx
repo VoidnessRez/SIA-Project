@@ -8,7 +8,7 @@ const BACKEND_URL = 'http://localhost:5174';
 const ReturnedItems = () => {
   const [returnedItems, setReturnedItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [filter, setFilter] = useState('pending'); // pending, approved, rejected, refunded
 
   useEffect(() => {

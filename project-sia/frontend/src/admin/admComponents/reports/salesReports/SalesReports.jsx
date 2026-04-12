@@ -157,6 +157,7 @@ function SalesReports() {
     window.print();
   };
 
+   
   useEffect(() => {
     fetchSalesReport();
   }, [dateRange, categoryFilter]);

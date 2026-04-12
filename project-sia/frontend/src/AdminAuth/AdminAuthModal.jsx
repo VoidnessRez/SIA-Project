@@ -34,6 +34,7 @@ const AdminAuthModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+   
   useEffect(() => {
     const onKey = (e) => {
       if (!isOpen) return;
@@ -96,7 +97,7 @@ const AdminAuthModal = ({ isOpen, onClose }) => {
       setAdminData(data);
       setLoading(false);
       setStep(2); // Move to OTP step
-    } catch (err) {
+    } catch {
       setError('Network error — please try again');
       setLoading(false);
     }

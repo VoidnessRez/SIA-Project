@@ -11,6 +11,7 @@ const SalesRecords = () => {
   const [sortBy, setSortBy] = useState('date'); // date, amount
   const [totalRevenue, setTotalRevenue] = useState(0);
 
+   
   useEffect(() => {
     fetchSalesRecords();
   }, [filterPeriod]);

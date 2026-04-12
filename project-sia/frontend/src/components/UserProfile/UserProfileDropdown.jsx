@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import EditProfileModal from '../EditProfileModal';
 import './UserProfileDropdown.css';
 
-const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', avatarUrl = '', userRole = 'user' }) => {
+const UserProfileDropdown = ({ firstName = '', lastName = '', email = '', username = 'Customer', avatarUrl = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);

@@ -14,6 +14,7 @@ const OverstockAlerts = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [newMaxStock, setNewMaxStock] = useState('');
 
+   
   useEffect(() => {
     fetchOverstockedItems();
     fetchStatistics();

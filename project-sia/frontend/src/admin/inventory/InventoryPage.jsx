@@ -5,7 +5,7 @@ import './Shared.css';
 const BACKEND_URL = 'http://localhost:5174';
 
 const InventoryPage = () => {
-  const [activeTab, setActiveTab] = useState('spare-parts');
+  const [activeTab] = useState('spare-parts');
   const [spareParts, setSpareParts] = useState([]);
   const [accessories, setAccessories] = useState([]);
   const [brands, setBrands] = useState({});

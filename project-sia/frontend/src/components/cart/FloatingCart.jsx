@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import CartModal from './CartModal.jsx';
 import './FloatingCart.css';
 
-const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
+const FloatingCart = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [localCart, setLocalCart] = useState([]);
   const { isAuthenticated } = useAuth();
@@ -65,7 +65,7 @@ const FloatingCart = ({ itemCount = 0, cartItems = [] }) => {
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
-  const handleCheckout = (items) => {
+  const handleCheckout = () => {
     // Cart will be read from localStorage in Checkout page
     window.location.href = '/checkout';
   };

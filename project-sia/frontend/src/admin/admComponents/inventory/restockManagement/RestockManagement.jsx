@@ -8,7 +8,7 @@ const BACKEND_URL = 'http://localhost:5174';
 const RestockManagement = () => {
   const [restockOrders, setRestockOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState('pending'); // pending, received, completed

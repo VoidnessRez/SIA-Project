@@ -125,7 +125,7 @@ const InventoryPage = () => {
               }
             });
           }
-        } catch (e) {
+        } catch {
           // Silent catch
         }
       }
@@ -160,7 +160,7 @@ const InventoryPage = () => {
         if (Array.isArray(models)) {
           return models.some(model => String(model || '').startsWith(selectedBikeBrand));
         }
-      } catch (e) {
+      } catch {
         return false;
       }
       return false;

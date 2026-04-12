@@ -43,6 +43,7 @@ const UserPersonalInfo = () => {
   });
 
   // Fetch user profile data on mount
+   
   useEffect(() => {
     if (user) {
       fetchProfile();

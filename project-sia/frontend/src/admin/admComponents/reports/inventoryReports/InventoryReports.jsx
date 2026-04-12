@@ -147,6 +147,7 @@ function InventoryReports() {
     window.print();
   };
 
+   
   useEffect(() => {
     fetchInventoryReport();
   }, [categoryFilter, stockFilter]);

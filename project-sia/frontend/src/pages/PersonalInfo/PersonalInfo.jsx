@@ -58,7 +58,7 @@ const PersonalInfo = () => {
       errors.lastName = 'Last name is required';
     }
     
-    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+    if (formData.phone && !/^[\d\s\-+()]+$/.test(formData.phone)) {
       errors.phone = 'Invalid phone number format';
     }
     
