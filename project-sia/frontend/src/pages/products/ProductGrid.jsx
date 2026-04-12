@@ -43,7 +43,10 @@ const parseCompatibilityList = (rawValue, knownBrandSlugs = knownBikeBrands) => 
     .map((label) => {
       const lower = label.toLowerCase();
       const knownBrand = knownBrandSlugs.find((b) => lower.includes(b));
-      const inferredBrand = knownBrand || 'unknown';
+      const firstToken = lower.split(/\s+/)[0]?.replace(/[^a-z0-9-]/g, '') || '';
+      const invalidTokens = ['for', 'all', 'any', 'universal', 'model', 'models', 'fit', 'fits'];
+      const inferredFromToken = firstToken && !invalidTokens.includes(firstToken) ? firstToken : '';
+      const inferredBrand = knownBrand || inferredFromToken || 'unknown';
       const brandSlug = slugify(inferredBrand || 'unknown');
       const brandName = inferredBrand === 'unknown' ? 'Unknown' : toTitle(inferredBrand);
       const ccMatch = label.match(/(\d{2,4})\s*cc?/i) || label.match(/\b(\d{2,4})\b/);
@@ -140,7 +143,6 @@ const ProductGrid = () => {
         ? brandsResult.data.motorcycle.map((b) => String(b?.name || '').trim()).filter(Boolean)
         : [];
       const dbBrandSlugs = dbBrandNames.map((name) => slugify(name));
-      setMotorcycleBrandNames(dbBrandNames);
 
       if (!result.success || !Array.isArray(result.data)) {
         setProducts([]);
@@ -171,6 +173,17 @@ const ProductGrid = () => {
           compatibilityModels: parseCompatibilityList(product.compatible_bike_models, dbBrandSlugs.length ? dbBrandSlugs : knownBikeBrands)
         };
       });
+
+      const fallbackBikeBrands = Array.from(new Set(
+        transformed
+          .flatMap((p) => p.compatibilityModels || [])
+          .map((m) => String(m?.brandName || '').trim())
+          .filter((name) => name && name.toLowerCase() !== 'unknown')
+      ));
+
+      setMotorcycleBrandNames(
+        Array.from(new Set([...dbBrandNames, ...fallbackBikeBrands]))
+      );
 
       setProducts(transformed);
     } catch (error) {
@@ -277,6 +290,11 @@ const ProductGrid = () => {
   const handleAddToCart = (product) => {
     if (!isAuthenticated()) {
       setShowAuthModal(true);
+      return;
+    }
+
+    if (Number(product?.stock || 0) <= 0) {
+      alert(`${product?.name || 'This item'} is out of stock.`);
       return;
     }
     
@@ -514,7 +532,13 @@ const ProductGrid = () => {
                   <span className="product-price">₱{Number(product.price || 0).toLocaleString()}</span>
                   <span className="product-stock">Stock: {product.stock}</span>
                 </div>
-                <button className="add-to-cart-btn" onClick={() => handleAddToCart(product)}>Add to Cart</button>
+                <button
+                  className="add-to-cart-btn"
+                  onClick={() => handleAddToCart(product)}
+                  disabled={Number(product.stock || 0) <= 0}
+                >
+                  {Number(product.stock || 0) <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
               </div>
             </div>
           ))}
@@ -614,11 +638,19 @@ const ProductGrid = () => {
                   </div>
 
                   <div className="modal-actions">
-                    <button className="add-to-cart-btn modal-cart-btn" onClick={() => handleAddToCart(selectedProduct)}>
-                      🛒 Add to Cart
+                    <button
+                      className="add-to-cart-btn modal-cart-btn"
+                      onClick={() => handleAddToCart(selectedProduct)}
+                      disabled={Number(selectedProduct.stock || 0) <= 0}
+                    >
+                      {Number(selectedProduct.stock || 0) <= 0 ? 'Out of Stock' : '🛒 Add to Cart'}
                     </button>
-                    <button className="buy-now-btn" onClick={() => handleAddToCart(selectedProduct)}>
-                      ⚡ Buy Now
+                    <button
+                      className="buy-now-btn"
+                      onClick={() => handleAddToCart(selectedProduct)}
+                      disabled={Number(selectedProduct.stock || 0) <= 0}
+                    >
+                      {Number(selectedProduct.stock || 0) <= 0 ? 'Out of Stock' : '⚡ Buy Now'}
                     </button>
                   </div>
                 </div>

@@ -63,7 +63,10 @@ import './Products.css';
       .map((label) => {
         const lower = label.toLowerCase();
         const knownBrand = knownBrandSlugs.find((b) => lower.includes(b));
-        const inferredBrand = knownBrand || 'unknown';
+        const firstToken = lower.split(/\s+/)[0]?.replace(/[^a-z0-9-]/g, '') || '';
+        const invalidTokens = ['for', 'all', 'any', 'universal', 'model', 'models', 'fit', 'fits'];
+        const inferredFromToken = firstToken && !invalidTokens.includes(firstToken) ? firstToken : '';
+        const inferredBrand = knownBrand || inferredFromToken || 'unknown';
         const brandSlug = slugify(inferredBrand || 'unknown');
         const brandName = inferredBrand === 'unknown' ? 'Unknown' : toTitle(inferredBrand);
         const ccMatch = label.match(/(\d{2,4})\s*cc?/i) || label.match(/\b(\d{2,4})\b/);
@@ -265,7 +268,6 @@ const Products = () => {
         ? brandsData.data.accessory.map((b) => String(b?.name || '').trim()).filter(Boolean)
         : [];
       const dbBrandSlugs = dbBrandNames.map((name) => slugify(name));
-      setMotorcycleBrandNames(dbBrandNames);
       setAllBrandNames(Array.from(new Set([
         ...dbSparepartBrandNames,
         ...dbAccessoryBrandNames
@@ -309,9 +311,21 @@ const Products = () => {
           };
         });
         
+        const fallbackBikeBrands = Array.from(new Set(
+          transformedProducts
+            .flatMap((p) => p.compatibilityModels || [])
+            .map((m) => String(m?.brandName || '').trim())
+            .filter((name) => name && name.toLowerCase() !== 'unknown')
+        ));
+
+        setMotorcycleBrandNames(
+          Array.from(new Set([...dbBrandNames, ...fallbackBikeBrands]))
+        );
+
         setProductsFromAPI(transformedProducts);
       } else {
         console.log('⚠️ No products returned from API');
+        setMotorcycleBrandNames(dbBrandNames);
         setProductsFromAPI([]);
       }
     } catch (error) {
@@ -471,6 +485,12 @@ const Products = () => {
     if (!isAuthenticated()) {
       console.log('❌ Not authenticated, showing auth modal');
       setShowAuthModal(true);
+      return;
+    }
+
+    const availableStock = Number(product?.stock || 0);
+    if (availableStock <= 0) {
+      showToast(`${product?.name || 'This item'} is out of stock.`, 'warning');
       return;
     }
     
@@ -719,7 +739,7 @@ const Products = () => {
               <div className="results-info">
                 <h2 style={{ marginBottom: '6px' }}>Set Your Motorcycle First</h2>
                 <p style={{ margin: 0, color: '#8a6d3b' }}>
-                  Piliin muna ang brand/model/cc at brand preference para tama ang compatible parts na lalabas.
+                  Select the brand/model/cc and brand preference first so that the correct compatible parts will appear
                 </p>
               </div>
             </div>
@@ -817,8 +837,9 @@ const Products = () => {
                     <button 
                       className="add-to-cart-btn"
                       onClick={() => handleAddToCart(product)}
+                      disabled={Number(product.stock || 0) <= 0}
                     >
-                      🛒 Add to Cart
+                      {Number(product.stock || 0) <= 0 ? 'Out of Stock' : '🛒 Add to Cart'}
                     </button>
                   </div>
                 </div>
@@ -935,8 +956,9 @@ const Products = () => {
                       handleAddToCart(selectedProduct);
                       closeQuickView();
                     }}
+                    disabled={Number(selectedProduct.stock || 0) <= 0}
                   >
-                    🛒 Add to Cart
+                    {Number(selectedProduct.stock || 0) <= 0 ? 'Out of Stock' : '🛒 Add to Cart'}
                   </button>
                   <button 
                     className="buy-now-btn"
@@ -944,8 +966,9 @@ const Products = () => {
                       handleAddToCart(selectedProduct);
                       closeQuickView();
                     }}
+                    disabled={Number(selectedProduct.stock || 0) <= 0}
                   >
-                    ⚡ Buy Now
+                    {Number(selectedProduct.stock || 0) <= 0 ? 'Out of Stock' : '⚡ Buy Now'}
                   </button>
                 </div>
               </div>
