@@ -1749,3 +1749,43 @@
 .dark-mode .stat-icon {
   filter: brightness(1.2);
 }
+
+.inventory-search-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.inventory-search-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.inventory-search-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.dark-mode .inventory-search-input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.dark-mode .inventory-search-input::placeholder {
+  color: #64748b;
+}
+
+.dark-mode .inventory-search-toggle {
+  color: #cbd5e1;
+}

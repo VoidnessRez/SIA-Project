@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Brands.css';
 
 const Brands = () => {
   const [activeCategory, setActiveCategory] = useState('all');
+  const navigate = useNavigate();
+
+  const slugify = (value) =>
+    String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
 
   const motorcycleBrands = [
     {
@@ -167,6 +175,29 @@ const Brands = () => {
 
   const filteredBrands = getFilteredBrands();
 
+  const getBrandCategory = (brandId) => {
+    if (motorcycleBrands.some((b) => b.id === brandId)) return 'motorcycle';
+    if (partsBrands.some((b) => b.id === brandId)) return 'parts';
+    if (accessoryBrands.some((b) => b.id === brandId)) return 'accessories';
+    return 'all';
+  };
+
+  const handleViewProducts = (brand) => {
+    const brandType = getBrandCategory(brand.id);
+    const params = new URLSearchParams();
+
+    if (brandType === 'motorcycle') {
+      params.set('bikeBrand', slugify(brand.name));
+    } else {
+      params.set('brand', slugify(brand.name));
+      if (brandType === 'parts' || brandType === 'accessories') {
+        params.set('category', brandType);
+      }
+    }
+
+    navigate(`/products?${params.toString()}`);
+  };
+
   return (
     <div className="brands-page">
       <div className="brands-hero">
@@ -211,7 +242,7 @@ const Brands = () => {
                 <p>{brand.products}</p>
               </div>
 
-              <button className="view-products-btn">
+              <button className="view-products-btn" onClick={() => handleViewProducts(brand)}>
                 View Products →
               </button>
             </div>

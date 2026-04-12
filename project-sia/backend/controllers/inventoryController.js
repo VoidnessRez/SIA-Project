@@ -59,6 +59,7 @@ export async function createSparePart(req, res) {
       payload.sparepart_brand_id = payload.brand_id;
       delete payload.brand_id;
     }
+    payload.is_active = true;
     payload.quality_type = normalizeQualityType(payload.quality_type);
 
     const { data, error } = await supabase
@@ -174,6 +175,7 @@ export async function createAccessory(req, res) {
       payload.accessory_brand_id = payload.brand_id;
       delete payload.brand_id;
     }
+    payload.is_active = true;
     payload.quality_type = normalizeQualityType(payload.quality_type);
 
     const { data, error } = await supabase

@@ -17,6 +17,8 @@ const SpareParts = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadedImagePaths, setUploadedImagePaths] = useState({ image_url: '', image_2: '', image_3: '' });
   const [stockFilter, setStockFilter] = useState('all'); // all, low, normal, overstocked
+  const [searchQuery, setSearchQuery] = useState('');
+  const [strictSearch, setStrictSearch] = useState(false);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -285,8 +287,22 @@ const SpareParts = () => {
 
   // Filter spare parts by stock status
   const filteredSpareParts = spareParts.filter(part => {
-    if (stockFilter === 'all') return true;
-    return getStockStatus(part) === stockFilter;
+    const matchesStock = stockFilter === 'all' || getStockStatus(part) === stockFilter;
+    const search = String(searchQuery || '').toLowerCase().trim();
+    const searchableFields = [
+      String(part.sku || '').toLowerCase().trim(),
+      String(part.name || '').toLowerCase().trim(),
+      String(part.description || '').toLowerCase().trim(),
+      String(part.brand_name || part.sparepart_brand?.name || '').toLowerCase().trim(),
+      String(part.part_type_name || part.part_type?.name || '').toLowerCase().trim()
+    ];
+    const matchesSearch =
+      search === '' ||
+      (strictSearch
+        ? searchableFields.some((field) => field === search)
+        : searchableFields.some((field) => field.includes(search)));
+
+    return matchesStock && matchesSearch;
   });
 
   // Calculate stock statistics
@@ -377,6 +393,24 @@ const SpareParts = () => {
           </button>
         </div>
 
+        <div className="inventory-search-controls">
+          <input
+            type="text"
+            className="inventory-search-input"
+            placeholder="Search SKU, name, brand, type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <label className="inventory-search-toggle">
+            <input
+              type="checkbox"
+              checked={strictSearch}
+              onChange={(e) => setStrictSearch(e.target.checked)}
+            />
+            Exact match
+          </label>
+        </div>
+
         <div className="inventory-table">
           <table>
             <thead>
@@ -426,7 +460,7 @@ const SpareParts = () => {
                   );
                 })
               ) : (
-                <tr><td colSpan="11" className="no-data">No spare parts found for this filter</td></tr>
+                <tr><td colSpan="11" className="no-data">No spare parts found for your current filter/search</td></tr>
               )}
             </tbody>
           </table>

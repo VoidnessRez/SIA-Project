@@ -17,6 +17,8 @@ const Accessories = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadedImagePaths, setUploadedImagePaths] = useState({ image_url: '', image_2: '', image_3: '' });
   const [stockFilter, setStockFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [strictSearch, setStrictSearch] = useState(false);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -277,8 +279,22 @@ const Accessories = () => {
 
   // Filter accessories by stock status
   const filteredAccessories = accessories.filter(item => {
-    if (stockFilter === 'all') return true;
-    return getStockStatus(item) === stockFilter;
+    const matchesStock = stockFilter === 'all' || getStockStatus(item) === stockFilter;
+    const search = String(searchQuery || '').toLowerCase().trim();
+    const searchableFields = [
+      String(item.sku || '').toLowerCase().trim(),
+      String(item.name || '').toLowerCase().trim(),
+      String(item.description || '').toLowerCase().trim(),
+      String(item.brand_name || item.accessory_brand?.name || '').toLowerCase().trim(),
+      String(item.part_type_name || item.part_type?.name || '').toLowerCase().trim()
+    ];
+    const matchesSearch =
+      search === '' ||
+      (strictSearch
+        ? searchableFields.some((field) => field === search)
+        : searchableFields.some((field) => field.includes(search)));
+
+    return matchesStock && matchesSearch;
   });
 
   // Calculate stock statistics
@@ -369,6 +385,24 @@ const Accessories = () => {
           </button>
         </div>
 
+        <div className="inventory-search-controls">
+          <input
+            type="text"
+            className="inventory-search-input"
+            placeholder="Search SKU, name, brand, type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <label className="inventory-search-toggle">
+            <input
+              type="checkbox"
+              checked={strictSearch}
+              onChange={(e) => setStrictSearch(e.target.checked)}
+            />
+            Exact match
+          </label>
+        </div>
+
         <div className="inventory-table">
           <table>
             <thead>
@@ -416,7 +450,7 @@ const Accessories = () => {
                   );
                 })
               ) : (
-                <tr><td colSpan="10" className="no-data">No accessories found for this filter</td></tr>
+                <tr><td colSpan="10" className="no-data">No accessories found for your current filter/search</td></tr>
               )}
             </tbody>
           </table>

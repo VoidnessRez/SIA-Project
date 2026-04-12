@@ -14,7 +14,12 @@ const slugify = (value) =>
 
 const knownBikeBrands = ['yamaha', 'honda', 'suzuki', 'kawasaki', 'ktm', 'ducati', 'bmw'];
 
-const parseCompatibilityList = (rawValue) => {
+const toTitle = (value) => {
+  const text = String(value || '').trim();
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+};
+
+const parseCompatibilityList = (rawValue, knownBrandSlugs = knownBikeBrands) => {
   if (!rawValue) return [];
 
   let list = [];
@@ -28,7 +33,7 @@ const parseCompatibilityList = (rawValue) => {
       const parsed = JSON.parse(trimmed);
       list = Array.isArray(parsed) ? parsed : [];
     } catch {
-      list = trimmed.split(',').map((v) => v.trim()).filter(Boolean);
+      list = trimmed.split(/[\n,;]+/).map((v) => v.trim()).filter(Boolean);
     }
   }
 
@@ -37,12 +42,13 @@ const parseCompatibilityList = (rawValue) => {
     .filter(Boolean)
     .map((label) => {
       const lower = label.toLowerCase();
-      const brandSlug = knownBikeBrands.find((b) => lower.includes(b)) || slugify(lower.split(' ')[0] || 'unknown');
-      const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
+      const knownBrand = knownBrandSlugs.find((b) => lower.includes(b));
+      const inferredBrand = knownBrand || 'unknown';
+      const brandSlug = slugify(inferredBrand || 'unknown');
+      const brandName = inferredBrand === 'unknown' ? 'Unknown' : toTitle(inferredBrand);
       const ccMatch = label.match(/(\d{2,4})\s*cc?/i) || label.match(/\b(\d{2,4})\b/);
       const cc = ccMatch ? parseInt(ccMatch[1], 10) : null;
-      const modelWithoutBrand = label
-        .replace(new RegExp(`^${brandName}\\s+`, 'i'), '')
+      const modelWithoutBrand = (brandName === 'Unknown' ? label : label.replace(new RegExp(`^${brandName}\\s+`, 'i'), ''))
         .replace(/\b\d{2,4}\s*cc?\b/gi, '')
         .trim();
 
@@ -88,12 +94,12 @@ const ProductGrid = () => {
   const [activeBikeModel, setActiveBikeModel] = useState('all');
   const [activeBikeCcRange, setActiveBikeCcRange] = useState('all');
   const [activeBrandPreference, setActiveBrandPreference] = useState('all');
-  const [bikeProfileReady, setBikeProfileReady] = useState(false);
   const [activeSizeSpec, setActiveSizeSpec] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [products, setProducts] = useState([]);
+  const [motorcycleBrandNames, setMotorcycleBrandNames] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const { isAuthenticated } = useAuth();
@@ -114,7 +120,6 @@ const ProductGrid = () => {
         setActiveBikeModel(parsed.bikeModel);
         setActiveBikeCcRange(parsed.bikeCcRange || 'all');
         setActiveBrandPreference(parsed.brandPreference || 'all');
-        setBikeProfileReady(true);
       }
     } catch (profileErr) {
       console.warn('Failed to load saved bike profile:', profileErr);
@@ -123,8 +128,19 @@ const ProductGrid = () => {
 
   const fetchFeaturedProducts = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/inventory/products`);
-      const result = await response.json();
+      const [productsResponse, brandsResponse] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/inventory/products`),
+        fetch(`${BACKEND_URL}/api/inventory/brands`)
+      ]);
+
+      const result = await productsResponse.json();
+      const brandsResult = await brandsResponse.json();
+
+      const dbBrandNames = Array.isArray(brandsResult?.data?.motorcycle)
+        ? brandsResult.data.motorcycle.map((b) => String(b?.name || '').trim()).filter(Boolean)
+        : [];
+      const dbBrandSlugs = dbBrandNames.map((name) => slugify(name));
+      setMotorcycleBrandNames(dbBrandNames);
 
       if (!result.success || !Array.isArray(result.data)) {
         setProducts([]);
@@ -152,7 +168,7 @@ const ProductGrid = () => {
           dimensions: product.dimensions || '',
           qualityType: String(product.quality_type || 'unknown').toLowerCase(),
           isUniversal: Boolean(product.is_universal),
-          compatibilityModels: parseCompatibilityList(product.compatible_bike_models)
+          compatibilityModels: parseCompatibilityList(product.compatible_bike_models, dbBrandSlugs.length ? dbBrandSlugs : knownBikeBrands)
         };
       });
 
@@ -180,25 +196,25 @@ const ProductGrid = () => {
 
   const motorcycleBrands = [
     { id: 'all', name: 'All Motorcycle Brands' },
-    ...Array.from(new Set(
-      products.flatMap((p) => (p.compatibilityModels || []).map((m) => m.brandName))
-    ))
+    ...Array.from(new Set(motorcycleBrandNames))
       .filter(Boolean)
       .sort((a, b) => a.localeCompare(b))
       .map((name) => ({ id: slugify(name), name })),
   ];
 
-  const motorcycleModels = [
-    { id: 'all', name: 'All Motorcycle Models' },
-    ...Array.from(new Set(
-      products.flatMap((p) => (p.compatibilityModels || [])
-        .filter((m) => activeBikeBrand === 'all' || m.brandSlug === activeBikeBrand)
-        .map((m) => m.modelName))
-    ))
-      .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b))
-      .map((name) => ({ id: slugify(name), name })),
-  ];
+  const motorcycleModels = activeBikeBrand === 'all'
+    ? [{ id: 'all', name: 'Select motorcycle brand first' }]
+    : [
+        { id: 'all', name: 'All Motorcycle Models' },
+        ...Array.from(new Set(
+          products.flatMap((p) => (p.compatibilityModels || [])
+            .filter((m) => m.brandSlug === activeBikeBrand)
+            .map((m) => m.modelName))
+        ))
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b))
+          .map((name) => ({ id: slugify(name), name })),
+      ];
 
   const sizeSpecs = [
     { id: 'all', name: 'All Sizes / Specs' },
@@ -208,12 +224,11 @@ const ProductGrid = () => {
   ];
 
   const handleApplyBikeProfile = () => {
-    if (activeBikeBrand === 'all' || activeBikeModel === 'all') {
-      alert('Please select your motorcycle brand and model first.');
+    if (activeBikeBrand === 'all') {
+      alert('Please select your motorcycle brand first.');
       return;
     }
 
-    setBikeProfileReady(true);
     localStorage.setItem('customerBikeProfile', JSON.stringify({
       bikeBrand: activeBikeBrand,
       bikeModel: activeBikeModel,
@@ -227,8 +242,6 @@ const ProductGrid = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    if (!bikeProfileReady) return false;
-
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
     const matchesBrand = activeBrand === 'all' || product.brand === activeBrand;
     const matchesSizeSpec = activeSizeSpec === 'all' || slugify(product.dimensions) === activeSizeSpec;
@@ -355,7 +368,6 @@ const ProductGrid = () => {
               onChange={(e) => {
                 setActiveBikeBrand(e.target.value);
                 setActiveBikeModel('all');
-                setBikeProfileReady(false);
               }}
             >
               {motorcycleBrands.map((brand) => (
@@ -368,8 +380,8 @@ const ProductGrid = () => {
               value={activeBikeModel}
               onChange={(e) => {
                 setActiveBikeModel(e.target.value);
-                setBikeProfileReady(false);
               }}
+              disabled={activeBikeBrand === 'all'}
             >
               {motorcycleModels.map((model) => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -381,7 +393,6 @@ const ProductGrid = () => {
               value={activeBikeCcRange}
               onChange={(e) => {
                 setActiveBikeCcRange(e.target.value);
-                setBikeProfileReady(false);
               }}
             >
               <option value="all">All Engine CC</option>
@@ -396,7 +407,6 @@ const ProductGrid = () => {
               value={activeBrandPreference}
               onChange={(e) => {
                 setActiveBrandPreference(e.target.value);
-                setBikeProfileReady(false);
               }}
             >
               <option value="all">Any Brand Preference</option>
@@ -428,7 +438,6 @@ const ProductGrid = () => {
               onChange={(e) => {
                 setActiveBikeBrand(e.target.value);
                 setActiveBikeModel('all');
-                setBikeProfileReady(false);
               }}
             >
               {motorcycleBrands.map((brand) => (
@@ -441,8 +450,8 @@ const ProductGrid = () => {
               value={activeBikeModel}
               onChange={(e) => {
                 setActiveBikeModel(e.target.value);
-                setBikeProfileReady(false);
               }}
+              disabled={activeBikeBrand === 'all'}
             >
               {motorcycleModels.map((model) => (
                 <option key={model.id} value={model.id}>{model.name}</option>
@@ -454,7 +463,6 @@ const ProductGrid = () => {
               value={activeBikeCcRange}
               onChange={(e) => {
                 setActiveBikeCcRange(e.target.value);
-                setBikeProfileReady(false);
               }}
             >
               <option value="all">All Engine CC</option>
@@ -479,8 +487,6 @@ const ProductGrid = () => {
         <div className="products-grid">
           {loading ? (
             <p>Loading products...</p>
-          ) : !bikeProfileReady ? (
-            <p>Please set your motorcycle profile first (brand/model/cc + preference).</p>
           ) : filteredProducts.length === 0 ? (
             <p>No products available right now.</p>
           ) : filteredProducts.map(product => (
