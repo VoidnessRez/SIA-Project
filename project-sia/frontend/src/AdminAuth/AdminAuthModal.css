@@ -207,6 +207,32 @@
   font-weight: 600;
 }
 
+.admin-auth-email-debug {
+  margin-top: 1rem;
+  text-align: left;
+  background: #eef5ff;
+  border: 1px solid #cfe0ff;
+  border-left: 4px solid #4f7fff;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  color: #1f2a44;
+}
+
+.admin-auth-email-debug strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.admin-auth-email-debug p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.admin-auth-email-debug span {
+  font-weight: 600;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .admin-auth-modal {

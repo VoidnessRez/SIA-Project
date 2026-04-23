@@ -337,6 +337,22 @@
   margin-bottom: 1.5rem;
 }
 
+.gcash-qr-upload {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gcash-qr-preview {
+  margin-top: 0.75rem;
+  width: 220px;
+  max-width: 100%;
+  border: 2px solid var(--inv-gray-200);
+  border-radius: 10px;
+  background: #fff;
+}
+
 .settings-form h3 {
   color: var(--inv-gray-800);
   margin: 1.5rem 0 1rem 0;

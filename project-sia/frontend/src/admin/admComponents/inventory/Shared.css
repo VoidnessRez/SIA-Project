@@ -398,12 +398,28 @@
 .modal {
   background: white;
   border-radius: 16px;
-  max-width: 600px;
+  max-width: 760px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 94vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.inventory-edit-modal {
+  max-width: 980px;
+}
+
+.modal.inventory-edit-modal .modal-body {
+  padding: 1.25rem 1.4rem;
+}
+
+.modal.inventory-edit-modal .modal-header {
+  padding: 1.1rem 1.4rem;
+}
+
+.modal.inventory-edit-modal .modal-footer {
+  padding: 1rem 1.4rem;
 }
 
 @keyframes slideUp {
@@ -472,7 +488,7 @@
    ================================================ */
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -498,6 +514,22 @@
   font-family: inherit;
 }
 
+.modal .form-group input,
+.modal .form-group select,
+.modal-content .form-group input,
+.modal-content .form-group select {
+  min-height: 48px;
+}
+
+.modal .form-group input[type="checkbox"],
+.modal-content .form-group input[type="checkbox"] {
+  min-height: 0;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
@@ -508,21 +540,146 @@
 }
 
 .form-group textarea {
-  min-height: 120px;
-  resize: vertical;
+  min-height: 48px;
+  height: 48px;
+  resize: none;
+  overflow: hidden;
   font-family: 'Inter', monospace;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .modal .form-row,
 .modal-content .form-row {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modal.inventory-edit-modal .form-row {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.95rem;
+  margin-bottom: 0.95rem;
+}
+
+.modal.inventory-edit-modal .form-group {
+  margin-bottom: 0.85rem;
+}
+
+.inventory-see-more-btn {
+  margin-top: 0.75rem;
+  border: 1px solid #d7ddf8;
+  background: #f3f6ff;
+  color: var(--inv-primary-dark);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.inventory-see-more-btn:hover {
+  background: #e9efff;
+}
+
+.inventory-photo-manager-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #dbe2ff;
+  border-radius: 10px;
+  background: #f8faff;
+}
+
+.inventory-photo-count {
+  font-size: 0.9rem;
+  color: var(--inv-gray-700);
+  font-weight: 600;
+}
+
+.inventory-nested-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 1rem;
+}
+
+.inventory-nested-modal {
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.35);
+}
+
+.inventory-nested-header,
+.inventory-nested-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #eef1f8;
+}
+
+.inventory-nested-footer {
+  border-top: 1px solid #eef1f8;
+  border-bottom: none;
+  justify-content: flex-end;
+}
+
+.inventory-nested-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--inv-gray-900);
+}
+
+.inventory-nested-body {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.inventory-photo-slot {
+  border: 1px solid #e9edf8;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #fafbff;
+}
+
+.inventory-photo-slot label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--inv-gray-800);
+}
+
+.inventory-photo-preview {
+  margin-top: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.inventory-photo-preview img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
 }
 
 .cancel-btn,
@@ -639,6 +796,15 @@
   .modal .form-row,
   .modal-content .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .modal.inventory-edit-modal .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-photo-manager-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .modal {
@@ -987,6 +1153,19 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content.inventory-edit-modal {
+  max-width: 980px;
+  max-height: 94vh;
+}
+
+.modal-content.inventory-edit-modal .modal-header {
+  padding: 1.1rem 1.4rem;
+}
+
+.modal-content.inventory-edit-modal form {
+  padding: 0.9rem 1.4rem 1.2rem;
 }
 
 .modal-content .form-row {

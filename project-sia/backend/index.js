@@ -10,7 +10,7 @@ import ordersRouter from './routes/orders.js';
 import priceHistoryRouter from './routes/priceHistory.js';
 import stockReleaseRouter from './routes/stockRelease.js';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 app.use(cors());

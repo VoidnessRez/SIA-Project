@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { APP_CONFIG } from '../../config/appConfig';
 import StorageUtils from '../../utils/storageUtils';
+import { loadGcashQrSettings, getMaskedGcashName, getMaskedGcashNumber } from '../../utils/paymentGatewaySettings';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -37,6 +38,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [errors, setErrors] = useState({});
+  const [gcashQrSettings, setGcashQrSettings] = useState(loadGcashQrSettings());
 
   // Load user's profile address when component mounts or when switching to saved address
   useEffect(() => {
@@ -70,6 +72,18 @@ const Checkout = () => {
       }
     }
   }, [isAuthenticated, navigate, cartItems]);
+
+  useEffect(() => {
+    const refreshSettings = () => {
+      setGcashQrSettings(loadGcashQrSettings());
+    };
+
+    refreshSettings();
+    window.addEventListener('focus', refreshSettings);
+    return () => {
+      window.removeEventListener('focus', refreshSettings);
+    };
+  }, []);
 
   // Calculate totals
   const calculateSubtotal = () => {
@@ -286,6 +300,10 @@ const Checkout = () => {
         throw new Error(result.message || 'Failed to create order');
       }
 
+      if (result.receiptEmail && !result.receiptEmail.success) {
+        alert(`Order placed, but receipt email failed to send: ${result.receiptEmail.message}`);
+      }
+
       console.log('[Checkout] ✅ Order created successfully:', result.data);
 
       // Prepare receipt data
@@ -311,6 +329,7 @@ const Checkout = () => {
           type: calculateWholesaleDiscount().tier,
           amount: calculateWholesaleDiscount().amount
         } : null,
+        emailDelivery: result.receiptEmail || null,
         total: calculateTotal(),
         paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 
                       paymentMethod === 'gcash' ? 'GCash' : 'Bank Transfer',
@@ -724,6 +743,32 @@ const Checkout = () => {
                       </div>
                     </div>
                   </label>
+
+                  {paymentMethod === 'gcash' && (
+                    <div className="gcash-qr-card">
+                      <h4>Scan to Pay via GCash</h4>
+                      {gcashQrSettings.qrImageUrl ? (
+                        <img src={gcashQrSettings.qrImageUrl} alt="GCash QR" className="gcash-qr-image" />
+                      ) : (
+                        <div className="gcash-qr-placeholder">No QR uploaded yet</div>
+                      )}
+                      <p className="gcash-meta">
+                        {getMaskedGcashName(gcashQrSettings.qrFirstName, gcashQrSettings.qrLastName) || 'Admin has not set GCash account name yet'}
+                      </p>
+                      <p className="gcash-meta">
+                        {getMaskedGcashNumber(gcashQrSettings.qrNumber) || 'Admin has not set GCash number yet'}
+                      </p>
+                      <small className="gcash-limit-note">
+                        {gcashQrSettings.qrLimitNote || 'Replace this QR when your receiving limit is reached.'}
+                      </small>
+                      <small className="gcash-limit-note">
+                        Buyer receipt upload: Place the order first, then go to My Orders &gt; open your order &gt; Upload GCash Receipt.
+                      </small>
+                      <small className="gcash-limit-note">
+                        Policy: GCash downpayment is non-refundable once verified by admin.
+                      </small>
+                    </div>
+                  )}
 
                   <label className={`payment-option ${paymentMethod === 'bank' ? 'selected' : ''}`}>
                     <input

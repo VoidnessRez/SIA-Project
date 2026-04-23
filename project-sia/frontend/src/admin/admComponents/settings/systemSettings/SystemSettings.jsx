@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader.jsx';
+import StorageUtils from '../../../../utils/storageUtils';
+import { getMaskedGcashName, getMaskedGcashNumber } from '../../../../utils/paymentGatewaySettings';
 import './SystemSettings.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
 
 const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -64,6 +68,10 @@ const SystemSettings = () => {
       bankTransfer: false
     },
     gcashNumber: '',
+    gcashQrFirstName: '',
+    gcashQrLastName: '',
+    gcashQrImageUrl: '',
+    gcashQrLimitNote: 'Replace this QR when your receiving limit is reached.',
     payMayaNumber: '',
     bankAccountName: '',
     bankAccountNumber: '',
@@ -93,10 +101,15 @@ const SystemSettings = () => {
   });
 
   const [activeTab, setActiveTab] = useState('general');
+  const [qrFile, setQrFile] = useState(null);
+  const [uploadingQr, setUploadingQr] = useState(false);
 
   useEffect(() => {
-    // Simulate loading settings
     setTimeout(() => {
+      const savedSettings = StorageUtils.getFromLocalStorage('systemSettings', null);
+      if (savedSettings && typeof savedSettings === 'object') {
+        setSettings((prev) => ({ ...prev, ...savedSettings }));
+      }
       setLoading(false);
     }, 800);
   }, []);
@@ -109,8 +122,44 @@ const SystemSettings = () => {
   };
 
   const handleSaveSettings = () => {
+    StorageUtils.setToLocalStorage('systemSettings', settings);
     console.log('Saving settings:', settings);
-    // alert('Settings saved successfully!');
+    alert('Settings saved successfully!');
+  };
+
+  const handleUploadGcashQr = async () => {
+    if (!qrFile) {
+      alert('Please choose a QR image first.');
+      return;
+    }
+
+    try {
+      setUploadingQr(true);
+      const formData = new FormData();
+      formData.append('qr', qrFile);
+
+      const response = await fetch(`${API_URL}/api/upload/gcash-qr`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to upload QR');
+      }
+
+      setSettings((prev) => ({
+        ...prev,
+        gcashQrImageUrl: result.url
+      }));
+      setQrFile(null);
+      alert('✅ GCash QR uploaded. Click Save Settings to publish it in checkout.');
+    } catch (error) {
+      console.error('GCash QR upload error:', error);
+      alert(`Failed to upload GCash QR: ${error.message}`);
+    } finally {
+      setUploadingQr(false);
+    }
   };
 
   return (
@@ -624,15 +673,77 @@ const SystemSettings = () => {
                     </div>
                     
                     {settings.paymentMethods.gcash && (
-                      <div className="form-group">
-                        <label>GCash Number</label>
-                        <input
-                          type="text"
-                          value={settings.gcashNumber}
-                          onChange={(e) => handleInputChange('gcashNumber', e.target.value)}
-                          placeholder="09XX XXX XXXX"
-                        />
-                      </div>
+                      <>
+                        <p className="section-note">
+                          If GCash name/number/QR are empty, checkout will show placeholder text until you save these fields.
+                        </p>
+                        <div className="form-row">
+                          <div className="form-group">
+                            <label>GCash First Name</label>
+                            <input
+                              type="text"
+                              value={settings.gcashQrFirstName}
+                              onChange={(e) => handleInputChange('gcashQrFirstName', e.target.value)}
+                              placeholder="Juan"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <label>GCash Last Name</label>
+                            <input
+                              type="text"
+                              value={settings.gcashQrLastName}
+                              onChange={(e) => handleInputChange('gcashQrLastName', e.target.value)}
+                              placeholder="Dela Cruz"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-group">
+                          <label>GCash Number</label>
+                          <input
+                            type="text"
+                            value={settings.gcashNumber}
+                            onChange={(e) => handleInputChange('gcashNumber', e.target.value)}
+                            placeholder="09XXXXXXXXX"
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>QR Replacement Note</label>
+                          <input
+                            type="text"
+                            value={settings.gcashQrLimitNote}
+                            onChange={(e) => handleInputChange('gcashQrLimitNote', e.target.value)}
+                            placeholder="Replace QR when receiving limit is reached"
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label>GCash QR Image</label>
+                          <div className="gcash-qr-upload">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setQrFile(e.target.files?.[0] || null)}
+                              disabled={uploadingQr}
+                            />
+                            <button
+                              type="button"
+                              className="test-btn"
+                              onClick={handleUploadGcashQr}
+                              disabled={uploadingQr || !qrFile}
+                            >
+                              {uploadingQr ? 'Uploading...' : 'Upload / Replace QR'}
+                            </button>
+                          </div>
+                          {settings.gcashQrImageUrl && (
+                            <img src={settings.gcashQrImageUrl} alt="GCash QR" className="gcash-qr-preview" />
+                          )}
+                          <small>
+                            Checkout display (masked): {getMaskedGcashName(settings.gcashQrFirstName, settings.gcashQrLastName) || 'N/A'} / {getMaskedGcashNumber(settings.gcashNumber) || 'N/A'}
+                          </small>
+                        </div>
+                      </>
                     )}
                     
                     {settings.paymentMethods.paymaya && (

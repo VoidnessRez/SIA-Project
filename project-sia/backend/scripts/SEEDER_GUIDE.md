@@ -24,6 +24,18 @@ cd backend
 node scripts/seed_new_features.js
 ```
 
+### Wholesale Seed (after migration #005)
+```bash
+cd backend
+npm run seed:wholesale
+```
+
+Dry run validation (no writes):
+```bash
+cd backend
+$env:DRY_RUN="1"; npm run seed:wholesale
+```
+
 ## 🎯 What Gets Created
 
 The script will **dynamically fetch your existing products** and generate:
@@ -166,6 +178,9 @@ Make sure you've run all SQL schema files in Supabase SQL Editor:
 - PRICE_HISTORY_SCHEMA.sql
 - STOCK_RELEASE_SCHEMA.sql
 
+For wholesale module seed, run:
+- backend/migrations/005_create_wholesale_tables.sql
+
 ### "Connection error"
 Check your `.env` file has correct Supabase credentials:
 ```env
@@ -189,6 +204,17 @@ After successful seeding:
 3. Check that data displays correctly
 4. Try editing max stock levels
 5. Test wholesale discounts in checkout
+
+## ✅ Core E2E Test Command
+
+After backend is running, execute:
+
+```bash
+cd backend
+npm run test:e2e:core
+```
+
+This scripted check validates key order/payment policy flows (COD vs GCash create rules, proof upload rules, paid verification requirements, non-refundable policy enforcement, and cancellation policy behavior).
 
 ---
 

@@ -129,6 +129,18 @@ const Receipt = () => {
                 <span className="info-value">{orderDetails.paymentMethod}</span>
               </div>
             </div>
+
+            {orderDetails.emailDelivery && (
+              <div className={`receipt-email-debug ${orderDetails.emailDelivery.success ? 'ok' : 'warn'}`}>
+                <h4>Email Delivery Status</h4>
+                <p><span>Success:</span> {orderDetails.emailDelivery.success ? 'Yes' : 'No'}</p>
+                <p><span>Provider:</span> {orderDetails.emailDelivery.provider || 'unknown'}</p>
+                <p><span>Accepted:</span> {(orderDetails.emailDelivery.accepted || []).join(', ') || 'none'}</p>
+                <p><span>Rejected:</span> {(orderDetails.emailDelivery.rejected || []).join(', ') || 'none'}</p>
+                <p><span>Response:</span> {orderDetails.emailDelivery.response || 'no-response'}</p>
+                <p><span>Message:</span> {orderDetails.emailDelivery.message || '-'}</p>
+              </div>
+            )}
           </div>
 
           {/* Items Table */}

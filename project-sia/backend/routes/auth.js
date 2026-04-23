@@ -610,11 +610,24 @@ router.post('/send-otp', async (req, res) => {
     
     if (result.success) {
       console.log('[Backend] ✅ OTP email sent successfully');
+      console.log('[Backend] 📬 OTP delivery details:', {
+        provider: result.provider || null,
+        messageId: result.messageId || null,
+        accepted: result.accepted || [],
+        rejected: result.rejected || [],
+        response: result.response || null
+      });
       return res.json({ 
         success: true, 
         message: 'OTP sent successfully',
         otp: otp, // In production, store this securely instead of returning
-        provider: result.provider
+        provider: result.provider,
+        delivery: {
+          accepted: result.accepted || [],
+          rejected: result.rejected || [],
+          response: result.response || null,
+          messageId: result.messageId || null
+        }
       });
     } else {
       console.error('[Backend] ❌ Failed to send OTP email:', result.error);

@@ -10,8 +10,14 @@ const Orders = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showAllModalItems, setShowAllModalItems] = useState(false);
+  const [proofFile, setProofFile] = useState(null);
+  const [uploadingProof, setUploadingProof] = useState(false);
+  const [reuploadReason, setReuploadReason] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptZoom, setReceiptZoom] = useState(1);
 
    
   useEffect(() => {
@@ -34,6 +40,7 @@ const Orders = () => {
         : result.data;
 
       const transformed = filteredByUser.map((order) => ({
+        rawId: order.id,
         id: order.order_number || `ORD-${order.id}`,
         date: order.order_date || order.created_at,
         status: order.order_status || 'pending_approval',
@@ -46,9 +53,15 @@ const Orders = () => {
           sku: item.product_sku
         })),
         shippingAddress: [order.delivery_barangay, order.delivery_city, order.delivery_province].filter(Boolean).join(', ') || 'N/A',
+        deliveryCity: order.delivery_city || null,
+        deliveryProvince: order.delivery_province || null,
         paymentMethod: order.payment_method || 'N/A',
+        paymentStatus: order.payment_status || 'pending',
+        adminNotes: order.admin_notes || '',
+        paymentProofUrl: order.payment_proof_url || null,
         trackingNumber: order.tracking_number || 'Pending',
-        fulfillmentMethod: order.fulfillment_method || 'delivery'
+        fulfillmentMethod: order.fulfillment_method || 'delivery',
+        cancellationReason: order.cancellation_reason || null
       }));
 
       setOrders(transformed);
@@ -66,24 +79,157 @@ const Orders = () => {
       shipped: { icon: '🚚', label: 'Shipped', color: '#17a2b8' },
       processing: { icon: '⏳', label: 'Processing', color: '#ffc107' },
       pending_approval: { icon: '⏳', label: 'Pending Approval', color: '#ffc107' },
+      incomplete_txn: { icon: '📄', label: 'Incomplete Transaction', color: '#f59e0b' },
       confirmed: { icon: '✅', label: 'Confirmed', color: '#17a2b8' },
+      buyer_cancelled: { icon: '🙋', label: 'Cancelled by You', color: '#dc3545' },
+      declined_admin: { icon: '🛑', label: 'Declined by Admin', color: '#b91c1c' },
       cancelled: { icon: '❌', label: 'Cancelled', color: '#dc3545' },
     };
     return statusMap[status] || { icon: '❓', label: 'Unknown', color: '#6c757d' };
   };
 
+  const handleBuyerCancel = async (order) => {
+    const isPaidGcash =
+      String(order?.paymentMethod || '').toLowerCase() === 'gcash' &&
+      String(order?.paymentStatus || '').toLowerCase() === 'paid';
+
+    const reasonInput = window.prompt('Reason for cancellation (optional):');
+    const reason = String(reasonInput || '').trim();
+
+    const confirmText = isPaidGcash
+      ? 'Cancel this order? GCash downpayment is NON-REFUNDABLE and this cannot be undone.'
+      : 'Cancel this order? This cannot be undone.';
+
+    if (!window.confirm(confirmText)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/orders/${order.rawId}/cancel-by-buyer`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cancellation_reason: reason || undefined })
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to cancel order');
+      }
+
+      alert('✅ Order cancelled successfully');
+      closeOrderDetails();
+      fetchOrders();
+    } catch (error) {
+      console.error('Buyer cancellation error:', error);
+      alert(`Failed to cancel order: ${error.message}`);
+    }
+  };
+
   const filteredOrders = orders.filter(order => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'processing') return ['processing', 'pending_approval', 'confirmed'].includes(order.status);
+    if (activeTab === 'processing') {
+      return ['processing', 'pending_approval', 'incomplete_txn', 'confirmed'].includes(order.status);
+    }
     return order.status === activeTab;
   });
 
   const openOrderDetails = (order) => {
     setSelectedOrder(order);
+    setShowAllModalItems(false);
+    setProofFile(null);
+    setReuploadReason('');
   };
 
   const closeOrderDetails = () => {
     setSelectedOrder(null);
+    setShowAllModalItems(false);
+    setProofFile(null);
+    setReuploadReason('');
+    setShowReceiptModal(false);
+    setReceiptZoom(1);
+  };
+
+  const isGcashPayment = String(selectedOrder?.paymentMethod || '').toLowerCase() === 'gcash';
+
+  const canUploadPaymentProof = (order) => {
+    const allowedStatuses = ['pending_approval', 'incomplete_txn', 'confirmed'];
+    return isGcashPayment && allowedStatuses.includes(order?.status);
+  };
+
+  const getPaymentStatusLabel = (status) => {
+    const value = String(status || 'pending').toLowerCase();
+    const map = {
+      pending: '⏳ Pending Verification',
+      paid: '✅ Verified Paid',
+      failed: '❌ Rejected/Blurry',
+      refunded: '↩️ Refunded'
+    };
+    return map[value] || value;
+  };
+
+  const handleZoomInReceipt = () => {
+    setReceiptZoom((prev) => Math.min(prev + 0.25, 3));
+  };
+
+  const handleZoomOutReceipt = () => {
+    setReceiptZoom((prev) => Math.max(prev - 0.25, 0.5));
+  };
+
+  const handleUploadPaymentProof = async () => {
+    if (!selectedOrder?.rawId) return;
+    if (!proofFile) {
+      alert('Please choose a receipt image first.');
+      return;
+    }
+
+    if (String(selectedOrder?.paymentStatus || '').toLowerCase() === 'failed' && !reuploadReason.trim()) {
+      alert('Please provide a reason/note for reupload.');
+      return;
+    }
+
+    try {
+      setUploadingProof(true);
+
+      const formData = new FormData();
+      formData.append('receipt', proofFile);
+      formData.append('orderId', String(selectedOrder.rawId));
+      if (reuploadReason.trim()) {
+        formData.append('reupload_reason', reuploadReason.trim());
+      }
+      if (user?.id) {
+        formData.append('userId', String(user.id));
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/upload/payment-proof`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to upload receipt');
+      }
+
+      setProofFile(null);
+      setReuploadReason('');
+      alert('✅ GCash receipt uploaded successfully');
+      await fetchOrders();
+
+      setSelectedOrder((prev) => (prev ? {
+        ...prev,
+        paymentProofUrl: result?.data?.payment_proof_url || result?.url || prev.paymentProofUrl,
+        paymentStatus: result?.data?.payment_status || prev.paymentStatus,
+        status: result?.data?.order_status || prev.status,
+        adminNotes: result?.data?.admin_notes || prev.adminNotes
+      } : prev));
+    } catch (error) {
+      console.error('Payment proof upload error:', error);
+      alert(`Failed to upload receipt: ${error.message}`);
+    } finally {
+      setUploadingProof(false);
+    }
   };
 
   const handleViewReceipt = (order) => {
@@ -92,9 +238,9 @@ const Orders = () => {
       orderNumber: order.id,
       timestamp: new Date(order.date).toISOString(),
       customer: {
-        name: 'Customer Name', // Would come from user profile in real scenario
-        email: 'customer@email.com',
-        phone: '09123456789'
+        name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || 'Customer',
+        email: user?.email || 'N/A',
+        phone: user?.phone || 'N/A'
       },
       items: order.items.map(item => ({
         id: item.sku || item.name,
@@ -109,7 +255,7 @@ const Orders = () => {
       discount: null,
       total: order.total,
       paymentMethod: order.paymentMethod,
-      fulfillmentMethod: 'delivery'
+      fulfillmentMethod: order.fulfillmentMethod || 'delivery'
     };
 
     // Navigate to receipt with order data
@@ -123,9 +269,9 @@ const Orders = () => {
       total: orders.length,
       delivered: orders.filter(o => o.status === 'delivered').length,
       shipped: orders.filter(o => o.status === 'shipped').length,
-      processing: orders.filter(o => o.status === 'processing').length,
+      processing: orders.filter(o => ['processing', 'pending_approval', 'incomplete_txn', 'confirmed'].includes(o.status)).length,
       totalSpent: orders
-        .filter(o => o.status !== 'cancelled')
+        .filter(o => !['cancelled', 'buyer_cancelled', 'declined_admin'].includes(o.status))
         .reduce((sum, o) => sum + o.total, 0),
     };
   };
@@ -185,7 +331,7 @@ const Orders = () => {
             className={`order-tab ${activeTab === 'processing' ? 'active' : ''}`}
             onClick={() => setActiveTab('processing')}
           >
-            Processing ({orders.filter(o => ['processing', 'pending_approval', 'confirmed'].includes(o.status)).length})
+            Processing ({orders.filter(o => ['processing', 'pending_approval', 'incomplete_txn', 'confirmed'].includes(o.status)).length})
           </button>
           <button
             className={`order-tab ${activeTab === 'shipped' ? 'active' : ''}`}
@@ -282,13 +428,17 @@ const Orders = () => {
                   {getStatusInfo(selectedOrder.status).icon} {getStatusInfo(selectedOrder.status).label}
                 </div>
                 <p className="detail-text">Order Date: {new Date(selectedOrder.date).toLocaleDateString()}</p>
-                <p className="detail-text">Tracking Number: <strong>{selectedOrder.trackingNumber}</strong></p>
+                {selectedOrder.trackingNumber && selectedOrder.trackingNumber !== 'Pending' && (
+                  <p className="detail-text">Tracking Number: <strong>{selectedOrder.trackingNumber}</strong></p>
+                )}
               </div>
 
               <div className="detail-section">
                 <h3>🛍️ Items ({selectedOrder.items.length})</h3>
                 <div className="modal-items-list">
-                  {selectedOrder.items.map((item, index) => (
+                  {(showAllModalItems || selectedOrder.items.length < 2
+                    ? selectedOrder.items
+                    : selectedOrder.items.slice(0, 1)).map((item, index) => (
                     <div key={index} className="modal-item">
                       {String(item.image || '').startsWith('http') ? (
                         <img className="modal-item-image" src={item.image} alt={item.name} />
@@ -303,42 +453,183 @@ const Orders = () => {
                     </div>
                   ))}
                 </div>
+                {selectedOrder.items.length >= 2 && (
+                  <button
+                    type="button"
+                    className="see-more-items-btn"
+                    onClick={() => setShowAllModalItems((prev) => !prev)}
+                  >
+                    {showAllModalItems
+                      ? 'See less'
+                      : `See more (${selectedOrder.items.length - 1} more item${selectedOrder.items.length - 1 > 1 ? 's' : ''})`}
+                  </button>
+                )}
               </div>
 
               <div className="detail-section">
                 <h3>📍 Shipping Address</h3>
-                <p className="detail-text">{selectedOrder.shippingAddress}</p>
+                <p className="detail-text">
+                  {selectedOrder.fulfillmentMethod === 'pickup'
+                    ? 'Store Pickup'
+                    : [selectedOrder.deliveryCity, selectedOrder.deliveryProvince].filter(Boolean).join(', ') || selectedOrder.shippingAddress}
+                </p>
               </div>
+
+              {['cancelled', 'buyer_cancelled', 'declined_admin'].includes(selectedOrder.status) && selectedOrder.cancellationReason && (
+                <div className="detail-section">
+                  <h3>📝 Cancellation Reason</h3>
+                  <p className="detail-text">{selectedOrder.cancellationReason}</p>
+                </div>
+              )}
 
               <div className="detail-section">
                 <h3>💳 Payment Method</h3>
                 <p className="detail-text">{selectedOrder.paymentMethod}</p>
+                {isGcashPayment && (
+                  <p className="detail-text"><strong>Status:</strong> {getPaymentStatusLabel(selectedOrder.paymentStatus)}</p>
+                )}
               </div>
 
-              <div className="order-summary">
-                <div className="summary-row">
+              {isGcashPayment && (
+                <div className="detail-section">
+                  <h3>📱 GCash Receipt</h3>
+
+                  {selectedOrder.paymentProofUrl ? (
+                    <p className="detail-text">
+                      Proof uploaded.{' '}
+                      <button
+                        type="button"
+                        className="view-receipt-link-btn"
+                        onClick={() => {
+                          setReceiptZoom(1);
+                          setShowReceiptModal(true);
+                        }}
+                      >
+                        View uploaded receipt
+                      </button>
+                    </p>
+                  ) : (
+                    <p className="detail-text">No receipt uploaded yet.</p>
+                  )}
+      {/* Receipt Modal */}
+      {showReceiptModal && selectedOrder?.paymentProofUrl && (
+        <div className="order-modal" style={{ zIndex: 1200, background: 'rgba(0,0,0,0.6)' }} onClick={() => {
+          setShowReceiptModal(false);
+          setReceiptZoom(1);
+        }}>
+          <div className="modal-content" style={{ maxWidth: 480, minHeight: 200, textAlign: 'center', position: 'relative' }} onClick={e => e.stopPropagation()}>
+            <button className="close-modal" style={{ position: 'absolute', top: 10, right: 10 }} onClick={() => {
+              setShowReceiptModal(false);
+              setReceiptZoom(1);
+            }}>✕</button>
+            <h3 style={{ marginTop: 24 }}>GCash Receipt</h3>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <button type="button" className="receipt-zoom-btn" onClick={handleZoomOutReceipt} disabled={receiptZoom <= 0.5}>- Zoom Out</button>
+              <span style={{ fontWeight: 600 }}>{Math.round(receiptZoom * 100)}%</span>
+              <button type="button" className="receipt-zoom-btn" onClick={handleZoomInReceipt} disabled={receiptZoom >= 3}>+ Zoom In</button>
+            </div>
+            <div style={{ margin: '18px 0' }}>
+              {selectedOrder.paymentProofUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                <div style={{ maxHeight: 420, overflow: 'auto', borderRadius: 8 }}>
+                  <img
+                    src={selectedOrder.paymentProofUrl}
+                    alt="GCash Receipt"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: 520,
+                      borderRadius: 8,
+                      boxShadow: '0 2px 12px #0002',
+                      transform: `scale(${receiptZoom})`,
+                      transformOrigin: 'top center',
+                      transition: 'transform 0.15s ease'
+                    }}
+                  />
+                </div>
+              ) : selectedOrder.paymentProofUrl.match(/\.(pdf)$/i) ? (
+                <div style={{ maxHeight: 420, overflow: 'auto', borderRadius: 8 }}>
+                  <iframe
+                    src={selectedOrder.paymentProofUrl}
+                    title="GCash Receipt PDF"
+                    style={{
+                      width: '100%',
+                      height: 420,
+                      border: 'none',
+                      borderRadius: 8,
+                      transform: `scale(${receiptZoom})`,
+                      transformOrigin: 'top center',
+                      transition: 'transform 0.15s ease'
+                    }}
+                  />
+                </div>
+              ) : (
+                <a href={selectedOrder.paymentProofUrl} target="_blank" rel="noreferrer">Open receipt</a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+                  {canUploadPaymentProof(selectedOrder) && (
+                    <div className="payment-proof-upload">
+                      <textarea
+                        className="payment-proof-note"
+                        value={reuploadReason}
+                        onChange={(e) => setReuploadReason(e.target.value)}
+                        placeholder="Type your reason or note for this upload (required if previously rejected)"
+                        rows={2}
+                        disabled={uploadingProof}
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                        disabled={uploadingProof}
+                      />
+                      <button
+                        type="button"
+                        className="action-btn download-btn"
+                        onClick={handleUploadPaymentProof}
+                        disabled={uploadingProof || !proofFile || (String(selectedOrder?.paymentStatus || '').toLowerCase() === 'failed' && !reuploadReason.trim())}
+                      >
+                        {uploadingProof ? 'Uploading...' : 'Upload GCash Receipt'}
+                      </button>
+                    </div>
+                  )}
+
+                  {String(selectedOrder?.paymentStatus || '').toLowerCase() === 'failed' && selectedOrder.adminNotes && (
+                    <p className="detail-text">
+                      <strong>Admin Note:</strong> {selectedOrder.adminNotes}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="order-details-summary">
+                <div className="order-details-summary-row">
                   <span>Subtotal:</span>
                   <span>₱{selectedOrder.total.toLocaleString()}</span>
                 </div>
-                <div className="summary-row">
+                <div className="order-details-summary-row">
                   <span>Shipping:</span>
-                  <span>Free</span>
+                  <span>{selectedOrder.fulfillmentMethod === 'pickup' ? 'Free' : 'By Area'}</span>
                 </div>
-                <div className="summary-row total-row">
+                <div className="order-details-summary-row total-row">
                   <span>Total:</span>
                   <span>₱{selectedOrder.total.toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="modal-actions">
-                {selectedOrder.status === 'delivered' && (
-                  <button className="action-btn reorder-btn">🔄 Reorder</button>
+                {['pending_approval', 'incomplete_txn', 'confirmed'].includes(selectedOrder.status) && (
+                  <button className="action-btn cancel-order-btn" onClick={() => handleBuyerCancel(selectedOrder)}>
+                    ❌ Cancel Order
+                  </button>
                 )}
-                {selectedOrder.status === 'shipped' && (
-                  <button className="action-btn track-btn">📦 Track Package</button>
+                {selectedOrder.status === 'delivered' && (
+                  <button className="action-btn reorder-order-btn">🔄 Reorder</button>
                 )}
                 <button 
-                  className="action-btn download-btn"
+                  className="action-btn download-btn receipt-btn"
                   onClick={() => handleViewReceipt(selectedOrder)}
                 >
                   📄 View Receipt

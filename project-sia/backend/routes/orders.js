@@ -4,6 +4,38 @@ import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
+const ORDER_STATUSES = {
+  PENDING_APPROVAL: 'pending_approval',
+  INCOMPLETE_TRANSACTION: 'incomplete_txn',
+  CONFIRMED: 'confirmed',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delivered',
+  BUYER_CANCELLED: 'buyer_cancelled',
+  DECLINED_ADMIN: 'declined_admin',
+  CANCELLED: 'cancelled'
+};
+
+const VALID_ORDER_STATUSES = new Set(Object.values(ORDER_STATUSES));
+
+const PAYMENT_STATUSES = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  FAILED: 'failed',
+  REFUNDED: 'refunded'
+};
+
+const VALID_PAYMENT_STATUSES = new Set(Object.values(PAYMENT_STATUSES));
+const NON_REFUNDABLE_GCASH_NOTE = 'GCash downpayment is non-refundable under store policy.';
+
+function appendAdminNote(existingNotes, noteText) {
+  const trimmed = String(noteText || '').trim();
+  if (!trimmed) return existingNotes || null;
+  const stamp = new Date().toISOString();
+  const line = `[Policy ${stamp}] ${trimmed}`;
+  return existingNotes ? `${existingNotes}\n${line}` : line;
+}
+
 const STOCK_TABLE_BY_TYPE = {
   sparepart: 'spare_parts',
   spare_part: 'spare_parts',
@@ -186,20 +218,25 @@ async function applyStockMovements(orderItems, { direction, referenceNumber, tra
         newQuantity: nextQty
       });
 
-      await logInventoryTransaction({
-        productType: normalizedType,
-        productId: item.product_id,
-        quantity: delta,
-        previousQuantity: currentQty,
-        newQuantity: nextQty,
-        referenceNumber,
-        transactionType,
-        notes: direction === 'deduct'
-          ? `Order reserve: ${referenceNumber}`
-          : `Order cancellation restock: ${referenceNumber}`,
-        productSku: item.product_sku || product.sku,
-        productName: item.product_name || product.name
-      });
+      try {
+        await logInventoryTransaction({
+          productType: normalizedType,
+          productId: item.product_id,
+          quantity: delta,
+          previousQuantity: currentQty,
+          newQuantity: nextQty,
+          referenceNumber,
+          transactionType,
+          notes: direction === 'deduct'
+            ? `Order reserve: ${referenceNumber}`
+            : `Order cancellation restock: ${referenceNumber}`,
+          productSku: item.product_sku || product.sku,
+          productName: item.product_name || product.name
+        });
+      } catch (txLogError) {
+        // Do not block core order flow when inventory transaction schema variants are incompatible.
+        console.warn('[Orders API] Inventory transaction logging skipped:', txLogError.message);
+      }
     }
   } catch (error) {
     await rollbackAppliedStock(appliedChanges);
@@ -244,10 +281,23 @@ router.post('/create', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Order must contain at least one item' });
     }
 
-    // Determine order status based on fulfillment method
-    // Pickup = auto-approved (confirmed)
-    // Delivery = pending_approval (admin needs to verify)
-    const order_status = fulfillment_method === 'pickup' ? 'confirmed' : 'pending_approval';
+    const normalizedPaymentMethod = String(payment_method || '').trim().toLowerCase();
+    const allowedPaymentMethods = new Set(['cod', 'gcash', 'bank']);
+    if (!allowedPaymentMethods.has(normalizedPaymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid payment method: ${payment_method}`
+      });
+    }
+
+    // GCash has an additional verification step, so it always starts in pending approval.
+    const isGcashPayment = normalizedPaymentMethod === 'gcash';
+    const order_status = isGcashPayment
+      ? ORDER_STATUSES.PENDING_APPROVAL
+      : (fulfillment_method === 'pickup' ? ORDER_STATUSES.CONFIRMED : ORDER_STATUSES.PENDING_APPROVAL);
+    const confirmedAt = !isGcashPayment && fulfillment_method === 'pickup'
+      ? new Date().toISOString()
+      : null;
 
     // Validate and normalize order items first.
     const orderItems = items.map((item, index) => {
@@ -305,7 +355,8 @@ router.post('/create', async (req, res) => {
         customer_email,
         customer_phone,
         fulfillment_method,
-        payment_method,
+        payment_method: normalizedPaymentMethod,
+        payment_status: PAYMENT_STATUSES.PENDING,
         delivery_address,
         delivery_barangay,
         delivery_city,
@@ -313,13 +364,14 @@ router.post('/create', async (req, res) => {
         delivery_zipcode,
         delivery_notes,
         order_status,
+        admin_notes: isGcashPayment ? 'Waiting for GCash receipt upload and admin verification.' : null,
         subtotal: parseFloat(subtotal),
         shipping_fee: parseFloat(shipping_fee),
         tax_amount: parseFloat(tax_amount || 0),
         discount_amount: parseFloat(discount_amount || 0),
         total_amount: parseFloat(total_amount),
         order_date: new Date().toISOString(),
-        confirmed_at: fulfillment_method === 'pickup' ? new Date().toISOString() : null
+        confirmed_at: confirmedAt
       }])
       .select()
       .single();
@@ -368,6 +420,12 @@ router.post('/create', async (req, res) => {
       throw deductError;
     }
 
+    let receiptEmailStatus = {
+      success: false,
+      provider: null,
+      message: 'Receipt email not attempted'
+    };
+
     // Send receipt email
     try {
       // Transform items to match email template format
@@ -380,7 +438,7 @@ router.post('/create', async (req, res) => {
         quantity: parseInt(item.quantity || 1)
       }));
 
-      await emailService.sendOrderReceipt({
+      const emailResult = await emailService.sendOrderReceipt({
         orderNumber: orderData.order_number,
         customerName: customer_name,
         customerEmail: customer_email,
@@ -396,10 +454,32 @@ router.post('/create', async (req, res) => {
         paymentMethod: payment_method,
         timestamp: orderData.order_date
       });
+
+      receiptEmailStatus = {
+        success: true,
+        provider: emailResult?.provider || null,
+        messageId: emailResult?.messageId || null,
+        accepted: emailResult?.accepted || [],
+        rejected: emailResult?.rejected || [],
+        response: emailResult?.response || null,
+        message: 'Receipt email sent'
+      };
+
       console.log('[Orders API] 📧 Receipt email sent');
+      console.log('[Orders API] 📬 Receipt delivery details:', {
+        provider: receiptEmailStatus.provider,
+        messageId: receiptEmailStatus.messageId,
+        accepted: receiptEmailStatus.accepted,
+        rejected: receiptEmailStatus.rejected,
+        response: receiptEmailStatus.response
+      });
     } catch (emailError) {
       console.error('[Orders API] ⚠️ Failed to send receipt email:', emailError);
-      // Don't fail the order if email fails
+      receiptEmailStatus = {
+        success: false,
+        provider: null,
+        message: emailError?.message || 'Failed to send receipt email'
+      };
     }
 
     res.status(201).json({
@@ -413,7 +493,8 @@ router.post('/create', async (req, res) => {
         order_status: orderData.order_status,
         total_amount: orderData.total_amount,
         fulfillment_method: orderData.fulfillment_method
-      }
+      },
+      receiptEmail: receiptEmailStatus
     });
 
   } catch (error) {
@@ -492,13 +573,13 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * PUT /api/orders/:id/status
- * Update order status
+ * PUT /api/orders/:id/cancel-by-buyer
+ * Cancel order from buyer side
  */
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/cancel-by-buyer', async (req, res) => {
   try {
     const { id } = req.params;
-    const { order_status, admin_notes } = req.body;
+    const { cancellation_reason } = req.body || {};
 
     const { data: existingOrder, error: existingOrderError } = await supabase
       .from('orders')
@@ -506,6 +587,219 @@ router.put('/:id/status', async (req, res) => {
         id,
         order_number,
         order_status,
+        payment_method,
+        payment_status,
+        admin_notes,
+        order_items (
+          product_type,
+          product_id,
+          product_sku,
+          product_name,
+          quantity
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (existingOrderError || !existingOrder) {
+      throw new Error('Order not found');
+    }
+
+    const cancellableStatuses = [
+      ORDER_STATUSES.PENDING_APPROVAL,
+      ORDER_STATUSES.INCOMPLETE_TRANSACTION,
+      ORDER_STATUSES.CONFIRMED
+    ];
+
+    if (!cancellableStatuses.includes(existingOrder.order_status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Order cannot be cancelled in status: ${existingOrder.order_status}`
+      });
+    }
+
+    await applyStockMovements(existingOrder.order_items || [], {
+      direction: 'restore',
+      referenceNumber: existingOrder.order_number,
+      transactionType: 'sale_buyer_cancel_restore'
+    });
+
+    const updateData = {
+      order_status: ORDER_STATUSES.BUYER_CANCELLED,
+      cancelled_at: new Date().toISOString(),
+      cancellation_reason: String(cancellation_reason || '').trim() || 'Cancelled by buyer',
+      updated_at: new Date().toISOString()
+    };
+
+    const isPaidGcash =
+      String(existingOrder.payment_method || '').toLowerCase() === 'gcash' &&
+      String(existingOrder.payment_status || '').toLowerCase() === PAYMENT_STATUSES.PAID;
+
+    if (isPaidGcash) {
+      updateData.admin_notes = appendAdminNote(existingOrder.admin_notes, NON_REFUNDABLE_GCASH_NOTE);
+    }
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Order cancelled by buyer',
+      data
+    });
+  } catch (error) {
+    console.error('[Orders API] Error in buyer cancellation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cancel order',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/orders/:id/payment-status
+ * Verify or update payment status (admin action)
+ */
+router.put('/:id/payment-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { payment_status, verification_note, admin_reason } = req.body || {};
+
+    if (!VALID_PAYMENT_STATUSES.has(payment_status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid payment status: ${payment_status}`
+      });
+    }
+
+    if (payment_status === PAYMENT_STATUSES.FAILED && !String(admin_reason || '').trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Admin reason is required when rejecting payment proof'
+      });
+    }
+
+    const { data: existingOrder, error: existingOrderError } = await supabase
+      .from('orders')
+      .select('id, order_status, payment_method, payment_proof_url, admin_notes')
+      .eq('id', id)
+      .single();
+
+    if (existingOrderError || !existingOrder) {
+      throw new Error('Order not found');
+    }
+
+    if (String(existingOrder.payment_method || '').toLowerCase() !== 'gcash') {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment verification action is only available for GCash orders'
+      });
+    }
+
+    if (payment_status === PAYMENT_STATUSES.REFUNDED) {
+      return res.status(400).json({
+        success: false,
+        message: 'GCash downpayment is non-refundable and cannot be marked as refunded'
+      });
+    }
+
+    if (payment_status === PAYMENT_STATUSES.PAID && !existingOrder.payment_proof_url) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot mark as paid without payment proof'
+      });
+    }
+
+    const updateData = {
+      payment_status,
+      updated_at: new Date().toISOString()
+    };
+
+    if (
+      payment_status === PAYMENT_STATUSES.PAID &&
+      [ORDER_STATUSES.PENDING_APPROVAL, ORDER_STATUSES.INCOMPLETE_TRANSACTION].includes(existingOrder.order_status)
+    ) {
+      updateData.order_status = ORDER_STATUSES.CONFIRMED;
+      updateData.confirmed_at = new Date().toISOString();
+    }
+
+    if (
+      payment_status === PAYMENT_STATUSES.FAILED &&
+      [ORDER_STATUSES.PENDING_APPROVAL, ORDER_STATUSES.CONFIRMED].includes(existingOrder.order_status)
+    ) {
+      updateData.order_status = ORDER_STATUSES.INCOMPLETE_TRANSACTION;
+    }
+
+    if (payment_status === PAYMENT_STATUSES.FAILED && String(admin_reason || '').trim()) {
+      const stamp = new Date().toISOString();
+      const line = `[Admin Reject ${stamp}] ${String(admin_reason).trim()}`;
+      updateData.admin_notes = existingOrder.admin_notes
+        ? `${existingOrder.admin_notes}\n${line}`
+        : line;
+    } else if (verification_note) {
+      const stamp = new Date().toISOString();
+      const line = `[Payment Verification ${stamp}] ${verification_note}`;
+      updateData.admin_notes = existingOrder.admin_notes
+        ? `${existingOrder.admin_notes}\n${line}`
+        : line;
+    }
+
+    const { data, error } = await supabase
+      .from('orders')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json({
+      success: true,
+      message: 'Payment status updated successfully',
+      data
+    });
+  } catch (error) {
+    console.error('[Orders API] Error updating payment status:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update payment status',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/orders/:id/status
+ * Update order status
+ */
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { order_status, admin_notes, cancellation_reason } = req.body;
+
+    if (!VALID_ORDER_STATUSES.has(order_status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid order status: ${order_status}`
+      });
+    }
+
+    const { data: existingOrder, error: existingOrderError } = await supabase
+      .from('orders')
+      .select(`
+        id,
+        order_number,
+        order_status,
+        payment_method,
+        payment_status,
+        admin_notes,
         order_items (
           product_type,
           product_id,
@@ -524,10 +818,26 @@ router.put('/:id/status', async (req, res) => {
     const previousStatus = existingOrder.order_status;
 
     // If a pending/confirmed order is cancelled (not accepted), restore reserved stock.
+    const nextIsCancellationStatus = [
+      ORDER_STATUSES.CANCELLED,
+      ORDER_STATUSES.BUYER_CANCELLED,
+      ORDER_STATUSES.DECLINED_ADMIN
+    ].includes(order_status);
+
+    const previousWasCancellationStatus = [
+      ORDER_STATUSES.CANCELLED,
+      ORDER_STATUSES.BUYER_CANCELLED,
+      ORDER_STATUSES.DECLINED_ADMIN
+    ].includes(previousStatus);
+
     const shouldRestoreStock =
-      order_status === 'cancelled' &&
-      previousStatus !== 'cancelled' &&
-      ['pending_approval', 'confirmed'].includes(previousStatus);
+      nextIsCancellationStatus &&
+      !previousWasCancellationStatus &&
+      [
+        ORDER_STATUSES.PENDING_APPROVAL,
+        ORDER_STATUSES.INCOMPLETE_TRANSACTION,
+        ORDER_STATUSES.CONFIRMED
+      ].includes(previousStatus);
 
     if (shouldRestoreStock) {
       await applyStockMovements(existingOrder.order_items || [], {
@@ -543,18 +853,35 @@ router.put('/:id/status', async (req, res) => {
     };
 
     // Add timestamp fields based on status
-    if (order_status === 'confirmed') {
+    if (order_status === ORDER_STATUSES.CONFIRMED) {
       updateData.confirmed_at = new Date().toISOString();
-    } else if (order_status === 'shipped') {
+    } else if (order_status === ORDER_STATUSES.SHIPPED) {
       updateData.shipped_at = new Date().toISOString();
-    } else if (order_status === 'delivered') {
+    } else if (order_status === ORDER_STATUSES.DELIVERED) {
       updateData.delivered_at = new Date().toISOString();
-    } else if (order_status === 'cancelled') {
+    } else if (
+      [
+        ORDER_STATUSES.CANCELLED,
+        ORDER_STATUSES.BUYER_CANCELLED,
+        ORDER_STATUSES.DECLINED_ADMIN
+      ].includes(order_status)
+    ) {
       updateData.cancelled_at = new Date().toISOString();
+      if (cancellation_reason) {
+        updateData.cancellation_reason = cancellation_reason;
+      }
     }
 
     if (admin_notes) {
       updateData.admin_notes = admin_notes;
+    }
+
+    const isPaidGcash =
+      String(existingOrder.payment_method || '').toLowerCase() === 'gcash' &&
+      String(existingOrder.payment_status || '').toLowerCase() === PAYMENT_STATUSES.PAID;
+
+    if (nextIsCancellationStatus && isPaidGcash) {
+      updateData.admin_notes = appendAdminNote(updateData.admin_notes || existingOrder.admin_notes, NON_REFUNDABLE_GCASH_NOTE);
     }
 
     const { data, error } = await supabase

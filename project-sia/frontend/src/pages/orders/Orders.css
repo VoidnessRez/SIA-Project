@@ -398,11 +398,55 @@
   line-height: 1.6;
 }
 
+.payment-proof-upload {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.payment-proof-note {
+  width: 100%;
+  min-height: 64px;
+  border: 2px solid #dbe3f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  color: #334155;
+  resize: vertical;
+}
+
+.payment-proof-note:focus {
+  outline: none;
+  border-color: #7c8df4;
+  box-shadow: 0 0 0 3px rgba(124, 141, 244, 0.15);
+}
+
+.payment-proof-upload input[type="file"] {
+  max-width: 320px;
+}
+
 /* Modal Items List */
 .modal-items-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+.see-more-items-btn {
+  margin-top: 12px;
+  border: 1px solid #d9deef;
+  background: #f4f6ff;
+  color: #4f5fd3;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.see-more-items-btn:hover {
+  background: #e9edff;
 }
 
 .modal-item {
@@ -449,22 +493,22 @@
   color: #667eea;
 }
 
-/* Order Summary */
-.order-summary {
+/* Order Details Summary */
+.order-details-summary {
   background: #f8f9fa;
   padding: 20px;
   border-radius: 12px;
   margin-top: 20px;
 }
 
-.summary-row {
+.order-details-summary-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
   color: #666;
 }
 
-.summary-row.total-row {
+.order-details-summary-row.total-row {
   font-size: 1.3rem;
   font-weight: 700;
   color: #333;
@@ -478,11 +522,12 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  justify-content: flex-start;
   margin-top: 25px;
 }
 
 .action-btn {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 150px;
   padding: 12px 20px;
   border: none;
@@ -520,6 +565,133 @@
 .download-btn:hover {
   background: #5a6fd8;
   transform: translateY(-2px);
+}
+
+.view-receipt-link-btn {
+  padding: 0 6px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background: transparent;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.view-receipt-link-btn:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.receipt-zoom-btn {
+  padding: 8px 12px;
+  border: 1px solid #4f46e5;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.receipt-zoom-btn:hover:not(:disabled) {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+.receipt-zoom-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Scoped hardening for Orders modal to avoid global modal class collisions */
+.order-modal .modal-content {
+  max-width: 760px;
+}
+
+.order-modal .modal-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+  padding: 22px 24px 24px;
+}
+
+.order-modal .detail-section {
+  margin-bottom: 0;
+  padding-bottom: 12px;
+}
+
+.order-modal .detail-section h3 {
+  margin-bottom: 10px;
+}
+
+.order-modal .detail-text {
+  margin: 2px 0;
+}
+
+.order-modal .modal-items-list {
+  gap: 10px;
+}
+
+.order-modal .modal-item {
+  padding: 12px;
+}
+
+.order-modal .order-details-summary,
+.order-modal .modal-actions {
+  grid-column: 1 / -1;
+}
+
+.order-modal .order-details-summary {
+  margin-top: 4px;
+}
+
+.order-modal .modal-actions {
+  margin-top: 4px;
+}
+
+.order-modal .action-btn {
+  padding: 10px 16px;
+}
+
+.order-modal .modal-actions .cancel-order-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.25);
+}
+
+.order-modal .modal-actions .cancel-order-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.order-modal .modal-actions .reorder-order-btn {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.24);
+}
+
+.order-modal .modal-actions .reorder-order-btn:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+.order-modal .payment-proof-upload .download-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff !important;
+}
+
+.order-modal .payment-proof-upload .download-btn:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
+}
+
+.order-modal .modal-actions .receipt-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.28);
+}
+
+.order-modal .modal-actions .receipt-btn:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
 }
 
 /* Responsive */
@@ -603,11 +775,21 @@
     padding: 20px;
   }
 
+  .order-modal .modal-body {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px 20px 20px;
+  }
+
   .modal-actions {
     flex-direction: column;
   }
 
   .action-btn {
     width: 100%;
+  }
+
+  .receipt-zoom-btn {
+    width: auto;
   }
 }

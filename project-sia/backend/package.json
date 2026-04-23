@@ -9,9 +9,13 @@
     "seed": "node scripts/seed_products.js",
     "seed:bulk": "node scripts/seed_bulk_mock_products.js",
     "seed:features": "node scripts/seed_new_features.js",
+    "seed:wholesale": "node scripts/seed_wholesale.js",
     "seed:ph": "node scripts/seed_ph_motorcycles.js",
     "seed:admin": "node scripts/seed_admin_pages.js",
     "scan:brands": "node scripts/db_brand_scan.mjs",
+    "test:email:otp": "node scripts/test_admin_email.mjs",
+    "test:email:order": "node scripts/test_order_email.mjs",
+    "test:e2e:core": "node scripts/test_e2e_core_flows.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

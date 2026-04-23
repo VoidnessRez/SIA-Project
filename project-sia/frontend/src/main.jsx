@@ -1,6 +1,6 @@
 import { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { DarkModeProvider } from './context/DarkModeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
@@ -11,6 +11,8 @@ import Brands from './pages/brand/Brands.jsx';
 import Orders from './pages/orders/Orders.jsx';
 import Contact from './pages/contacts/Contact.jsx';
 import Checkout from './pages/checkout/Checkout.jsx';
+import TermsAndConditions from './pages/legal/TermsAndConditions.jsx';
+import DataPolicyPage from './pages/legal/DataPolicyPage.jsx';
 import LoginPage from './Auth/login/LogInPage.jsx';
 import SignUpPage from './Auth/signup/SignUpPage.jsx';
 import Header from './components/header/Header.jsx';
@@ -72,7 +74,23 @@ const App = () => {
 
 const AppContent = ({ showAdminModal, setShowAdminModal }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const [isAdminAuthed, setIsAdminAuthed] = useState(() => {
+    try {
+      return sessionStorage.getItem('adminAuthed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      setIsAdminAuthed(sessionStorage.getItem('adminAuthed') === 'true');
+    } catch {
+      setIsAdminAuthed(false);
+    }
+  }, [location.pathname, showAdminModal]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -86,6 +104,15 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setShowAdminModal]);
+
+  if (isAdminRoute && !isAdminAuthed) {
+    return (
+      <AdminAuthModal
+        isOpen={true}
+        onClose={() => navigate('/')}
+      />
+    );
+  }
 
   return (
     <>
@@ -101,6 +128,8 @@ const AppContent = ({ showAdminModal, setShowAdminModal }) => {
             <Route path="/products" element={<Products />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<DataPolicyPage />} />
             
             {/* Protected routes - require login */}
             <Route 

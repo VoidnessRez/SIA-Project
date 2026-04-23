@@ -21,6 +21,8 @@ const InventoryPage = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImageManager, setShowImageManager] = useState(false);
+  const [showFitmentOptions, setShowFitmentOptions] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadedImagePaths, setUploadedImagePaths] = useState({
@@ -237,6 +239,8 @@ const InventoryPage = () => {
 
   const handleAddProduct = () => {
     setEditingProduct(null);
+    setShowImageManager(false);
+    setShowFitmentOptions(false);
     setUploadedImagePaths({ image_url: '', image_2: '', image_3: '' });
     setFormData({
       sku: `SKU-${Date.now()}`,
@@ -267,6 +271,15 @@ const InventoryPage = () => {
 
   const handleEditProduct = (product) => {
     setEditingProduct(product);
+    setShowImageManager(false);
+    setShowFitmentOptions(
+      !!(
+        !product.is_universal ||
+        String(product.compatible_bike_models || '').trim() ||
+        String(product.available_sizes || '').trim() ||
+        String(product.available_colors || '').trim()
+      )
+    );
     setUploadedImagePaths({
       image_url: extractStoragePathFromUrl(product.image_url),
       image_2: extractStoragePathFromUrl(product.image_2),
@@ -997,11 +1010,11 @@ const InventoryPage = () => {
 
       {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => { setShowAddModal(false); setShowImageManager(false); }}>
+          <div className="modal-content inventory-edit-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editingProduct ? 'Edit' : 'Add'} {activeTab === 'spare-parts' ? 'Spare Part' : 'Accessory'}</h2>
-              <button className="close-button" onClick={() => setShowAddModal(false)}>×</button>
+              <button className="close-button" onClick={() => { setShowAddModal(false); setShowImageManager(false); }}>×</button>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -1182,47 +1195,18 @@ const InventoryPage = () => {
 
               <div className="form-group">
                 <label>Product Photos (maximum 3)</label>
-                {IMAGE_FIELDS.map((fieldName, index) => (
-                  <div key={fieldName} className="photo-slot-group" style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.35rem' }}>Photo {index + 1}</label>
-                    <input
-                      type="text"
-                      placeholder="https://..."
-                      value={formData[fieldName] || ''}
-                      onChange={(e) => {
-                        const nextUrl = e.target.value;
-                        setFormData((prev) => ({ ...prev, [fieldName]: nextUrl }));
-                        setUploadedImagePaths((prev) => ({
-                          ...prev,
-                          [fieldName]: extractStoragePathFromUrl(nextUrl)
-                        }));
-                      }}
-                    />
-                    <div className="photo-upload-row">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, fieldName)}
-                        disabled={uploadingImage}
-                      />
-                      <button
-                        type="button"
-                        className="form-button cancel"
-                        onClick={() => handleRemoveImage(fieldName)}
-                        disabled={uploadingImage || !formData[fieldName]}
-                      >
-                        Remove Photo {index + 1}
-                      </button>
-                    </div>
-                    <div className="photo-preview-box">
-                      {isImageUrl(formData[fieldName]) ? (
-                        <img src={formData[fieldName]} alt={`Preview ${index + 1}`} className="photo-preview-image" />
-                      ) : (
-                        <span className="photo-preview-fallback">No photo selected</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                <div className="inventory-photo-manager-row">
+                  <span className="inventory-photo-count">
+                    {IMAGE_FIELDS.filter((field) => isImageUrl(formData[field])).length} of {IMAGE_FIELDS.length} uploaded
+                  </span>
+                  <button
+                    type="button"
+                    className="inventory-see-more-btn"
+                    onClick={() => setShowImageManager(true)}
+                  >
+                    Manage Photos
+                  </button>
+                </div>
                 {uploadingImage && <small>Uploading image...</small>}
               </div>
 
@@ -1242,47 +1226,61 @@ const InventoryPage = () => {
               </div>
 
               <div className="form-group">
-                <label>Compatible Motorcycle Models</label>
-                <textarea
-                  placeholder={'Yamaha Aerox 155cc\nYamaha NMAX 155cc\nHonda Beat 110cc'}
-                  value={formData.compatible_bike_models}
-                  onChange={(e) => setFormData({ ...formData, compatible_bike_models: e.target.value })}
-                  disabled={formData.is_universal}
-                  rows={4}
-                />
-                <small>
-                  Enter one model per line. This connects directly to customer motorcycle filters.
-                </small>
+                <button
+                  type="button"
+                  className="inventory-see-more-btn"
+                  onClick={() => setShowFitmentOptions((prev) => !prev)}
+                >
+                  {showFitmentOptions ? 'Hide fitment/options' : 'Show fitment/options'}
+                </button>
               </div>
 
-              {activeTab === 'accessories' && (
+              {showFitmentOptions && (
                 <>
                   <div className="form-group">
-                    <label>Available Sizes (Accessories)</label>
+                    <label>Compatible Motorcycle Models</label>
                     <textarea
-                      placeholder={'S\nM\nL\nXL'}
-                      value={formData.available_sizes}
-                      onChange={(e) => setFormData({ ...formData, available_sizes: e.target.value })}
-                      rows={3}
+                      placeholder={'Yamaha Aerox 155cc\nYamaha NMAX 155cc\nHonda Beat 110cc'}
+                      value={formData.compatible_bike_models}
+                      onChange={(e) => setFormData({ ...formData, compatible_bike_models: e.target.value })}
+                      disabled={formData.is_universal}
+                      rows={4}
                     />
-                    <small>One size per line. Saved and reusable for size-based display/filtering.</small>
+                    <small>
+                      Enter one model per line. This connects directly to customer motorcycle filters.
+                    </small>
                   </div>
 
-                  <div className="form-group">
-                    <label>Available Colors (Accessories)</label>
-                    <textarea
-                      placeholder={'Black\nRed\nBlue'}
-                      value={formData.available_colors}
-                      onChange={(e) => setFormData({ ...formData, available_colors: e.target.value })}
-                      rows={3}
-                    />
-                    <small>One color per line for proper product variation setup.</small>
-                  </div>
+                  {activeTab === 'accessories' && (
+                    <>
+                      <div className="form-group">
+                        <label>Available Sizes (Accessories)</label>
+                        <textarea
+                          placeholder={'S\nM\nL\nXL'}
+                          value={formData.available_sizes}
+                          onChange={(e) => setFormData({ ...formData, available_sizes: e.target.value })}
+                          rows={3}
+                        />
+                        <small>One size per line. Saved and reusable for size-based display/filtering.</small>
+                      </div>
+
+                      <div className="form-group">
+                        <label>Available Colors (Accessories)</label>
+                        <textarea
+                          placeholder={'Black\nRed\nBlue'}
+                          value={formData.available_colors}
+                          onChange={(e) => setFormData({ ...formData, available_colors: e.target.value })}
+                          rows={3}
+                        />
+                        <small>One color per line for proper product variation setup.</small>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
 
               <div className="form-actions">
-                <button type="button" className="form-button cancel" onClick={() => setShowAddModal(false)}>
+                <button type="button" className="form-button cancel" onClick={() => { setShowAddModal(false); setShowImageManager(false); }}>
                   Cancel
                 </button>
                 <button type="submit" className="form-button submit" disabled={loading}>
@@ -1290,6 +1288,67 @@ const InventoryPage = () => {
                 </button>
               </div>
             </form>
+
+            {showImageManager && (
+              <div className="inventory-nested-overlay" onClick={() => setShowImageManager(false)}>
+                <div className="inventory-nested-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="inventory-nested-header">
+                    <h4>Product Photos</h4>
+                    <button type="button" className="modal-close" onClick={() => setShowImageManager(false)}>×</button>
+                  </div>
+
+                  <div className="inventory-nested-body">
+                    {IMAGE_FIELDS.map((fieldName, index) => (
+                      <div key={fieldName} className="inventory-photo-slot">
+                        <label>Photo {index + 1}</label>
+                        <input
+                          type="text"
+                          placeholder="https://..."
+                          value={formData[fieldName] || ''}
+                          onChange={(e) => {
+                            const nextUrl = e.target.value;
+                            setFormData((prev) => ({ ...prev, [fieldName]: nextUrl }));
+                            setUploadedImagePaths((prev) => ({
+                              ...prev,
+                              [fieldName]: extractStoragePathFromUrl(nextUrl)
+                            }));
+                          }}
+                        />
+
+                        <div className="photo-upload-row">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, fieldName)}
+                            disabled={uploadingImage}
+                          />
+                          <button
+                            type="button"
+                            className="form-button cancel"
+                            onClick={() => handleRemoveImage(fieldName)}
+                            disabled={uploadingImage || !formData[fieldName]}
+                          >
+                            Remove Photo {index + 1}
+                          </button>
+                        </div>
+
+                        <div className="photo-preview-box">
+                          {isImageUrl(formData[fieldName]) ? (
+                            <img src={formData[fieldName]} alt={`Preview ${index + 1}`} className="photo-preview-image" />
+                          ) : (
+                            <span className="photo-preview-fallback">No photo selected</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="inventory-nested-footer">
+                    <button type="button" className="save-btn" onClick={() => setShowImageManager(false)}>Done</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

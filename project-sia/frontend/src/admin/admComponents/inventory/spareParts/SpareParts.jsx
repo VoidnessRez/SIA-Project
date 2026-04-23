@@ -16,6 +16,7 @@ const SpareParts = () => {
   const [partTypes, setPartTypes] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadedImagePaths, setUploadedImagePaths] = useState({ image_url: '', image_2: '', image_3: '' });
+  const [showImageManager, setShowImageManager] = useState(false);
   const [stockFilter, setStockFilter] = useState('all'); // all, low, normal, overstocked
   const [searchQuery, setSearchQuery] = useState('');
   const [strictSearch, setStrictSearch] = useState(false);
@@ -71,6 +72,7 @@ const SpareParts = () => {
 
   const handleAddPart = () => {
     setEditingPart(null);
+    setShowImageManager(false);
     setUploadedImagePaths({ image_url: '', image_2: '', image_3: '' });
     setFormData({
       sku: `SP-${Date.now()}`,
@@ -97,6 +99,7 @@ const SpareParts = () => {
 
   const handleEditPart = (part) => {
     setEditingPart(part);
+    setShowImageManager(false);
     setUploadedImagePaths({
       image_url: extractStoragePathFromUrl(part.image_url),
       image_2: extractStoragePathFromUrl(part.image_2),
@@ -276,6 +279,12 @@ const SpareParts = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : (numericFields.has(name) ? parseFloat(value) || 0 : value)
     }));
+  };
+
+  const autoResizeTextarea = (el) => {
+    if (!el) return;
+    el.style.height = '48px';
+    el.style.height = `${Math.max(48, el.scrollHeight)}px`;
   };
 
   // Helper function to determine stock status
@@ -469,10 +478,18 @@ const SpareParts = () => {
         {/* Modal */}
         {showAddModal && (
           <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal inventory-edit-modal" onClick={e => e.stopPropagation()}>
               <div className="modal-header">
                 <h3>{editingPart ? 'Edit Spare Part' : 'Add New Spare Part'}</h3>
-                <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
+                <button
+                  className="modal-close"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setShowImageManager(false);
+                  }}
+                >
+                  ×
+                </button>
               </div>
               
               <div className="modal-body">
@@ -488,7 +505,13 @@ const SpareParts = () => {
 
                 <div className="form-group">
                   <label>Description</label>
-                  <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3"></textarea>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    onInput={(e) => autoResizeTextarea(e.currentTarget)}
+                    rows="1"
+                  ></textarea>
                 </div>
 
                 <div className="form-row">
@@ -513,16 +536,13 @@ const SpareParts = () => {
                     <small>Alert when stock falls below this</small>
                   </div>
                   <div className="form-group">
-                    <label>Reorder Qty</label>
-                    <input type="number" name="reorder_quantity" value={formData.reorder_quantity} onChange={handleInputChange} />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
                     <label>Overstock Level (Max)</label>
                     <input type="number" name="max_stock_level" value={formData.max_stock_level} onChange={handleInputChange} />
                     <small>Alert when stock exceeds this</small>
+                  </div>
+                  <div className="form-group">
+                    <label>Reorder Qty</label>
+                    <input type="number" name="reorder_quantity" value={formData.reorder_quantity} onChange={handleInputChange} />
                   </div>
                 </div>
 
@@ -547,41 +567,30 @@ const SpareParts = () => {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Brand Quality</label>
-                  <select name="quality_type" value={formData.quality_type} onChange={handleInputChange}>
-                    <option value="unknown">Unspecified</option>
-                    <option value="genuine">Genuine / OEM</option>
-                    <option value="aftermarket">Aftermarket</option>
-                  </select>
-                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Brand Quality</label>
+                    <select name="quality_type" value={formData.quality_type} onChange={handleInputChange}>
+                      <option value="unknown">Unspecified</option>
+                      <option value="genuine">Genuine / OEM</option>
+                      <option value="aftermarket">Aftermarket</option>
+                    </select>
+                  </div>
 
-                <div className="form-group">
-                  <label>Product Photos (max 3)</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
-                    {IMAGE_FIELDS.map((fieldName, index) => (
-                      <div key={fieldName}>
-                        <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px' }}>Photo {index + 1}</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageUpload(e, fieldName)}
-                          disabled={uploadingImage}
-                        />
-                        {isImageUrl(formData[fieldName]) ? (
-                          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <img
-                              src={formData[fieldName]}
-                              alt={`Photo ${index + 1}`}
-                              style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #d9d9d9' }}
-                            />
-                            <button type="button" className="delete-btn" onClick={() => handleRemoveImage(fieldName)}>Remove</button>
-                          </div>
-                        ) : (
-                          <small>No photo uploaded</small>
-                        )}
-                      </div>
-                    ))}
+                  <div className="form-group">
+                    <label>Product Photos (max 3)</label>
+                    <div className="inventory-photo-manager-row">
+                      <span className="inventory-photo-count">
+                        {IMAGE_FIELDS.filter((field) => isImageUrl(formData[field])).length} of {IMAGE_FIELDS.length} uploaded
+                      </span>
+                      <button
+                        type="button"
+                        className="inventory-see-more-btn"
+                        onClick={() => setShowImageManager(true)}
+                      >
+                        Manage Photos
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -610,10 +619,56 @@ const SpareParts = () => {
               </div>
 
               <div className="modal-footer">
-                <button className="cancel-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
+                <button
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setShowImageManager(false);
+                  }}
+                >
+                  Cancel
+                </button>
                 <button className="save-btn" onClick={handleSavePart}>Save Spare Part</button>
               </div>
             </div>
+
+            {showImageManager && (
+              <div className="inventory-nested-overlay" onClick={() => setShowImageManager(false)}>
+                <div className="inventory-nested-modal" onClick={(e) => e.stopPropagation()}>
+                  <div className="inventory-nested-header">
+                    <h4>Product Photos</h4>
+                    <button type="button" className="modal-close" onClick={() => setShowImageManager(false)}>×</button>
+                  </div>
+
+                  <div className="inventory-nested-body">
+                    {IMAGE_FIELDS.map((fieldName, index) => (
+                      <div key={fieldName} className="inventory-photo-slot">
+                        <label>Photo {index + 1}</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, fieldName)}
+                          disabled={uploadingImage}
+                        />
+
+                        {isImageUrl(formData[fieldName]) ? (
+                          <div className="inventory-photo-preview">
+                            <img src={formData[fieldName]} alt={`Photo ${index + 1}`} />
+                            <button type="button" className="delete-btn" onClick={() => handleRemoveImage(fieldName)}>Remove</button>
+                          </div>
+                        ) : (
+                          <small>No photo uploaded</small>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="inventory-nested-footer">
+                    <button type="button" className="save-btn" onClick={() => setShowImageManager(false)}>Done</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

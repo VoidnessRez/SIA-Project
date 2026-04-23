@@ -148,6 +148,146 @@ router.post('/product-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// POST /api/upload/payment-proof
+// Upload GCash payment proof for an order
+router.post('/payment-proof', upload.single('receipt'), async (req, res) => {
+  console.log('[Upload] 💳 POST /api/upload/payment-proof - Request received');
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No receipt image provided' });
+    }
+
+    const orderId = Number(req.body?.orderId);
+    const reuploadReason = String(req.body?.reupload_reason || '').trim();
+    if (!Number.isFinite(orderId) || orderId <= 0) {
+      return res.status(400).json({ success: false, message: 'Valid orderId is required' });
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('id, order_number, payment_method, order_status, admin_notes')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError || !order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (String(order.payment_method || '').toLowerCase() !== 'gcash') {
+      return res.status(400).json({ success: false, message: 'Payment proof upload is only for GCash orders' });
+    }
+
+    const safeOrderNumber = String(order.order_number || `order-${orderId}`).replace(/[^a-zA-Z0-9-_]/g, '-');
+    const fileExt = String(req.file.originalname || 'png').split('.').pop();
+    const fileName = `${safeOrderNumber}-${Date.now()}.${fileExt}`;
+    const filePath = `payments/gcash/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('profiles')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const {
+      data: { publicUrl }
+    } = supabase.storage.from('profiles').getPublicUrl(filePath);
+
+    const updateData = {
+      payment_proof_url: publicUrl,
+      payment_status: 'pending',
+      updated_at: new Date().toISOString()
+    };
+
+    // After failed/blurry verification, resubmission should return to admin review queue.
+    if (String(order.order_status || '').toLowerCase() === 'incomplete_txn') {
+      updateData.order_status = 'pending_approval';
+    }
+
+    if (reuploadReason) {
+      const stamp = new Date().toISOString();
+      const line = `[Buyer Reupload ${stamp}] ${reuploadReason}`;
+      updateData.admin_notes = order.admin_notes
+        ? `${order.admin_notes}\n${line}`
+        : line;
+    }
+
+    const { data: updatedOrder, error: updateError } = await supabase
+      .from('orders')
+      .update(updateData)
+      .eq('id', orderId)
+      .select('id, order_number, payment_method, payment_status, payment_proof_url, order_status, admin_notes, updated_at')
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    return res.json({
+      success: true,
+      message: 'Payment proof uploaded successfully',
+      url: publicUrl,
+      path: filePath,
+      data: updatedOrder
+    });
+  } catch (error) {
+    console.error('[Upload] 💥 Payment proof upload error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to upload payment proof'
+    });
+  }
+});
+
+// POST /api/upload/gcash-qr
+// Upload or replace active GCash QR image used in checkout
+router.post('/gcash-qr', upload.single('qr'), async (req, res) => {
+  console.log('[Upload] 🧾 POST /api/upload/gcash-qr - Request received');
+
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No QR image provided' });
+    }
+
+    const fileExt = String(req.file.originalname || 'png').split('.').pop();
+    const fileName = `gcash-qr-${Date.now()}.${fileExt}`;
+    const filePath = `payments/gcash-qr/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('profiles')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const {
+      data: { publicUrl }
+    } = supabase.storage.from('profiles').getPublicUrl(filePath);
+
+    return res.json({
+      success: true,
+      message: 'GCash QR uploaded successfully',
+      url: publicUrl,
+      path: filePath
+    });
+  } catch (error) {
+    console.error('[Upload] 💥 GCash QR upload error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to upload GCash QR image'
+    });
+  }
+});
+
 // DELETE /api/upload/product-image
 // Delete product image by storage path
 router.delete('/product-image', async (req, res) => {

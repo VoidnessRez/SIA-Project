@@ -182,6 +182,54 @@
   font-size: 0.9rem;
 }
 
+.gcash-qr-card {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 2px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%);
+}
+
+.gcash-qr-card h4 {
+  margin: 0 0 0.75rem 0;
+  color: #1e3a8a;
+}
+
+.gcash-qr-image {
+  width: 220px;
+  max-width: 100%;
+  border-radius: 10px;
+  border: 2px solid #bfdbfe;
+  background: white;
+}
+
+.gcash-qr-placeholder {
+  width: 220px;
+  max-width: 100%;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 2px dashed #93c5fd;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+}
+
+.gcash-meta {
+  margin: 0.45rem 0 0;
+  font-weight: 700;
+  color: #1f2937;
+  letter-spacing: 0.4px;
+}
+
+.gcash-limit-note {
+  display: block;
+  margin-top: 0.6rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
 /* Fulfillment Methods */
 .fulfillment-methods {
   display: grid;

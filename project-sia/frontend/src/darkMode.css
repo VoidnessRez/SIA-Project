@@ -131,8 +131,9 @@ body.dark-mode {
   border-color: var(--border-color);
 }
 
-/* Dark mode for Buttons (exclude admin auth buttons) */
-.dark-mode button:not(.cta-button):not(.add-to-cart-btn):not(.checkout-btn):not(.logout-item):not(.admin-auth-showpass):not(.admin-auth-btn):not(.admin-auth-login):not(.admin-auth-cancel):not(.admin-auth-send-otp):not(.admin-auth-back) {
+/* Dark mode for plain buttons only.
+   Keep class-based buttons in control of their own component styles. */
+.dark-mode button:not([class]) {
   color: var(--text-primary);
 }
 
