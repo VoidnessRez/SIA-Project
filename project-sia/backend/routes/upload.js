@@ -214,8 +214,15 @@ router.post('/payment-proof', upload.single('receipt'), async (req, res) => {
       .upsert(settingsPayload, { onConflict: 'key' });
 
     if (settingsError) {
+      console.error('[Upload] ❌ Failed to persist GCash QR settings:', settingsError);
       throw settingsError;
     }
+
+    console.log('[Upload] ✅ Persisted GCash QR settings:', {
+      key: settingsPayload.key,
+      url: settingsPayload.value.url,
+      path: settingsPayload.value.path
+    });
 
     const updateData = {
       payment_proof_url: publicUrl,
