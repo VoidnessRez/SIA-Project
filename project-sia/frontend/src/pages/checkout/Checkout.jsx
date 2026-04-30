@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { APP_CONFIG } from '../../config/appConfig';
 import StorageUtils from '../../utils/storageUtils';
-import { loadGcashQrSettings, getMaskedGcashName, getMaskedGcashNumber } from '../../utils/paymentGatewaySettings';
+import { loadGcashQrSettings } from '../../utils/paymentGatewaySettings';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -752,17 +752,8 @@ const Checkout = () => {
                       ) : (
                         <div className="gcash-qr-placeholder">No QR uploaded yet</div>
                       )}
-                      <p className="gcash-meta">
-                        {getMaskedGcashName(gcashQrSettings.qrFirstName, gcashQrSettings.qrLastName) || 'Admin has not set GCash account name yet'}
-                      </p>
-                      <p className="gcash-meta">
-                        {getMaskedGcashNumber(gcashQrSettings.qrNumber) || 'Admin has not set GCash number yet'}
-                      </p>
                       <small className="gcash-limit-note">
                         {gcashQrSettings.qrLimitNote || 'Replace this QR when your receiving limit is reached.'}
-                      </small>
-                      <small className="gcash-limit-note">
-                        Buyer receipt upload: Place the order first, then go to My Orders &gt; open your order &gt; Upload GCash Receipt.
                       </small>
                       <small className="gcash-limit-note">
                         Policy: GCash downpayment is non-refundable once verified by admin.

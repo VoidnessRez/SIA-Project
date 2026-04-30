@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader.jsx';
 import StorageUtils from '../../../../utils/storageUtils';
-import { getMaskedGcashName, getMaskedGcashNumber } from '../../../../utils/paymentGatewaySettings';
 import './SystemSettings.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
@@ -67,11 +66,7 @@ const SystemSettings = () => {
       paymaya: false,
       bankTransfer: false
     },
-    gcashNumber: '',
-    gcashQrFirstName: '',
-    gcashQrLastName: '',
     gcashQrImageUrl: '',
-    gcashQrLimitNote: 'Replace this QR when your receiving limit is reached.',
     payMayaNumber: '',
     bankAccountName: '',
     bankAccountNumber: '',
@@ -675,49 +670,8 @@ const SystemSettings = () => {
                     {settings.paymentMethods.gcash && (
                       <>
                         <p className="section-note">
-                          If GCash name/number/QR are empty, checkout will show placeholder text until you save these fields.
+                          Upload the active GCash QR image. Checkout will show this QR for payment.
                         </p>
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label>GCash First Name</label>
-                            <input
-                              type="text"
-                              value={settings.gcashQrFirstName}
-                              onChange={(e) => handleInputChange('gcashQrFirstName', e.target.value)}
-                              placeholder="Juan"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <label>GCash Last Name</label>
-                            <input
-                              type="text"
-                              value={settings.gcashQrLastName}
-                              onChange={(e) => handleInputChange('gcashQrLastName', e.target.value)}
-                              placeholder="Dela Cruz"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="form-group">
-                          <label>GCash Number</label>
-                          <input
-                            type="text"
-                            value={settings.gcashNumber}
-                            onChange={(e) => handleInputChange('gcashNumber', e.target.value)}
-                            placeholder="09XXXXXXXXX"
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label>QR Replacement Note</label>
-                          <input
-                            type="text"
-                            value={settings.gcashQrLimitNote}
-                            onChange={(e) => handleInputChange('gcashQrLimitNote', e.target.value)}
-                            placeholder="Replace QR when receiving limit is reached"
-                          />
-                        </div>
-
                         <div className="form-group">
                           <label>GCash QR Image</label>
                           <div className="gcash-qr-upload">
@@ -739,9 +693,6 @@ const SystemSettings = () => {
                           {settings.gcashQrImageUrl && (
                             <img src={settings.gcashQrImageUrl} alt="GCash QR" className="gcash-qr-preview" />
                           )}
-                          <small>
-                            Checkout display (masked): {getMaskedGcashName(settings.gcashQrFirstName, settings.gcashQrLastName) || 'N/A'} / {getMaskedGcashNumber(settings.gcashNumber) || 'N/A'}
-                          </small>
                         </div>
                       </>
                     )}
