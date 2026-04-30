@@ -269,8 +269,7 @@ const Checkout = () => {
       console.log('[Checkout] 📤 Sending order to backend:', orderData);
 
       // Send to backend
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
-      const response = await fetch(`${API_URL}/api/orders/create`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/orders/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

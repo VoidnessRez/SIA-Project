@@ -18,7 +18,13 @@ export function loadGcashQrSettings() {
 
 export async function fetchGcashQrSettings(apiBaseUrl) {
   try {
-    const response = await fetch(`${apiBaseUrl}/api/system-settings/gcash-qr`);
+    const endpoint = `${apiBaseUrl}/api/system-settings/gcash-qr?t=${Date.now()}`;
+    const response = await fetch(endpoint, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
     const result = await response.json();
     if (!response.ok || !result.success) {
       throw new Error(result?.message || 'Failed to load GCash QR');
