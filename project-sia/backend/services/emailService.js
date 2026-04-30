@@ -12,23 +12,53 @@ class EmailService {
 
   async initializeTransporters() {
     try {
+      const smtpHost = process.env.SMTP_HOST;
+      const smtpPort = Number(process.env.SMTP_PORT || 587);
+      const smtpSecure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
+      const adminUser = process.env.SMTP_USER || process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com';
+      const adminPass = process.env.SMTP_PASS || process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || 'your-app-password';
+      const ordersUser = process.env.SMTP_USER || process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || 'mejia.spareparts.system@gmail.com';
+      const ordersPass = process.env.SMTP_PASS || process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || 'your-app-password';
+
+      console.log('📧 Email transport:', smtpHost ? `smtp (${smtpHost}:${smtpPort}, secure=${smtpSecure})` : 'gmail');
+
       // Admin Email Transporter (for OTP, security alerts)
-      this.adminTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_ADMIN_USER || process.env.EMAIL_USER || 'mejia.spareparts.system@gmail.com',
-          pass: process.env.EMAIL_ADMIN_PASS || process.env.EMAIL_PASS || 'your-app-password'
-        }
-      });
+      this.adminTransporter = smtpHost
+        ? nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
+            auth: {
+              user: adminUser,
+              pass: adminPass
+            }
+          })
+        : nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: adminUser,
+              pass: adminPass
+            }
+          });
 
       // Orders Email Transporter (for order receipts)
-      this.ordersTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_ORDERS_USER || process.env.EMAIL_ADMIN_USER || 'mejia.spareparts.system@gmail.com',
-          pass: process.env.EMAIL_ORDERS_PASS || process.env.EMAIL_ADMIN_PASS || 'your-app-password'
-        }
-      });
+      this.ordersTransporter = smtpHost
+        ? nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
+            auth: {
+              user: ordersUser,
+              pass: ordersPass
+            }
+          })
+        : nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: ordersUser,
+              pass: ordersPass
+            }
+          });
 
       // Verify both connections
       await this.adminTransporter.verify();
