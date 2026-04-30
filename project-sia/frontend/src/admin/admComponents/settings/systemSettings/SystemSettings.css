@@ -314,7 +314,7 @@
 
 .test-btn {
   padding: 0.75rem 1.5rem;
-  background: var(--inv-gradient);
+  background: linear-gradient(135deg, var(--inv-primary) 0%, var(--inv-primary-dark) 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -322,11 +322,24 @@
   cursor: pointer;
   transition: all 0.3s ease;
   width: fit-content;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .test-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.test-btn:disabled,
+.test-btn[disabled] {
+  background: var(--inv-gray-300);
+  color: var(--inv-gray-600);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* Payment Methods */
