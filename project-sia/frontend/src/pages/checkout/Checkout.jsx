@@ -753,7 +753,7 @@ const Checkout = () => {
                         <div className="gcash-qr-placeholder">No QR uploaded yet</div>
                       )}
                       <small className="gcash-limit-note">
-                        {gcashQrSettings.qrLimitNote || 'Replace this QR when your receiving limit is reached.'}
+                        Pagkatapos mag-order, i-attach ang screenshot ng resibo sa My Orders &gt; buksan ang order &gt; Upload GCash Receipt.
                       </small>
                       <small className="gcash-limit-note">
                         Policy: GCash downpayment is non-refundable once verified by admin.

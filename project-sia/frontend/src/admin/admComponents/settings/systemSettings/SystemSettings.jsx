@@ -149,19 +149,28 @@ const SystemSettings = () => {
       });
 
       console.log('[SystemSettings] 📡 Upload response status:', response.status);
-      const result = await response.json();
+      let result = null;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        const rawText = await response.text().catch(() => '');
+        console.error('[SystemSettings] ❌ Upload response parse failed:', parseError);
+        console.log('[SystemSettings] 📄 Upload raw response:', rawText);
+      }
       console.log('[SystemSettings] 📦 Upload response body:', result);
       if (!response.ok || !result.success) {
-        throw new Error(result.message || 'Failed to upload QR');
+        throw new Error(result?.message || 'Failed to upload QR');
       }
 
-      setSettings((prev) => ({
-        ...prev,
+      const nextSettings = {
+        ...settings,
         gcashQrImageUrl: result.url
-      }));
+      };
+      setSettings(nextSettings);
+      StorageUtils.setToLocalStorage('systemSettings', nextSettings);
       setQrFile(null);
       console.log('[SystemSettings] ✅ GCash QR set to:', result.url);
-      alert('✅ GCash QR uploaded. Click Save Settings to publish it in checkout.');
+      alert('✅ GCash QR uploaded and saved. Refresh checkout to view it.');
     } catch (error) {
       console.error('GCash QR upload error:', error);
       alert(`Failed to upload GCash QR: ${error.message}`);
