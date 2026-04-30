@@ -59,11 +59,14 @@ const mainFilePath = resolve(process.argv[1]);
 const isMain = __filename === mainFilePath || 
                import.meta.url === `file:///${process.argv[1]}` ||
                import.meta.url === `file://${process.argv[1]}`;
+const forceListen = String(process.env.FORCE_LISTEN || 'false').toLowerCase() === 'true';
+const runningInPm2 = !!process.env.PM2_HOME;
+const shouldStart = isMain || forceListen || runningInPm2;
 
-console.log('🔍 Debug:', { __filename, mainFilePath, isMain });
+console.log('🔍 Debug:', { __filename, mainFilePath, isMain, forceListen, runningInPm2 });
 
 let server;
-if (isMain) {
+if (shouldStart) {
   const port = process.env.PORT || 5174;
   server = app.listen(port, () => {
     console.log(`\n🚀  Backend starting...`);

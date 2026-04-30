@@ -12,7 +12,49 @@ This guide deploys the whole project to a Hostinger VPS (Ubuntu-based). It cover
 - Domain: example.com (optional but recommended)
 - Repo is on GitHub and you can SSH into VPS
 
+## 0.1) Hostinger hPanel steps (click guide)
+
+### A) Create / open VPS
+1. Login to Hostinger hPanel.
+2. Click VPS in the left sidebar.
+3. Click Manage on your VPS plan.
+4. In Operating System, pick Ubuntu 22.04.
+5. Click Install OS (wait until status is Running).
+
+### B) Get VPS access details
+1. In the VPS dashboard, copy the IP Address.
+2. Go to SSH Access or Access Details tab.
+3. Set/Reset root password if asked.
+4. Keep these ready: IP, SSH user (usually root), password.
+
+### C) (Optional) Add domain to VPS
+1. Go to Domains in hPanel.
+2. Select your domain.
+3. Click DNS / DNS Zone.
+4. Add or edit A Record:
+    - Name: @
+    - Points to: your VPS IP
+5. Add or edit CNAME:
+    - Name: www
+    - Points to: @
+6. Save changes (DNS may take a few minutes to hours).
+
+### D) (Optional) Create email account for SMTP
+1. Go to Emails in hPanel.
+2. Choose your domain.
+3. Click Create Email Account.
+4. Set email (e.g., noreply@yourdomain.com) and password.
+5. After creation, click Manage -> Configure Mail Client.
+6. Copy SMTP host, port, and encryption type.
+
 ## 1) Prepare VPS
+
+### 1.0 Connect via SSH
+From your local machine (PowerShell or Terminal):
+```bash
+ssh root@YOUR_VPS_IP
+```
+If asked, type yes and enter your VPS password.
 
 ### 1.1 Update packages
 ```bash
@@ -52,21 +94,21 @@ sudo mkdir project-sia
 sudo chown -R $USER:$USER /var/www/project-sia
 cd /var/www/project-sia
 
-git clone <YOUR_REPO_URL> .
+git clone https://github.com/VoidnessRez/SIA-Project .
 ```
 
 ## 3) Backend Setup (Express)
 
 ### 3.1 Install dependencies
 ```bash
-cd /var/www/project-sia/backend
+cd /var/www/project-sia/project-sia/backend
 npm install
 ```
 
 ### 3.2 Create production environment file
 Create a new file:
 ```bash
-nano /var/www/project-sia/backend/.env
+nano /var/www/project-sia/project-sia/backend/.env
 ```
 
 Example:
@@ -98,7 +140,7 @@ Notes:
 
 ### 3.3 Start backend with PM2
 ```bash
-cd /var/www/project-sia/backend
+cd /var/www/project-sia/project-sia/backend
 pm2 start index.js --name project-sia-backend
 pm2 save
 pm2 startup
@@ -113,7 +155,7 @@ curl http://localhost:5174/api/health
 
 ### 4.1 Install dependencies and build
 ```bash
-cd /var/www/project-sia/frontend
+cd /var/www/project-sia/project-sia/frontend
 npm install
 npm run build
 ```
@@ -130,9 +172,9 @@ Paste and update domain:
 ```nginx
 server {
     listen 80;
-    server_name example.com www.example.com;
+    server_name 76.13.191.123;
 
-    root /var/www/project-sia/frontend/dist;
+    root /var/www/project-sia/project-sia/frontend/dist;
     index index.html;
 
     # Frontend SPA routing
@@ -204,7 +246,7 @@ VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
 
 Then rebuild:
 ```bash
-cd /var/www/project-sia/frontend
+cd /var/www/project-sia/project-sia/frontend
 npm run build
 ```
 
@@ -234,7 +276,7 @@ npm run build
 ## 11) Update / Redeploy
 
 ```bash
-cd /var/www/project-sia
+cd /var/www/project-sia/project-sia
 git pull
 
 # Backend
