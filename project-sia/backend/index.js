@@ -9,6 +9,7 @@ import inventoryRouter from './routes/inventory.js';
 import ordersRouter from './routes/orders.js';
 import priceHistoryRouter from './routes/priceHistory.js';
 import stockReleaseRouter from './routes/stockRelease.js';
+import systemSettingsRouter from './routes/systemSettings.js';
 
 dotenv.config({ override: true });
 
@@ -33,6 +34,8 @@ app.use('/api/price-history', priceHistoryRouter);
 console.log('   ✓ Price History routes loaded');
 app.use('/api/stock-releases', stockReleaseRouter);
 console.log('   ✓ Stock Release routes loaded');
+app.use('/api/system-settings', systemSettingsRouter);
+console.log('   ✓ System Settings routes loaded');
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

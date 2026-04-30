@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { APP_CONFIG } from '../../config/appConfig';
+import { APP_CONFIG, API_CONFIG } from '../../config/appConfig';
 import StorageUtils from '../../utils/storageUtils';
-import { loadGcashQrSettings } from '../../utils/paymentGatewaySettings';
+import { fetchGcashQrSettings } from '../../utils/paymentGatewaySettings';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -38,7 +38,10 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [errors, setErrors] = useState({});
-  const [gcashQrSettings, setGcashQrSettings] = useState(loadGcashQrSettings());
+  const [gcashQrSettings, setGcashQrSettings] = useState({
+    qrImageUrl: '',
+    qrLimitNote: ''
+  });
 
   // Load user's profile address when component mounts or when switching to saved address
   useEffect(() => {
@@ -74,8 +77,9 @@ const Checkout = () => {
   }, [isAuthenticated, navigate, cartItems]);
 
   useEffect(() => {
-    const refreshSettings = () => {
-      setGcashQrSettings(loadGcashQrSettings());
+    const refreshSettings = async () => {
+      const settings = await fetchGcashQrSettings(API_CONFIG.BASE_URL);
+      setGcashQrSettings(settings);
     };
 
     refreshSettings();

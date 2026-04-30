@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../../../AdminAuth/layout/AdminLayout';
 import SkeletonLoader from '../../inventory/SkeletonLoader.jsx';
 import StorageUtils from '../../../../utils/storageUtils';
+import { API_CONFIG } from '../../../../config/appConfig';
 import './SystemSettings.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5174';
+const API_URL = API_CONFIG.BASE_URL;
 
 const SystemSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -107,6 +108,24 @@ const SystemSettings = () => {
       }
       setLoading(false);
     }, 800);
+  }, []);
+
+  useEffect(() => {
+    const loadGcashQr = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/system-settings/gcash-qr`);
+        const result = await response.json();
+        if (!response.ok || !result.success) return;
+
+        if (result.url) {
+          setSettings((prev) => ({ ...prev, gcashQrImageUrl: result.url }));
+        }
+      } catch (error) {
+        console.error('[SystemSettings] Failed to load GCash QR:', error);
+      }
+    };
+
+    loadGcashQr();
   }, []);
 
   const handleInputChange = (field, value) => {

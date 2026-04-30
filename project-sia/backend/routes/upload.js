@@ -199,6 +199,24 @@ router.post('/payment-proof', upload.single('receipt'), async (req, res) => {
       data: { publicUrl }
     } = supabase.storage.from('profiles').getPublicUrl(filePath);
 
+    const settingsPayload = {
+      key: 'gcash_qr',
+      value: {
+        url: publicUrl,
+        path: filePath,
+        updatedAt: new Date().toISOString()
+      },
+      updated_at: new Date().toISOString()
+    };
+
+    const { error: settingsError } = await supabase
+      .from('system_settings')
+      .upsert(settingsPayload, { onConflict: 'key' });
+
+    if (settingsError) {
+      throw settingsError;
+    }
+
     const updateData = {
       payment_proof_url: publicUrl,
       payment_status: 'pending',
