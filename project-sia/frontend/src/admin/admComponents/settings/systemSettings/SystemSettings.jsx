@@ -713,7 +713,26 @@ const SystemSettings = () => {
                             </button>
                           </div>
                           {settings.gcashQrImageUrl && (
-                            <img src={settings.gcashQrImageUrl} alt="GCash QR" className="gcash-qr-preview" />
+                            <>
+                              <img src={settings.gcashQrImageUrl} alt="GCash QR" className="gcash-qr-preview" />
+                              <div className="gcash-qr-actions">
+                                <a
+                                  className="test-btn"
+                                  href={settings.gcashQrImageUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  View QR
+                                </a>
+                                <a
+                                  className="test-btn"
+                                  href={settings.gcashQrImageUrl}
+                                  download
+                                >
+                                  Save QR
+                                </a>
+                              </div>
+                            </>
                           )}
                         </div>
                       </>
