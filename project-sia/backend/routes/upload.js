@@ -314,7 +314,7 @@ router.post('/gcash-qr', upload.single('qr'), async (req, res) => {
 });
 
 // DELETE /api/upload/product-image
-// Delete product image by storage path
+// Delete product image by storage pathHey, Cortana. Hey, Cortana. I don't know. Music experience. Cortana Mobile. Weather. Hey, Cortana. Next. Time Cortana, do you have a? Start. Hey, Cortana, open stop. Playing. For me. Hey, Cortana. What's up now? Hey, Cortana. Turn the volume down. Hey, Cortana. Open. What is the music tomorrow? Hey, Cortana. Laptop India. Volume Account 19. 77. Are you? Can you? Hey, Cortana, swipe. Connect. Shy. Shy. Wow. Cortana, pause. Wow. Watch with George Smith. Hey, Cortana, play speaker. Cortana. Hey, Cortana. I need a pizza. Pl. Hey, Cortana mine. Hey, Cortana. Cortana. Hey, Cortana. Hey, Cortana. Change. Bhavika. 
 router.delete('/product-image', async (req, res) => {
   try {
     const { path } = req.body || {};
